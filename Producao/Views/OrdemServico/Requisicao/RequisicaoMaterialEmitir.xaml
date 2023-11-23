@@ -1,0 +1,84 @@
+﻿<UserControl x:Class="Producao.Views.OrdemServico.Requisicao.RequisicaoMaterialEmitir"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.OrdemServico.Requisicao" 
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d" 
+             d:DesignWidth="250" Unloaded="UserControl_Unloaded">
+    
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <syncfusion:SfTextInputLayout
+            Grid.Row="0"
+            InputViewPadding="5" 
+            HintFloatMode="Float" 
+            Hint="NÚMERO DE SERVIÇO" 
+            CharCountVisibility="Collapsed" 
+            HelperTextVisibility="Collapsed">
+            <syncfusion:SfTextBoxExt 
+                TextAlignment="Center" 
+                PreviewKeyDown="OnPreviewKeyDown"/>
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+            Grid.Row="1"
+            InputViewPadding="5" 
+            HintFloatMode="Float" 
+            Hint="SETOR" 
+            CharCountVisibility="Collapsed" 
+            HelperTextVisibility="Collapsed">
+            <syncfusion:SfTextBoxExt 
+                Text="{Binding ProdutoServico.setor_caminho}"
+                IsEnabled="False" 
+                TextAlignment="Center" />
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+            Grid.Row="2"
+            InputViewPadding="5" 
+            HintFloatMode="Float" 
+            Hint="DATA" 
+            CharCountVisibility="Collapsed" 
+            HelperTextVisibility="Collapsed">
+            <syncfusion:SfTextBoxExt
+                x:Name="txtData" 
+                IsEnabled="False" 
+                TextAlignment="Center" />
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+            Grid.Row="3"
+            InputViewPadding="5" 
+            HintFloatMode="Float" 
+            Hint="EMITENTE" 
+            CharCountVisibility="Collapsed" 
+            HelperTextVisibility="Collapsed">
+            <syncfusion:SfTextBoxExt
+                x:Name="txtEmitente" 
+                IsEnabled="False" 
+                TextAlignment="Center" />
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+            Grid.Row="4"
+            InputViewPadding="5" 
+            HintFloatMode="Float" 
+            Hint="NÚMERO DA REQUISIÇÃO" 
+            CharCountVisibility="Collapsed" 
+            HelperTextVisibility="Collapsed">
+            <syncfusion:SfTextBoxExt 
+                TextAlignment="Center" MouseDoubleClick="OnMouseDoubleClick" />
+        </syncfusion:SfTextInputLayout>
+
+    </Grid>
+    
+</UserControl>

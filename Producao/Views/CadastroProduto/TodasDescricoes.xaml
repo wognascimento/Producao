@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="Producao.Views.CadastroProduto.TodasDescricoes"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.CadastroProduto" 
+             xmlns:app="clr-namespace:Producao"
+             xmlns:Syncfusion="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" 
+             Loaded="OnLoaded" Unloaded="UserControl_Unloaded">
+
+    <UserControl.Resources>
+        <app:ConverterNumber x:Key="ConverterNumber"/>
+        <app:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+
+
+    <Grid>
+        <Syncfusion:SfDataGrid
+            Name="itens" 
+            ItemsSource="{Binding Descricoes}" 
+            ColumnSizer="AutoLastColumnFill" 
+            AllowFiltering="True" 
+            AllowResizingColumns="True" 
+            AutoGenerateColumns="False">
+            <Syncfusion:SfDataGrid.Columns>
+                <Syncfusion:GridTextColumn MappingName="codcompladicional"/>
+                <Syncfusion:GridTextColumn MappingName="planilha" />
+                <Syncfusion:GridTextColumn MappingName="familia" />
+                <Syncfusion:GridTextColumn MappingName="descricao_completa" />
+                <Syncfusion:GridTextColumn MappingName="unidade"/>
+                <Syncfusion:GridTextColumn MappingName="descricaofiscal"/>
+                <Syncfusion:GridTextColumn MappingName="descricaoespanhol"/>
+                <Syncfusion:GridCheckBoxColumn MappingName="prodcontrolado"
+                                           DisplayBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}}"
+                                           ValueBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}}" />
+                <Syncfusion:GridCheckBoxColumn MappingName="inativo"
+                                           DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
+                                           ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"/>
+                <Syncfusion:GridTextColumn MappingName="vida_util"/>
+                <Syncfusion:GridCurrencyColumn MappingName="custo"/>
+                <Syncfusion:GridTextColumn MappingName="saldo_estoque"/>
+            </Syncfusion:SfDataGrid.Columns>
+        </Syncfusion:SfDataGrid>
+    </Grid>
+
+</UserControl>

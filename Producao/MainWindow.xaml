@@ -1,0 +1,202 @@
+﻿<Window x:Class="Producao.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+        Title="SISTEMA INTEGRADO DE GERENCIAMENTO - PRODUÇÃO"
+        Height="768" Width="1024" WindowState="Maximized" Loaded="Window_Loaded">
+
+    <Grid x:Name="Etiqueta">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <syncfusion:MenuAdv 
+            Grid.Row="0" 
+            ScrollViewer.HorizontalScrollBarVisibility="Visible" 
+            PopUpAnimationType="Slide" 
+            VerticalAlignment="Center" 
+            VerticalContentAlignment="Center">
+            <syncfusion:MenuItemAdv Click="MenuItemAdv_Click" Header="Aprovados"/>
+            <!--<syncfusion:MenuItemAdv Header="Memorial"/>-->
+            <syncfusion:MenuItemAdv Header="Check list">
+                <syncfusion:MenuItemAdv Header="Natal">
+                    <syncfusion:MenuItemAdv x:Name="Checklist" Header="Checklist" Click="OnChecklist_Click"/>
+                    <syncfusion:MenuItemAdv x:Name="CompletarChecklist" Header="Completar" Click="CompletarChecklistClick"/>
+                    <syncfusion:MenuItemAdv x:Name="Revisao" Header="Revisão" Click="OnRevisaoChecklistClick"/>
+                    <syncfusion:MenuItemAdv x:Name="EtiquetaChecklist" Header="Etiqueta">
+                        <syncfusion:MenuItemAdv Header="Emitir" Click="OnEtiquetaChecklistClick"/>
+                        <syncfusion:MenuItemAdv Header="Imprimir" Click="OnEtiquetaChecklistEmitidaClick"/>
+                    </syncfusion:MenuItemAdv>
+                    <syncfusion:MenuItemAdv x:Name="historico" Header="Histórico" Click="OnHistoricoChecklistClick"/>
+                </syncfusion:MenuItemAdv>
+                <syncfusion:MenuItemAdv Header="Memorial" Click="OnOpenMemorial"/>
+                <syncfusion:MenuItemAdv Header="Funxma"/>
+                <syncfusion:MenuItemAdv Header="Prefeitura"/>
+            </syncfusion:MenuItemAdv>
+            <syncfusion:MenuItemAdv Header="Planilha">
+                <syncfusion:MenuItemAdv Header="Análise Cliente" Click="OnAnaliseCliente"/>
+                <syncfusion:MenuItemAdv Header="Análise Planilha" Click="OnAnalisePlanilha"/>
+                <syncfusion:MenuItemAdv Header="Análise ShowRoom"/>
+                <syncfusion:MenuItemAdv Header="Controle por Grupo" Click="ControleGrupoClick"/>
+                <syncfusion:MenuItemAdv Header="Pendência de Produção" Click="OnPendenciaProducaoClick"/>
+            </syncfusion:MenuItemAdv>
+            
+            <!--<syncfusion:MenuItemAdv Header="Agenda Visita Técnica"/>-->
+            <syncfusion:MenuItemAdv Header="Ordem de Serviço">
+                <syncfusion:MenuItemAdv Header="Serviço">
+                    <syncfusion:MenuItemAdv Header="Emitir" Click="OnEmitirOSServicoClick"/>
+                    <syncfusion:MenuItemAdv Header="Emitidas" Click="OnEmitidasOSServicoClick"/>
+                    <syncfusion:MenuItemAdv Header="Baixa" Click="OnBaixaServisoClick"/>
+                </syncfusion:MenuItemAdv>
+                <syncfusion:MenuItemAdv Header="Produção">
+                    <syncfusion:MenuItemAdv Header="Solicitar" Click="OnSolicitarOSProdutoClick"/>
+                    <syncfusion:MenuItemAdv Header="Alterar Solicitação" Click="OnAlterarSolicitacaoOSProdutoClick"/>
+                    <syncfusion:MenuItemAdv Header="Emitir" Click="OnEmitirOSProdutoClick"/>
+                    <syncfusion:MenuItemAdv Header="Baixa" Click="OnBaixaProdutoClick"/>
+                    <syncfusion:MenuItemAdv Header="Relatórios">
+                        <syncfusion:MenuItemAdv Header="Emitidas" Click="OnEmitidasClick"/>
+                        <syncfusion:MenuItemAdv Header="Concluídas" Click="OnConcluidasClick"/>
+                        <syncfusion:MenuItemAdv Header="Não Concluídas" Click="OnNaoConcluidasClick"/>
+                        <syncfusion:MenuItemAdv Header="Canceladas" Click="OnCanceladasClick"/>
+                        <syncfusion:MenuItemAdv Header="Transformação"/>
+                        <syncfusion:MenuItemAdv Header="Programação de produção" Click="OnProgramacaoProducaoClick"/>
+                    </syncfusion:MenuItemAdv>
+                </syncfusion:MenuItemAdv>
+                <syncfusion:MenuItemAdv Header="Desbaiamento"/>
+                <syncfusion:MenuItemAdv Header="Transformação"/>
+                <syncfusion:MenuItemAdv Header="Requisição">
+                    <syncfusion:MenuItemAdv Header="Receita" Click="OnCreateReceitaRequisicao"/>
+                    <syncfusion:MenuItemAdv Header="Emitir" Click="OnRequisicaClick"/>
+                    <syncfusion:MenuItemAdv Header="Alterar" Click="OnAlterarRequisicoes"/>
+                    <syncfusion:MenuItemAdv Header="Consultas">
+                        <syncfusion:MenuItemAdv Header="Emitidas" Click="OnRequisicoesEmitidas"/>
+                    </syncfusion:MenuItemAdv>
+                </syncfusion:MenuItemAdv>
+                <syncfusion:MenuItemAdv Header="Impedimento Checklist"/>
+            </syncfusion:MenuItemAdv>
+            
+            <syncfusion:MenuItemAdv Header="Adereçamento"/>
+            
+            <syncfusion:MenuItemAdv Header="Central de Modelos">
+                <syncfusion:MenuItemAdv Header="Modelos">
+                    <syncfusion:MenuItemAdv Header="Criar" Click="OnCentralCriarModelo"/>
+                    <syncfusion:MenuItemAdv Header="Ordem de Serviço" Click="OnCentralEmitirOs"/>
+                    <syncfusion:MenuItemAdv Header="Status Checklist" Click="OnCentralStatusCheckList"/>
+                </syncfusion:MenuItemAdv>
+                <syncfusion:MenuItemAdv Header="Tabela P.A" Click="OnCentralTabelaPa"/>
+                <syncfusion:MenuItemAdv Header="Fator" Click="OnCentralFatorConversao"/>
+            </syncfusion:MenuItemAdv>
+
+            <syncfusion:MenuItemAdv Header="Construção">
+                <syncfusion:MenuItemAdv Header="Cadastro Shopping" Click="OnCadastroConstrucao"/>
+                <syncfusion:MenuItemAdv Header="Cadastro de Peças" Click="OnCadastroPecaConstrucao"/>
+            </syncfusion:MenuItemAdv>
+
+            <syncfusion:MenuItemAdv Header="Controlados">
+                <syncfusion:MenuItemAdv Header="Imprimir" Click="OnImprimirEtiquetaControlado"/>
+                <syncfusion:MenuItemAdv Header="Vincular Etiqueta" Click="OnVinculoRequisicao"/>
+                <syncfusion:MenuItemAdv Header="Cobrança"/>
+                <syncfusion:MenuItemAdv Header="Retorno" Click="OnRetornoControlado"/>
+                <syncfusion:MenuItemAdv Header="Relatórios">
+                    <syncfusion:MenuItemAdv Header="Sigla" Click="OnRelatorioSigla"/>
+                    <syncfusion:MenuItemAdv Header="Planilha" Click="OnRelatorioPlanilha"/>
+                </syncfusion:MenuItemAdv>
+            </syncfusion:MenuItemAdv>
+
+
+
+            <syncfusion:MenuItemAdv Header="Produto">
+                <syncfusion:MenuItemAdv Header="Relplan"/>
+                <syncfusion:MenuItemAdv Header="Cadastro de Produto" Click="OnCadastroProduto"/>
+                <!--
+                <syncfusion:MenuItemAdv Header="Descrição"/>
+                <syncfusion:MenuItemAdv Header="Descrição Adicional"/>
+                <syncfusion:MenuItemAdv Header="Complemento Adicional"/>
+                -->
+                <syncfusion:MenuItemAdv Header="Cadastrar Descrição Espanhol" Click="OnCadastroEspanhol"/>
+                <syncfusion:MenuItemAdv Header="Todas as Descrições" Click="OnTodasDescricoes"/>
+                <syncfusion:MenuItemAdv Header="Produtos Shopping" Click="OnProdutosShopping"/>
+            </syncfusion:MenuItemAdv>
+            
+            
+            <syncfusion:MenuItemAdv Header="Estoque">
+                <syncfusion:MenuItemAdv Header="Saldo Estoque" Click="OnSaldoEstoqueClick"/>
+                <syncfusion:MenuItemAdv Header="Planejamento Estoque" Click="OnPlanejamentoEstoqueClick"/>
+                <syncfusion:MenuItemAdv Header="Sobra"/>
+                <syncfusion:MenuItemAdv Header="Relatório Iventário"/>
+                <syncfusion:MenuItemAdv Header="CCE">
+                    <syncfusion:MenuItemAdv Header="Lançamentos" Click="OnDigitarCCEClick"/>
+                    <syncfusion:MenuItemAdv Header="Relatório" Click="OnRelatorioCCEClick"/>
+                    <syncfusion:MenuItemAdv Header="Consulta" Click="OnConsultaCCEClick"/>
+                </syncfusion:MenuItemAdv>
+                <syncfusion:MenuItemAdv Header="Movimentações">
+                    <syncfusion:MenuItemAdv Header="Entrada" Click="OnEntradaEstoqueClick"/>
+                    <syncfusion:MenuItemAdv Header="Saida" Click="OnSaidaEstoqueClick"/>
+                    <syncfusion:MenuItemAdv Header="Libera Produto Bloqueado" Click="OnLiberarProdutoBloqueadoClick"/>
+                </syncfusion:MenuItemAdv>
+                <syncfusion:MenuItemAdv Header="Baixa de Requisição" Click="OnBaixaRequisicaoClick"/>
+            </syncfusion:MenuItemAdv>
+            
+            
+            <syncfusion:MenuItemAdv Header="Kit">
+                
+                <syncfusion:MenuItemAdv Header="Solução">
+                    <syncfusion:MenuItemAdv Header="Checklist" Click="OnKitSolucaoCheckList"/>
+                    <syncfusion:MenuItemAdv Header="Consulta" Click="OnQueryKitsolucaoGeral"/>
+                </syncfusion:MenuItemAdv>
+                
+                <syncfusion:MenuItemAdv Header="Manutenção">
+                    <syncfusion:MenuItemAdv Header="Checklist" Click="OnKitManutencaoCheckList"/>
+                    <syncfusion:MenuItemAdv Header="Consulta" Click="OnQueryKitManutencaoGeral"/>
+                </syncfusion:MenuItemAdv>
+
+                <syncfusion:MenuItemAdv Header="Controle Geral" Click="OnControleGeral"/>
+
+            </syncfusion:MenuItemAdv>
+
+            <syncfusion:MenuItemAdv Header="Sobre" Click="MenuItemAdv_Click_1"/>
+        </syncfusion:MenuAdv>
+
+        <syncfusion:DocumentContainer 
+            Name="_mdi" 
+            Grid.Row="1" 
+            EnableAutoScroll="True"
+            Mode="TDI"
+            CloseButtonClick="_mdi_CloseButtonClick"
+            CloseAllTabs="_mdi_CloseAllTabs"/>
+
+        <StatusBar Grid.Row="2">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="4*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <StatusBarItem>
+                <Image Source="/icones/icons8-usu_0025c3_0025a1rio-de-g_0025c3_0025aanero-neutro-windows-metro-16.png" Width="16" Height="16" MouseDown="OnAlterarUsuario"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="1">
+                <TextBlock x:Name="txtUsername"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="2">
+                <syncfusion:SfLinearProgressBar x:Name="PbLoading" Height="20" Progress="80" Width="100" IsIndeterminate="True" Visibility="Hidden"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="3">
+                <Image Source="/icones/configuracao-de-dados-windows-metro-16.png" Width="16" Height="16" MouseDown="Image_MouseDown"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="4">
+                <TextBlock x:Name="txtDataBase"/>
+            </StatusBarItem>
+        </StatusBar>
+        
+    </Grid>
+
+</Window>

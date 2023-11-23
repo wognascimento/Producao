@@ -1,0 +1,71 @@
+﻿<Window x:Class="Producao.Views.CadastroProduto.CadastroAdicional"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.CadastroProduto" 
+             xmlns:vewModel="clr-namespace:Producao" 
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="600" 
+             WindowStartupLocation="CenterOwner" 
+             WindowStyle="ToolWindow" Loaded="OnLoaded" Title="Descrição Adicional">
+
+    <Window.Resources>
+        <vewModel:ConverterNumber x:Key="ConverterNumber"/>
+        <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
+    </Window.Resources>
+
+    <Grid>
+
+        <syncfusion:SfDataGrid
+            x:Name="adicionais"
+            Grid.Row="1"
+            AddNewRowPosition="Bottom"
+            ShowRowHeader="True"
+            AutoGenerateColumns="False"
+            AllowFiltering="True"
+            ColumnSizer="AutoWithLastColumnFill"
+            ItemsSource="{Binding ProdutosAdicionais}"
+            SelectedItem="{Binding ProdutoAdicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            CurrentCellDropDownSelectionChanged="OnCurrentCellDropDownSelectionChanged" 
+            CurrentCellValueChanged="OnCurrentCellValueChanged" 
+            FontSize="10" 
+            RowValidated="OnRowValidated" 
+            RowValidating="OnRowValidating" 
+            AddNewRowInitiating="OnAddNewRowInitiating" AllowEditing="True" >
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridNumericColumn
+                        HeaderText="CÓDIGO" 
+                        MappingName="coduniadicional"
+                        DisplayBinding="{Binding coduniadicional, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridTextColumn
+                        HeaderText="DESCRIÇÃO ADICIONAL" 
+                        MappingName="descricao_adicional"/>
+                <syncfusion:GridCheckBoxColumn
+                        AllowEditing="True"
+                        HeaderText="INATIVO" 
+                        MappingName="inativo"
+                        DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
+                        ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}" />
+                <syncfusion:GridTemplateColumn 
+                        HeaderText=""
+                        MappingName="coduniadicional" ColumnSizer="SizeToCells">
+                    <syncfusion:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button 
+                                    Content="Complemento" 
+                                    syncfusion:FocusManagerHelper.FocusedElement="True"
+                                    Command="{Binding Path=DataContext.RowDataCommand, ElementName=adicionais}" 
+                                    CommandParameter="{Binding ElementName=adicionais}"/>
+                        </DataTemplate>
+                    </syncfusion:GridTemplateColumn.CellTemplate>
+                </syncfusion:GridTemplateColumn>
+            </syncfusion:SfDataGrid.Columns>
+
+
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+    
+</Window>

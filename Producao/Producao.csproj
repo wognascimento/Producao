@@ -1,0 +1,192 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <IsPublishable>True</IsPublishable>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="App.ico" />
+    <None Remove="icones\configuracao-de-dados-windows-metro-16.png" />
+    <None Remove="icones\icons8-adicionar-a-coleção-40.png" />
+    <None Remove="icones\icons8-adicionar-a-coleção-80.png" />
+    <None Remove="icones\icons8-adicionar-propriedade-40.png" />
+    <None Remove="icones\icons8-adicionar-propriedade-80.png" />
+    <None Remove="icones\icons8-copiar-40.png" />
+    <None Remove="icones\icons8-copiar-80.png" />
+    <None Remove="icones\icons8-detalhes-40.png" />
+    <None Remove="icones\icons8-detalhes-80.png" />
+    <None Remove="icones\icons8-editar-propriedade-40.png" />
+    <None Remove="icones\icons8-editar-propriedade-80.png" />
+    <None Remove="icones\icons8-excluir-40.png" />
+    <None Remove="icones\icons8-excluir-80.png" />
+    <None Remove="icones\icons8-impressão-40.png" />
+    <None Remove="icones\icons8-impressão-80.png" />
+    <None Remove="icones\icons8-lista-de-verificação-40.png" />
+    <None Remove="icones\icons8-lista-de-verificação-80.png" />
+    <None Remove="icones\icons8-ms-excel-blue-ui-120.png" />
+    <None Remove="icones\icons8-ms-excel-blue-ui-16.png" />
+    <None Remove="icones\icons8-ms-excel-blue-ui-32.png" />
+    <None Remove="icones\icons8-ms-excel-blue-ui-96.png" />
+    <None Remove="icones\icons8-next-page-blue-ui-16.png" />
+    <None Remove="icones\icons8-next-page-blue-ui-32.png" />
+    <None Remove="icones\icons8-next-page-blue-ui-96.png" />
+    <None Remove="icones\icons8-pesquisar-40.png" />
+    <None Remove="icones\icons8-pesquisar-80.png" />
+    <None Remove="icones\icons8-salvar-40.png" />
+    <None Remove="icones\icons8-salvar-80.png" />
+    <None Remove="icones\icons8-salvar-como-blue-ui-16.png" />
+    <None Remove="icones\icons8-salvar-como-blue-ui-32.png" />
+    <None Remove="icones\icons8-salvar-como-blue-ui-96.png" />
+    <None Remove="icones\icons8-usu_0025c3_0025a1rio-de-g_0025c3_0025aanero-neutro-windows-metro-16.png" />
+    <None Remove="icones\icons8-vassoura-40.png" />
+    <None Remove="icones\icons8-vassoura-80.png" />
+    <None Remove="Modelos\DESCRICOES_CONSTRUCAO_MODELO.xlsx" />
+    <None Remove="Modelos\ETIQUETA_MODELO.xlsx" />
+    <None Remove="Modelos\ETIQUETA_REQUISICAO_MODELO.xlsx" />
+    <None Remove="Modelos\ORDEM_SERVICO_MODELO.xlsx" />
+    <None Remove="Modelos\ORDEM_SERVICO_SERVICO_MODELO.xlsx" />
+    <None Remove="Modelos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx" />
+    <None Remove="Modelos\RECEITA_CENTRAL_MODELO.xlsx" />
+    <None Remove="Modelos\RELATORIO_CCE_MODELO.xlsx" />
+    <None Remove="Modelos\REQUISICAO_KIT_MODELO.xlsx" />
+    <None Remove="Modelos\REQUISICAO_MODELO.xlsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Project_Readme.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="6.2.7" />
+    <PackageReference Include="itext7" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.5" />
+    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
+    <PackageReference Include="NuGet.CommandLine" Version="6.8.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="squirrel.windows" Version="1.9.0" />
+    <PackageReference Include="syncfusion.ui.wpf.net" Version="20.3.0.56" />
+    <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
+    <PackageReference Include="Telerik.UI.for.Wpf.70.Xaml">
+      <Version>2023.1.117.0</Version>
+    </PackageReference>
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="7.22.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="App.ico" />
+    <Resource Include="icones\configuracao-de-dados-windows-metro-16.png" />
+    <Resource Include="icones\icons8-adicionar-a-coleção-40.png" />
+    <Resource Include="icones\icons8-adicionar-a-coleção-80.png" />
+    <Resource Include="icones\icons8-adicionar-propriedade-40.png" />
+    <Resource Include="icones\icons8-adicionar-propriedade-80.png" />
+    <Resource Include="icones\icons8-copiar-40.png" />
+    <Resource Include="icones\icons8-copiar-80.png" />
+    <Resource Include="icones\icons8-detalhes-80.png" />
+    <Resource Include="icones\icons8-editar-propriedade-40.png" />
+    <Resource Include="icones\icons8-editar-propriedade-80.png" />
+    <Resource Include="icones\icons8-excluir-40.png" />
+    <Resource Include="icones\icons8-excluir-80.png" />
+    <Resource Include="icones\icons8-impressão-40.png" />
+    <Resource Include="icones\icons8-impressão-80.png" />
+    <Resource Include="icones\icons8-lista-de-verificação-40.png" />
+    <Resource Include="icones\icons8-lista-de-verificação-80.png" />
+    <Resource Include="icones\icons8-ms-excel-blue-ui-120.png" />
+    <Resource Include="icones\icons8-ms-excel-blue-ui-16.png" />
+    <Resource Include="icones\icons8-ms-excel-blue-ui-32.png" />
+    <Resource Include="icones\icons8-ms-excel-blue-ui-96.png" />
+    <Resource Include="icones\icons8-next-page-blue-ui-16.png" />
+    <Resource Include="icones\icons8-next-page-blue-ui-32.png" />
+    <Resource Include="icones\icons8-next-page-blue-ui-96.png" />
+    <Resource Include="icones\icons8-pesquisar-40.png" />
+    <Resource Include="icones\icons8-pesquisar-80.png" />
+    <Resource Include="icones\icons8-salvar-40.png" />
+    <Resource Include="icones\icons8-salvar-80.png" />
+    <Resource Include="icones\icons8-salvar-como-blue-ui-16.png" />
+    <Resource Include="icones\icons8-salvar-como-blue-ui-32.png" />
+    <Resource Include="icones\icons8-salvar-como-blue-ui-96.png" />
+    <Resource Include="icones\icons8-usu_0025c3_0025a1rio-de-g_0025c3_0025aanero-neutro-windows-metro-16.png" />
+    <Resource Include="icones\icons8-vassoura-40.png" />
+    <Resource Include="icones\icons8-vassoura-80.png" />
+    <Content Include="Modelos\DESCRICOES_CONSTRUCAO_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\ETIQUETA_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\ETIQUETA_REQUISICAO_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\ORDEM_SERVICO_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\ORDEM_SERVICO_SERVICO_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\RECEITA_CENTRAL_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\RELATORIO_CCE_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\REQUISICAO_KIT_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\REQUISICAO_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Impressos\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icones\icons8-detalhes-40.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\kit\manutencao\ViewDetalhesKitManutencao.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\kit\manutencao\ViewKitManutencao.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\OrdemServico\Produto\AlterarSolicitacaoOrdemServicoProduto.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="App.config">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+
+	<PropertyGroup>
+		<NugetTools>$(PkgNuGet_CommandLine)\tools</NugetTools>
+		<SquirrelTools>$(Pkgsquirrel_windows)\tools</SquirrelTools>
+
+		<Version>0.0.0</Version>
+
+		<NuspecFile>$(SolutionDir)Producao\Producao.nuspec</NuspecFile>
+	</PropertyGroup>
+
+	<Target Name="GenerateRelease" AfterTargets="AfterBuild" Condition="$(Configuration) == Release">
+		<XmlPeek XmlInputPath="$(NuspecFile)" Query="/package/metadata/id/text()">
+			<Output TaskParameter="Result" ItemName="ID" />
+		</XmlPeek>
+
+		<Exec Command="$(NugetTools)\NuGet.exe pack $(NuspecFile) -Version $(Version) -Properties Configuration=Release -OutputDirectory $(SolutionDir)Deployment\GeneratedNugets" />
+
+		<Exec Command="$(SquirrelTools)\Squirrel.exe --releasify $(SolutionDir)Deployment\GeneratedNugets\@(ID).$(Version).nupkg --releaseDir=$(SolutionDir)Deployment\Releases -g .\loading.gif" />
+	</Target>
+	
+</Project>

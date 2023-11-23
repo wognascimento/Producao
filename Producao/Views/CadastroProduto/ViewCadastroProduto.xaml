@@ -1,0 +1,108 @@
+﻿<UserControl x:Class="Producao.Views.CadastroProduto.ViewCadastroProduto"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:local="clr-namespace:Producao.Views.CadastroProduto"
+             mc:Ignorable="d" 
+             xmlns:vewModel="clr-namespace:Producao"
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="OnLoaded" Unloaded="UserControl_Unloaded">
+
+    <UserControl.Resources>
+        <vewModel:ConverterNumber x:Key="ConverterNumber"/>
+        <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
+        <!--<local:NameButtonConverter x:Key="NameButtonConverter" />-->
+    </UserControl.Resources>
+    
+    <Grid>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4"
+                    HintFloatMode="Float" 
+                    Hint="PLANILHA" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed" Margin="5">
+
+            <syncfusion:SfTextBoxExt
+                x:Name="cbPlanilha"
+                SearchItemPath="planilha"
+                ValueMemberPath="planilha"
+                ShowDropDownButton="False"
+                ShowClearButton="True"
+                AutoCompleteMode="SuggestAppend"
+
+                AutoCompleteSource="{Binding Planilhas}" 
+                SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItemChanged="OnPlanilhaSelectionChanged" 
+                ShowSuggestionsOnFocus="True"/>
+        </syncfusion:SfTextInputLayout>
+
+
+        <syncfusion:SfDataGrid
+            x:Name="produtos"
+            Grid.Row="1"
+            AddNewRowPosition="Bottom"
+            ShowRowHeader="True"
+            AutoGenerateColumns="False"
+            ColumnSizer="AutoWithLastColumnFill"
+            ItemsSource="{Binding Produtos}"
+            SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            CurrentCellDropDownSelectionChanged="OnCurrentCellDropDownSelectionChanged" 
+            CurrentCellValueChanged="OnCurrentCellValueChanged" 
+            FontSize="10" 
+            RowValidated="OnRowValidated" 
+            RowValidating="OnRowValidating" 
+            AddNewRowInitiating="OnAddNewRowInitiating" AllowFiltering="True" CurrentCellEndEdit="OnCurrentCellEndEdit" AllowEditing="True" >
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridNumericColumn
+                        HeaderText="CÓDIGO" 
+                        MappingName="codigo"
+                        DisplayBinding="{Binding codigo, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridComboBoxColumn
+                        HeaderText="CLASSE COMPRA" 
+                        MappingName="classe_solict_compra"
+                        ItemsSource="{Binding ClasseSolicitCompras}"
+                        DisplayMemberPath="classe_solicit_compra"
+                        SelectedValuePath="classe_solicit_compra"/>
+
+                <syncfusion:GridComboBoxColumn
+                        HeaderText="FAMILIA COMPRAS" 
+                        MappingName="familia"
+                        ItemsSource="{Binding FamiliaProds}"
+                        DisplayMemberPath="nomefamilia"
+                        SelectedValuePath="nomefamilia"/>
+
+                <syncfusion:GridTextColumn
+                        HeaderText="DESCRIÇÃO" 
+                        MappingName="descricao"/>
+                <syncfusion:GridCheckBoxColumn
+                        AllowEditing="True"
+                        HeaderText="INATIVO" 
+                        MappingName="inativo"
+                        DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
+                        ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}" />
+                <syncfusion:GridTemplateColumn 
+                        HeaderText=""
+                        MappingName="codigo" ColumnSizer="SizeToCells">
+                    <syncfusion:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button 
+                                    Content="Adicional" 
+                                    syncfusion:FocusManagerHelper.FocusedElement="True"
+                                    Command="{Binding Path=DataContext.RowDataCommand,ElementName=produtos}" 
+                                    CommandParameter="{Binding ElementName=produtos}"/>
+                        </DataTemplate>
+                    </syncfusion:GridTemplateColumn.CellTemplate>
+                </syncfusion:GridTemplateColumn>
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+    
+</UserControl>

@@ -1,0 +1,49 @@
+﻿<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Producao.Views.CentralModelos"
+        xmlns:Syncfusion="http://schemas.syncfusion.com/wpf" 
+        x:Class="Producao.Views.CentralModelos.ModeloFiada"
+        mc:Ignorable="d"
+        Title="Modelos Fiada" Height="300" Width="230" 
+        Loaded="Window_Loaded" 
+        WindowStartupLocation="CenterOwner" 
+        WindowStyle="ToolWindow">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Syncfusion:SfTextInputLayout 
+            Grid.Row="0"
+            InputViewPadding="4" 
+            HintFloatMode="Float" 
+            Hint="QTD FIADA POR CASCATA" 
+            CharCountVisibility="Collapsed" 
+            HelperTextVisibility="Collapsed" Margin="5" >
+
+            <Syncfusion:IntegerTextBox UseNullOption="True" Value="{Binding Modelo.qtd_fiada_cascata}" TextAlignment="Center" LostFocus="IntegerTextBox_LostFocus"/>
+
+        </Syncfusion:SfTextInputLayout>
+
+        <Syncfusion:SfDataGrid 
+            Grid.Row="1" 
+            ItemsSource="{Binding Path=ModeloFiada}" 
+            AddNewRowPosition="Top" 
+            AutoGenerateColumns="False" 
+            AllowEditing="True"
+            AddNewRowInitiating="SfDataGrid_AddNewRowInitiating" 
+            RowValidating="SfDataGrid_RowValidating" 
+            RowValidated="SfDataGrid_RowValidated">
+            <Syncfusion:SfDataGrid.Columns>
+                <Syncfusion:GridComboBoxColumn ItemsSource="{Binding Path=Modelos}" MappingName="modelofiada" ColumnSizer="AutoLastColumnFill" HeaderText="Modelo"/>
+                <Syncfusion:GridNumericColumn MappingName="qtdmodelofiada" HeaderText="qtd fiada" ColumnSizer="SizeToHeader" ParsingMode="Int" NumberDecimalDigits="0" AllowNullValue="True"/>
+            </Syncfusion:SfDataGrid.Columns>
+        </Syncfusion:SfDataGrid>
+
+    </Grid>
+
+</Window>

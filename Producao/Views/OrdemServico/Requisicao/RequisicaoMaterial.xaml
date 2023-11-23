@@ -1,0 +1,277 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Producao.Views.OrdemServico.Requisicao"
+    xmlns:vewModel="clr-namespace:Producao"
+    xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
+    x:Class="Producao.Views.OrdemServico.Requisicao.RequisicaoMaterial"
+    mc:Ignorable="d"
+    Title="Requisição de Material" 
+    Height="auto" Width="auto"
+    WindowStartupLocation="CenterScreen" 
+    WindowStyle="ToolWindow"
+    ResizeMode="NoResize" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
+
+    <Window.Resources>
+        <vewModel:ConverterNumber x:Key="ConverterNumber"/>
+        <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
+    </Window.Resources>
+
+    <Grid Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="303"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="5" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="5" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <syncfusion:SfTextInputLayout
+            Grid.Row="0"
+            InputViewPadding="5" 
+            HintFloatMode="Float" 
+            Hint="REQUISIÇÃO NÚMERO" 
+            CharCountVisibility="Collapsed" 
+            HelperTextVisibility="Collapsed">
+            <syncfusion:SfTextBoxExt 
+                x:Name="tbNumRequisicao"
+                Text="{Binding Requisicao.num_requisicao}"
+                IsEnabled="False" 
+                TextAlignment="Center" />
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="1"
+                Grid.Column="0"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="BUSCAR PRODUTO POR CÓDIGO" 
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+            
+            <syncfusion:SfTextBoxExt 
+                x:Name="tbCodproduto" 
+                PreviewKeyDown="OnBuscaProduto"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:ButtonAdv 
+                x:Name="btnBuscar" 
+                Grid.Row="1" 
+                Grid.Column="2" 
+                Width="30" 
+                HorizontalAlignment="Left" 
+                SmallIcon="/icones/icons8-pesquisar-40.png" 
+                LargeIcon="/icones/icons8-pesquisar-80.png" 
+                SizeMode="Small" 
+                Click="OnOpenDescricoes" />
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="2"
+                Grid.Column="0"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="PLANILHA" 
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt 
+                x:Name="txtPlanilha"
+                SearchItemPath="planilha"
+                ShowDropDownButton="False"
+                AutoCompleteMode="SuggestAppend"
+                ShowClearButton="True"
+                AutoCompleteSource="{Binding Path=Planilhas}" 
+                SelectedItemChanged="OnSelectedPlanilha" 
+                ShowSuggestionsOnFocus="True"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="2"
+                Grid.Column="2"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="DESCRIÇÃO" 
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt 
+                x:Name="txtDescricao"
+                ShowDropDownButton="False"
+                SearchItemPath="descricao"
+                AutoCompleteMode="SuggestAppend"
+                ShowClearButton="True"
+                AutoCompleteSource="{Binding Path=Produtos}"
+                SelectedItemChanged="OnSelectedDescricao"
+                ShowSuggestionsOnFocus="True"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="3"
+                Grid.Column="0"
+                Grid.ColumnSpan="3"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="DESCRIÇÃO ADICIONAL"
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt
+                x:Name="txtDescricaoAdicional"
+                ShowDropDownButton="False"
+                SearchItemPath="descricao_adicional"
+                AutoCompleteMode="SuggestAppend"
+                ShowClearButton="True"
+                AutoCompleteSource="{Binding Path=DescAdicionais}"
+                SelectedItemChanged="OnSelectedDescricaoAdicional"
+                ShowSuggestionsOnFocus="True"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="4"
+                Grid.Column="0"
+                Grid.ColumnSpan="3"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="COMPLEMENTO ADICIONAL"
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt 
+                x:Name="txtComplementoAdicional"
+                ShowDropDownButton="False"
+                SearchItemPath="complementoadicional"
+                AutoCompleteMode="SuggestAppend"
+                ShowClearButton="True"
+                AutoCompleteSource="{Binding Path=CompleAdicionais}"
+                SelectedItemChanged="OnSelectedComplementoAdicional"
+                ShowSuggestionsOnFocus="True"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="5"
+                Grid.Column="0"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="QUANTIDADE"
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt x:Name="txtQuantidade"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="5"
+                Grid.Column="3"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="UNIDADE"
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed" Width="100" HorizontalAlignment="Left">
+
+            <syncfusion:SfTextBoxExt x:Name="txtUnidade" IsEnabled="False"/>
+
+        </syncfusion:SfTextInputLayout>
+
+
+
+        <Grid Grid.Row="8" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="1"/>
+                <ColumnDefinition />
+                <ColumnDefinition Width="1"/>
+                <ColumnDefinition />
+                <ColumnDefinition Width="1"/>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <syncfusion:ButtonAdv
+                Grid.Column="0"
+                SmallIcon="/icones/icons8-vassoura-40.png" 
+                LargeIcon="/icones/icons8-vassoura-80.png" 
+                SizeMode="Large" 
+                Label="LIMPAR" 
+                Content="_LIMPAR" 
+                Click="OnLimparClick" />
+
+            <syncfusion:ButtonAdv 
+				Grid.Column="2"
+                SmallIcon="/icones/icons8-adicionar-propriedade-40.png" 
+                LargeIcon="/icones/icons8-adicionar-propriedade-80.png" 
+                SizeMode="Large" Label="ADICIONAR" 
+                Click="OnAdicionarClick"/>
+
+            <syncfusion:ButtonAdv 
+				Grid.Column="4"
+                SmallIcon="/icones/icons8-editar-propriedade-40.png" 
+                LargeIcon="/icones/icons8-editar-propriedade-80.png" 
+                SizeMode="Large" Label="EDITAR" 
+                Click="OnEditClick"/>
+
+            <syncfusion:ButtonAdv 
+				Grid.Column="6"
+                SmallIcon="/icones/icons8-impressão-40.png" 
+                LargeIcon="/icones/icons8-impressão-80.png" 
+                SizeMode="Large" 
+                Label="IMPRIMIR" 
+                Click="OnPrintClick"/>
+
+        </Grid>
+
+        <syncfusion:SfDataGrid
+            x:Name="itens" 
+            Grid.Row="10"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            AutoGenerateColumns="False" 
+            AllowResizingColumns="True"
+            AllowDraggingColumns="True"
+            ColumnSizer="AutoWithLastColumnFill"
+            ShowRowHeader="True" 
+            ItemsSource="{Binding QryRequisicaoDetalhes}"
+            MouseDoubleClick="OnMouseDoubleClick">
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridNumericColumn 
+                    HeaderText="ID" 
+                    MappingName="cod_det_req"
+                    DisplayBinding="{Binding cod_det_req, Converter={StaticResource ConverterNumber}}"/>   
+                <syncfusion:GridNumericColumn 
+                    HeaderText="COD." 
+                    MappingName="codcompladicional"
+                    DisplayBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridTextColumn HeaderText="PLANILHA" MappingName="planilha"/>
+                <syncfusion:GridTextColumn HeaderText="DESCRIÇÃO" MappingName="descricao_completa"/>
+                <syncfusion:GridTextColumn HeaderText="UNID" MappingName="unidade"/>
+                <syncfusion:GridNumericColumn 
+                    HeaderText="QTDE" 
+                    MappingName="quantidade"
+                    DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridTextColumn HeaderText="VOLTAGEM" MappingName="voltagem"/>
+                <syncfusion:GridTextColumn HeaderText="LOCAL SHOPPING" MappingName="local_shop"/>
+                <syncfusion:GridDateTimeColumn HeaderText="INSERIDO EM" MappingName="data"/>
+                <syncfusion:GridTextColumn HeaderText="INSERIDO POR" MappingName="alterado_por" ColumnSizer="SizeToHeader"/>
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+
+</Window>

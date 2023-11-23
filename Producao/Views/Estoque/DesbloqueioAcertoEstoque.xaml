@@ -1,0 +1,65 @@
+﻿<UserControl x:Class="Producao.Views.Estoque.DesbloqueioAcertoEstoque"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:app="clr-namespace:Producao" 
+             xmlns:local="clr-namespace:Producao.Views.Estoque" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+
+
+    <UserControl.Resources>
+        <app:ConverterNumber x:Key="ConverterNumber"/>
+        <app:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+
+
+    <Grid>
+
+        <syncfusion:SfDataGrid
+           x:Name="itens" 
+           Grid.Row="1"
+           Grid.Column="0"
+           Grid.ColumnSpan="3"
+           AutoGenerateColumns="False" 
+           AllowResizingColumns="True"
+           AllowDraggingColumns="True"
+           AllowFiltering="True"
+           ColumnSizer="AutoWithLastColumnFill"
+           ShowRowHeader="True" 
+           ItemsSource="{Binding Itens}" CurrentCellValueChanged="itens_CurrentCellValueChanged">
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridNumericColumn 
+                    MappingName="codigo" 
+                    DisplayBinding="{Binding codigo, Converter={StaticResource ConverterNumber}}"
+                    ColumnSizer="SizeToCells"/>
+                <syncfusion:GridNumericColumn 
+                    MappingName="cod_movimentacao" 
+                    DisplayBinding="{Binding cod_movimentacao, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToCells"/>
+                <syncfusion:GridTextColumn MappingName="processo" ColumnSizer="SizeToCells"/>
+                <syncfusion:GridNumericColumn 
+                    MappingName="codcompladicional" 
+                    DisplayBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToCells"/>
+                <syncfusion:GridTextColumn MappingName="planilha" ColumnSizer="SizeToCells"/>
+                <syncfusion:GridTextColumn MappingName="descricao_completa"/>
+                <syncfusion:GridTextColumn MappingName="unidade" ColumnSizer="SizeToCells"/>
+                <syncfusion:GridNumericColumn 
+                    MappingName="quantidade"
+                    DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridCheckBoxColumn 
+                    MappingName="bloqueado" 
+                    DisplayBinding="{Binding bloqueado, Converter={StaticResource ConverterBoolen}}"
+                    ValueBinding="{Binding bloqueado, Converter={StaticResource ConverterBoolen}}"
+                    ColumnSizer="SizeToHeader" 
+                    AllowEditing="True"/>
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+    
+</UserControl>

@@ -1,0 +1,117 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:Producao.Views.kit.manutencao"
+    xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+    xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+    x:Class="Producao.Views.kit.manutencao.ViewKitManutencao"
+    mc:Ignorable="d" 
+    d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+
+        <StackPanel Grid.RowSpan="1" Margin="5" HorizontalAlignment="Left">
+
+            <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4"
+                    HintFloatMode="Float" 
+                    Hint="Shopping" 
+                    Width="260" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed" >
+
+                <syncfusion:SfTextBoxExt 
+                        x:Name="cbSiglaShopping"
+                        SearchItemPath="cliente"
+                        ValueMemberPath="num_os"
+                        ShowDropDownButton="false"
+                        AutoCompleteMode="SuggestAppend"
+                        AutoCompleteSource="{Binding Siglas}" 
+                        SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedItemChanged="OnSiglaSelectionChanged" 
+                        ShowSuggestionsOnFocus="True" 
+                        ShowClearButton="True"/>
+
+            </syncfusion:SfTextInputLayout>
+
+        </StackPanel>
+
+        <syncfusion:SfDataGrid 
+            x:Name="osKit"
+            Grid.Row="1"
+            AddNewRowPosition="Bottom"
+            ShowRowHeader="True"
+            AutoGenerateColumns="False"
+            ColumnSizer="SizeToHeader"
+            ItemsSource="{Binding OsKits}"
+            SelectedItem="{Binding OsKit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            AllowResizingColumns="True" 
+            AllowResizingHiddenColumns="True" AddNewRowInitiating="SfDataGrid_AddNewRowInitiating" RowValidated="SfDataGrid_RowValidated" RowValidating="SfDataGrid_RowValidating" AllowEditing="True">
+                <syncfusion:SfDataGrid.Columns>
+
+                    <syncfusion:GridDateTimeColumn
+                        HeaderText="DATA EMISSAO" 
+                        MappingName="data_emissao"/>
+                    
+                    <syncfusion:GridTextColumn
+                        HeaderText="SOLICITANTE" 
+                        MappingName="solicitante"/>
+<!--
+                    <syncfusion:GridDateTimeColumn
+                        HeaderText="HORA SOLICITACAO" 
+                        MappingName="hora_solicitacao"/>
+-->                    
+                    <syncfusion:GridDateTimeColumn
+                        HeaderText="CONCLUIR ATE" 
+                        MappingName="concluir_ate"/>
+                    
+                    <syncfusion:GridTextColumn
+                        HeaderText="ATENDENTE" 
+                        MappingName="atendente"/>
+                    
+                    <syncfusion:GridDateTimeColumn
+                        HeaderText="DATA SOLICITACAO"
+                        MappingName="data_solicitacao"/>
+                    
+                    <syncfusion:GridTextColumn
+                        HeaderText="NOITE DE MONTAGEM" 
+                        MappingName="noite_montagem"/>
+                    
+                    <syncfusion:GridTextColumn
+                        HeaderText="OBSERVAÇÃO" 
+                        MappingName="obs_de_envio"/>
+
+                <syncfusion:GridTextColumn
+                        HeaderText="CONTROLE" 
+                        MappingName="os"/>
+
+                <syncfusion:GridTemplateColumn 
+                    HeaderText="DETALHES"
+                    MappingName="os">
+                        <syncfusion:GridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button 
+                                Content="DETALHES" 
+                                syncfusion:FocusManagerHelper.FocusedElement="True"
+                                Command="{Binding Path=DataContext.RowDetalhesCommand,ElementName=osKit}" 
+                                CommandParameter="{Binding ElementName=osKit}"/>
+                            </DataTemplate>
+                        </syncfusion:GridTemplateColumn.CellTemplate>
+                    </syncfusion:GridTemplateColumn>
+
+                </syncfusion:SfDataGrid.Columns>                        
+            
+        </syncfusion:SfDataGrid>
+
+
+    </Grid>
+
+</UserControl>

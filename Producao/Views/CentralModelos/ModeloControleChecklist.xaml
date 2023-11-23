@@ -1,0 +1,50 @@
+﻿<Window x:Class="Producao.Views.CentralModelos.ModeloControleChecklist"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Producao.Views.CentralModelos" 
+        xmlns:Syncfusion="http://schemas.syncfusion.com/wpf"
+        mc:Ignorable="d"
+        Title="CONTROLE BAIXA MODELO CHECK-LIST"
+        Height="450" Width="800" 
+        WindowStartupLocation="CenterScreen" 
+        WindowStyle="ToolWindow"
+        ResizeMode="NoResize"
+        Loaded="Window_Loaded">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Syncfusion:SfDataGrid 
+            x:Name="dgItens"
+            Grid.Row="0" 
+            AllowResizingColumns="True" 
+            AllowDraggingColumns="True" 
+            AutoGenerateColumns="False" 
+            FontSize="10" 
+            ItemsSource="{Binding ItensChkList}" 
+            SelectedItem="{Binding ItemChkList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            PreviewKeyDown="dgItens_PreviewKeyDown">
+            <Syncfusion:SfDataGrid.Columns>
+                <Syncfusion:GridTextColumn HeaderText="SIGLA" ColumnSizer="SizeToCells" MappingName="sigla"/>
+                <Syncfusion:GridNumericColumn HeaderText="COD.DET." ColumnSizer="SizeToHeader" MappingName="coddetalhescompl"/>
+                <Syncfusion:GridTextColumn HeaderText="PLANILHA" ColumnSizer="SizeToHeader" MappingName="planilha"/>
+                <Syncfusion:GridTextColumn HeaderText="DESCRIÇÃO COMPLETA" ColumnSizer="AutoWithLastColumnFill" MappingName="descricao_completa"/>
+                <Syncfusion:GridTextColumn HeaderText="UNID" ColumnSizer="SizeToCells" MappingName="unidade"/>
+                <Syncfusion:GridNumericColumn HeaderText="QTDE" ColumnSizer="SizeToCells" MappingName="qtd_compl_chk"/>
+            </Syncfusion:SfDataGrid.Columns>
+        </Syncfusion:SfDataGrid>
+
+        <StatusBar Grid.Row="1">
+            <StatusBarItem Grid.Column="1">
+                <TextBlock Text="Precisona a tecla F3 na linha selecionada para dar baixa" FontWeight="Bold" />
+            </StatusBarItem>
+        </StatusBar>
+
+    </Grid>
+    
+</Window>

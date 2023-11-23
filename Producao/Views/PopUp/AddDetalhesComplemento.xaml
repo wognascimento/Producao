@@ -1,0 +1,100 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Producao.Views.popup"
+    xmlns:Syncfusion="http://schemas.syncfusion.com/wpf" 
+    x:Class="Producao.Views.popup.AddDetalhesComplemento"
+    xmlns:vewModel="clr-namespace:Producao"
+    mc:Ignorable="d"
+    Title="Adicionar Detalhes Complemento" 
+    Height="200" Width="300" 
+    WindowStartupLocation="CenterScreen" 
+    WindowStyle="ToolWindow"
+    ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!--<local:FormatConverter x:Key="formatConverter"/>-->
+        <vewModel:ConverterNumber x:Key="ConverterNumber"/>
+        <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
+    </Window.Resources>
+
+    <Grid Margin="10" UseLayoutRounding="True">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Text="COMPLEMENTO " VerticalAlignment="Center" />
+        <TextBlock Grid.Row="1" Text="UNIDADE " VerticalAlignment="Center"/>
+        <TextBlock Grid.Row="2" Text="ESTOQUE " VerticalAlignment="Center"/>
+        <TextBlock Grid.Row="3" Text="QUANTIDADE " VerticalAlignment="Center"/>
+        <TextBlock Grid.Row="4" Text="CONFIRMADO " VerticalAlignment="Center"/>
+
+        <Syncfusion:ComboBoxAdv 
+            x:Name="compelemntos" 
+            DefaultText="Seleiona o Complemento" 
+            Grid.Row="0" Grid.Column="1"
+            IsEditable="true"
+            AutoCompleteMode="Suggest"
+            DisplayMemberPath="complementoadicional" 
+            ItemsSource="{Binding CompleAdicionais}"
+            SelectedItem="{Binding Compledicional}"
+            SelectedValue="{Binding DetCompl.codcompladicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectedValuePath="codcompladicional"/>
+
+
+        <Syncfusion:SfTextBoxExt 
+            Grid.Row="1" 
+            Grid.Column="1" 
+            Text="{Binding Compledicional.unidade}"
+            IsEnabled="False"/>
+
+        <Syncfusion:SfTextBoxExt 
+            Grid.Row="2" 
+            Grid.Column="1" 
+            Text="{Binding Compledicional.saldo_estoque}"
+            IsEnabled="False"/>
+
+        <Syncfusion:DoubleTextBox 
+            x:Name="quantidade" 
+            Grid.Row="3" 
+            Grid.Column="1" 
+            UseNullOption="True"
+            NullValue="{x:Null}"
+            MinimumNumberDecimalDigits="0"
+            Value="{Binding DetCompl.qtd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        
+        <CheckBox 
+            x:Name="confirmado" 
+            Grid.Row="4" 
+            Grid.Column="1"
+            IsChecked="{Binding Path=DetCompl.confirmado, Converter={StaticResource ConverterBoolen}}"/>
+
+        <!--ValueBinding="{Binding confirmado, Converter={StaticResource ConverterBoolen}}"-->
+        
+        <Syncfusion:ButtonAdv 
+            Grid.Row="5" 
+            Grid.ColumnSpan="2" 
+            LargeIcon="/icones/icons8-adicionar-propriedade-80.png" 
+            SmallIcon="/icones/icons8-adicionar-propriedade-40.png" 
+            Label="GRAVAR" 
+            SizeMode="Large" Click="OnGravarDetalhesComplemento" />
+
+
+
+
+
+
+    </Grid>
+
+</Window>

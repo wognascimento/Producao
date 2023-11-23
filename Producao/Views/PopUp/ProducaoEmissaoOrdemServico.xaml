@@ -1,0 +1,64 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Producao.Views.PopUp"
+        xmlns:Syncfusion="http://schemas.syncfusion.com/wpf" 
+        x:Class="Producao.Views.PopUp.ProducaoEmissaoOrdemServico"
+        mc:Ignorable="d"
+        Title="EMISSÃO ORDEM DE SERVIÇO" Height="450" Width="664" ResizeMode="NoResize" WindowStyle="ToolWindow" WindowStartupLocation="CenterOwner">
+
+    <Grid>
+
+        <GroupBox HorizontalAlignment="Center" Height="127" Margin="0,10,0,0" VerticalAlignment="Top" Width="644"/>
+
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Tipo da O.S." Margin="16,10,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="207">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Núm. O.S." Margin="246,10,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="207" Height="33">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Planilha" Margin="16,41,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="277">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Produto" Margin="16,74,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="503">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+
+
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Setor" Margin="10,142,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="509">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Quantidade" Margin="524,74,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Data Inicial" Margin="10,180,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Data Final" Margin="119,180,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Shopping" Margin="10,218,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Tema" Margin="119,218,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="509">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Orientação" Margin="10,256,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="618">
+            <TextBox TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
+        </Syncfusion:SfTextInputLayout>
+
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Próximo Setor" Margin="10,335,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="509">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Num. Serviço" Margin="524,335,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
+            <TextBox />
+        </Syncfusion:SfTextInputLayout>
+
+    </Grid>
+
+</Window>

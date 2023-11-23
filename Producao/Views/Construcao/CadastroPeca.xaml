@@ -1,0 +1,154 @@
+﻿<UserControl x:Class="Producao.Views.Construcao.CadastroPeca"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:local="clr-namespace:Producao.Views.Construcao" 
+             xmlns:app="clr-namespace:Producao"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+
+    <UserControl.Resources>
+        <app:ConverterNumber x:Key="ConverterNumber"/>
+        <app:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+
+
+    <Grid Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="303"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="5" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="5" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="2"
+                Grid.Column="0"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="PLANILHA" 
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt 
+                x:Name="txtPlanilha"
+                SearchItemPath="planilha"
+                ShowDropDownButton="False"
+                AutoCompleteMode="SuggestAppend"
+                ShowClearButton="True"
+                AutoCompleteSource="{Binding Path=Planilhas}" 
+                SelectedItemChanged="OnSelectedPlanilha" 
+                ShowSuggestionsOnFocus="True"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="2"
+                Grid.Column="2"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="DESCRIÇÃO" 
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt 
+                x:Name="txtDescricao"
+                ShowDropDownButton="False"
+                SearchItemPath="descricao"
+                AutoCompleteMode="SuggestAppend"
+                ShowClearButton="True"
+                AutoCompleteSource="{Binding Path=Produtos}"
+                SelectedItemChanged="OnSelectedDescricao"
+                ShowSuggestionsOnFocus="True"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="3"
+                Grid.Column="0"
+                Grid.ColumnSpan="3"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="DESCRIÇÃO ADICIONAL"
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt
+                x:Name="txtDescricaoAdicional"
+                ShowDropDownButton="False"
+                SearchItemPath="descricao_adicional"
+                AutoCompleteMode="SuggestAppend"
+                ShowClearButton="True"
+                AutoCompleteSource="{Binding Path=DescAdicionais}"
+                SelectedItemChanged="OnSelectedDescricaoAdicional"
+                ShowSuggestionsOnFocus="True"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfTextInputLayout
+                Grid.Row="4"
+                Grid.Column="0"
+                Grid.ColumnSpan="3"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="COMPLEMENTO ADICIONAL"
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt 
+                x:Name="txtComplementoAdicional"
+                ShowDropDownButton="False"
+                SearchItemPath="complementoadicional"
+                AutoCompleteMode="SuggestAppend"
+                ShowClearButton="True"
+                AutoCompleteSource="{Binding Path=CompleAdicionais}"
+                SelectedItemChanged="OnSelectedComplementoAdicional"
+                ShowSuggestionsOnFocus="True"/>
+
+        </syncfusion:SfTextInputLayout>
+
+
+        <syncfusion:SfDataGrid
+            x:Name="itens" 
+            Grid.Row="10"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            AutoGenerateColumns="False" 
+            AllowResizingColumns="True"
+            AllowDraggingColumns="True"
+            ColumnSizer="AutoWithLastColumnFill"
+            ShowRowHeader="True" 
+            ItemsSource="{Binding Detalhes}" 
+            AddNewRowPosition="Top" 
+            AllowEditing="True" 
+            AllowFiltering="True" AddNewRowInitiating="itens_AddNewRowInitiating" RowValidating="itens_RowValidating" RowValidated="itens_RowValidated">
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridTextColumn 
+                    MappingName="item"
+                    DisplayBinding="{Binding item, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridTextColumn MappingName="descricao_peca"/>
+                <syncfusion:GridNumericColumn 
+                    MappingName="volume" 
+                    ColumnSizer="SizeToHeader"
+                    DisplayBinding="{Binding volume, Converter={StaticResource ConverterNumber}}"/>
+
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+
+</UserControl>

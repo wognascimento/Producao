@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="Producao.Views.Estoque.DigitacaoCCE"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:local="clr-namespace:Producao.Views.Estoque"
+             xmlns:app="clr-namespace:Producao" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Unloaded="UserControl_Unloaded">
+
+
+    <UserControl.Resources>
+        <app:ConverterNumber x:Key="ConverterNumber"/>
+        <app:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+
+
+
+    <Grid Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.4*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <syncfusion:SfTextInputLayout
+            Grid.Row="0"
+            Grid.Column="0"
+            InputViewPadding="4" 
+            HintFloatMode="Float" 
+            Hint="INFORME A SEMANA" 
+            CharCountVisibility="Collapsed" 
+            HelperTextVisibility="Collapsed" Margin="0,-5,0,5">
+
+            <syncfusion:SfTextBoxExt 
+                x:Name="tbCodproduto" 
+                PreviewKeyDown="OnBuscarLancamentoSemana"/>
+
+        </syncfusion:SfTextInputLayout>
+
+        <syncfusion:SfDataGrid
+            x:Name="itens" 
+            Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            AutoGenerateColumns="False" 
+            AllowResizingColumns="True"
+            AllowDraggingColumns="True"
+            AllowFiltering="True"
+            ColumnSizer="AutoWithLastColumnFill"
+            ShowRowHeader="True" 
+            ItemsSource="{Binding Itens}" RowValidated="itens_RowValidated" AddNewRowPosition="Top" AllowEditing="True" AddNewRowInitiating="itens_AddNewRowInitiating">
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridNumericColumn MappingName="cod_compladicional" DisplayBinding="{Binding cod_compladicional, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToHeader" HeaderText="COD"/>
+                <syncfusion:GridNumericColumn MappingName="quantidade" AllowEditing="True" DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridDateTimeColumn MappingName="digitado_data" ColumnSizer="SizeToHeader" AllowEditing="False"/>
+                <syncfusion:GridTextColumn MappingName="digitado_por" ColumnSizer="SizeToHeader" AllowEditing="False"/>
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+
+    </Grid>
+
+
+
+</UserControl>

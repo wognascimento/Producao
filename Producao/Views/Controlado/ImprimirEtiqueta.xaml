@@ -1,0 +1,81 @@
+﻿<UserControl
+             x:Class="Producao.Views.Controlado.ImprimirEtiqueta"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.Controlado"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
+             mc:Ignorable="d" 
+             xmlns:app="clr-namespace:Producao"
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+
+    <UserControl.Resources>
+        <app:ConverterNumber x:Key="ConverterNumber"/>
+        <app:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+
+    
+    <Grid>
+
+        <syncfusion:SfDataGrid 
+            AutoGenerateColumns="False" 
+            AllowResizingColumns="True"
+            AllowDraggingColumns="True"
+            ColumnSizer="AutoWithLastColumnFill" AllowFiltering="True"
+            ShowRowHeader="True" 
+            ItemsSource="{Binding Produtos}"
+            SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+
+            <syncfusion:SfDataGrid.RecordContextMenu>
+                <ContextMenu Style="{x:Null}">
+
+                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Imprimir}}"
+                              CommandParameter="{Binding}"
+                              Header="Imprimir"/>
+
+                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Adicionar}}"
+                              CommandParameter="{Binding}"
+                              Header="Adicionar" />
+
+                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Remover}}"
+                              CommandParameter="{Binding}"
+                              Header="Remover Não Impressa" />
+
+                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Impressas}}"
+                              CommandParameter="{Binding}"
+                              Header="Impressas" />
+                    <!--
+                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Gerar}}"
+                              CommandParameter="{Binding}"
+                              Header="Gerar Etiqueta" />
+                    -->
+                </ContextMenu>
+            </syncfusion:SfDataGrid.RecordContextMenu>
+            
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridNumericColumn 
+                    MappingName="codcompladicional"
+                    DisplayBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}"
+                    ColumnSizer="SizeToCells"/>
+                <syncfusion:GridTextColumn MappingName="planilha" ColumnSizer="SizeToCells"/>
+                <syncfusion:GridTextColumn MappingName="desc_completa"/>
+                <syncfusion:GridTextColumn MappingName="unidade"/>
+                <syncfusion:GridNumericColumn 
+                    MappingName="saldo_estoque" 
+                    DisplayBinding="{Binding saldo_estoque, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+                <syncfusion:GridNumericColumn 
+                    MappingName="etiquetas" 
+                    DisplayBinding="{Binding etiquetas, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+                <syncfusion:GridNumericColumn 
+                    MappingName="impressas" 
+                    DisplayBinding="{Binding impressas, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+</UserControl>

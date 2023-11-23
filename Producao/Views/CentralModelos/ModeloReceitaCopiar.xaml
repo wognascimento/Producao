@@ -1,0 +1,44 @@
+﻿<Window x:Class="Producao.Views.CentralModelos.ModeloReceitaCopiar"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Producao.Views.CentralModelos" 
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+        mc:Ignorable="d"
+        Title="COPIAR RECEITA ANO ANTERIOR"
+        Height="768" Width="1024"
+        WindowStartupLocation="CenterScreen" 
+        WindowStyle="ToolWindow"
+        ResizeMode="NoResize" 
+        WindowState="Maximized"
+        Loaded="Window_Loaded">
+    
+    <Grid>
+
+        <syncfusion:SfDataGrid 
+            x:Name="dgModelos"
+            Grid.Row="9" 
+            Grid.Column="0"
+            Grid.ColumnSpan="3" 
+            AllowFiltering="True" 
+            AllowResizingColumns="True" 
+            AutoGenerateColumns="False" 
+            ColumnSizer="SizeToHeader"
+            ItemsSource="{Binding Path=ItensReceita}" FontSize="8" MouseDoubleClick="dgModelos_MouseDoubleClick" AllowResizingHiddenColumns="True">
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridNumericColumn MappingName="ano" Width="70" NumberDecimalDigits="0" HeaderText="ANO"/>
+                <syncfusion:GridNumericColumn MappingName="id_modelo" Width="70" NumberDecimalDigits="0" HeaderText="MODELO"/>
+                <syncfusion:GridTextColumn MappingName="tema" Width="55" HeaderText="TEMA"/>
+                <syncfusion:GridTextColumn MappingName="obs_modelo" HeaderText="OBS."/>
+                <syncfusion:GridTextColumn MappingName="planilha" HeaderText="PLANILHA"/>
+                <syncfusion:GridTextColumn MappingName="descricao_completa" HeaderText="DESCRICAO COMPLETA"/>
+                <syncfusion:GridTextColumn MappingName="planilha_receita" HeaderText="PLANILHA RECEITA"/>
+                <syncfusion:GridTextColumn MappingName="descricao_completa_receita" HeaderText="DESCRICAO COMPLETA RECEITA"/>
+                <syncfusion:GridNumericColumn MappingName="qtd_producao_receita" HeaderText="PRODUÇÃO" Width="100"/>
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+    
+</Window>

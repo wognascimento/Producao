@@ -1,0 +1,96 @@
+﻿<UserControl x:Class="Producao.Views.CheckList.ViewEmitirEtiquetaCheckList"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.CheckList"
+             xmlns:vewModel="clr-namespace:Producao" xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+
+    <UserControl.Resources>
+        <vewModel:ConverterNumber x:Key="ConverterNumber"/>
+        <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+    
+    
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+
+        <StackPanel Grid.Row="0" Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="5" 
+                    Margin="5" 
+                    HintFloatMode="Float" 
+                    Hint="Shopping" 
+                    Width="260" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed">
+                    <syncfusion:ComboBoxAdv 
+                        x:Name="cbSiglaShopping"
+                        IsEditable="true"
+                        AutoCompleteMode="Suggest"
+                        ItemsSource="{Binding Siglas}" 
+                        SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedValue="{Binding ComplementoCheckList.id_aprovado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        DisplayMemberPath="sigla_serv"
+                        SelectedValuePath="id_aprovado"
+                        SelectionChanged="OnSiglaSelectionChanged"/>
+                </syncfusion:SfTextInputLayout>
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="5" 
+                    Margin="5" 
+                    HintFloatMode="Float" 
+                    Hint="Tema" 
+                    Width="450"  
+                    IsEnabled="False" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed">
+                    <syncfusion:SfTextBoxExt Text="{Binding Sigla.tema}"/>
+                </syncfusion:SfTextInputLayout>
+            </StackPanel>
+        </StackPanel>
+
+
+        <syncfusion:SfDataGrid
+            x:Name="dgCheckList" 
+            Grid.Row="1"
+            AutoGenerateColumns="False" 
+            AllowResizingColumns="True"
+            ColumnSizer="AutoWithLastColumnFill" 
+            AllowFiltering="True"
+            ItemsSource="{Binding Itens}"
+            MouseDoubleClick="OnMouseDoubleClick" RecordDeleting="dgCheckList_RecordDeleting">
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridTextColumn HeaderText="SIGLA" MappingName="sigla" ColumnSizer="SizeToCells"/>
+                <syncfusion:GridTextColumn HeaderText="ITEM" MappingName="item_memorial"/>
+                <syncfusion:GridTextColumn HeaderText="LOCAL DO SHOPPING" MappingName="local_shoppings"/>
+                <syncfusion:GridTextColumn HeaderText="PLANILHA" MappingName="planilha"/>
+                <syncfusion:GridTextColumn HeaderText="DESCRIÇÃO COMPLETA" MappingName="descricao_completa"/>
+
+                <syncfusion:GridNumericColumn 
+                            HeaderText="CODDETALHESCOMPL" 
+                            MappingName="coddetalhescompl"
+                            DisplayBinding="{Binding coddetalhescompl, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridNumericColumn 
+                            HeaderText="QTD NÃO EXPEDIDA" 
+                            MappingName="qtd_nao_expedida"
+                            DisplayBinding="{Binding qtd_nao_expedida, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridCheckBoxColumn HeaderText="EMITIDA" MappingName="etiqueta_emitida" ColumnSizer="SizeToHeader"/>
+
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+    
+    
+</UserControl>

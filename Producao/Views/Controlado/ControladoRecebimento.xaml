@@ -1,0 +1,124 @@
+﻿<UserControl x:Class="Producao.Views.Controlado.ControladoRecebimento"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.Controlado" 
+             xmlns:Syncfusion="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d" 
+             xmlns:app="clr-namespace:Producao"
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+
+    <UserControl.Resources>
+        <app:ConverterNumber x:Key="ConverterNumber"/>
+        <app:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+    
+    
+    <Grid>
+
+        <Syncfusion:SfDataGrid 
+            AutoGenerateColumns="False" 
+            AllowResizingColumns="True"
+            AllowDraggingColumns="True"
+            ColumnSizer="AutoWithLastColumnFill"
+            ShowRowHeader="True" 
+            ItemsSource="{Binding Produtos}"
+            SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AllowFiltering="True" CanUseViewFilter="True" RowValidated="SfDataGrid_RowValidated"> 
+
+            <Syncfusion:SfDataGrid.Columns>
+
+                <Syncfusion:GridTextColumn 
+                    MappingName="sigla"
+                    ColumnSizer="SizeToCells"/>
+
+                <Syncfusion:GridNumericColumn
+                    MappingName="codcompladicional" 
+                    DisplayBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+
+
+                <Syncfusion:GridTextColumn 
+                    MappingName="planilha"
+                    ColumnSizer="SizeToCells"/>
+
+                <Syncfusion:GridTextColumn 
+                    MappingName="descricao"
+                    ColumnSizer="SizeToCells"/>
+
+                <Syncfusion:GridTextColumn 
+                    MappingName="unidade"
+                    ColumnSizer="SizeToCells"/>
+
+                <Syncfusion:GridNumericColumn
+                    MappingName="expedido"
+                    NumberGroupSizes="3"
+                    DisplayBinding="{Binding expedido, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+
+                <Syncfusion:GridNumericColumn
+                    MappingName="solucao_manutencao" 
+                    NumberGroupSizes="3"
+                    DisplayBinding="{Binding solucao_manutencao, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+
+                <Syncfusion:GridNumericColumn
+                    MappingName="qrcode" 
+                    NumberGroupSizes="3"
+                    DisplayBinding="{Binding qrcode, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+
+                <Syncfusion:GridNumericColumn
+                    MappingName="recebida" 
+                    NumberGroupSizes="3"
+                    DisplayBinding="{Binding recebida, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+
+                <Syncfusion:GridNumericColumn
+                    MappingName="devolvida" 
+                    NumberGroupSizes="3"
+                    DisplayBinding="{Binding devolvida, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+
+                <Syncfusion:GridNumericColumn
+                    MappingName="retorno" 
+                    NumberGroupSizes="3"
+                    DisplayBinding="{Binding retorno, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" 
+                    AllowEditing="True" />
+
+                <Syncfusion:GridNumericColumn
+                    MappingName="cobranca" 
+                    NumberGroupSizes="3"
+                    DisplayBinding="{Binding cobranca, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+
+                <Syncfusion:GridCurrencyColumn
+                    MappingName="custo" 
+                    CurrencyGroupSizes="3"
+                    ColumnSizer="SizeToHeader" />
+
+                <Syncfusion:GridCurrencyColumn
+                    MappingName="custo_total" 
+                    CurrencyGroupSizes="3"
+                    ColumnSizer="SizeToHeader" />
+                <!--
+                <Syncfusion:GridCheckBoxColumn
+                    AllowEditing="True"
+                    MappingName="cancelar_cobraca"
+                    DisplayBinding="{Binding cancelar_cobraca, Converter={StaticResource ConverterBoolen}}"
+                    ValueBinding="{Binding cancelar_cobraca, Converter={StaticResource ConverterBoolen}}" />
+                -->
+                <Syncfusion:GridTextColumn 
+                    MappingName="justificativa"
+                    ColumnSizer="SizeToHeader"/>
+
+                
+            </Syncfusion:SfDataGrid.Columns>
+
+        </Syncfusion:SfDataGrid>
+
+    </Grid>
+    
+    
+</UserControl>

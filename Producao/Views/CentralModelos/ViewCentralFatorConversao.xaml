@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="Producao.Views.CentralModelos.ViewCentralFatorConversao"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao" 
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded" Unloaded="UserControl_Unloaded">
+
+    <UserControl.Resources>
+        <local:ConverterNumber x:Key="ConverterNumber"/>
+    </UserControl.Resources>
+    
+    <Grid>
+
+        <syncfusion:SfDataGrid 
+            x:Name="dgTabela"
+            AllowResizingColumns="True" 
+            AutoGenerateColumns="False" 
+            ColumnSizer="SizeToHeader"
+            ItemsSource="{Binding Path=Itens}"
+            FontSize="9"
+            AllowResizingHiddenColumns="True" 
+            AddNewRowPosition="Top" 
+            AllowEditing="True" 
+            RowValidated="dgTabela_RowValidated" 
+            RowValidating="dgTabela_RowValidating">
+
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridMultiColumnDropDownList  
+                    AutoGenerateColumns="False"
+                    AllowFiltering="True" 
+                    AllowEditing="False"
+                    HeaderText="DESCRIÇÃO"
+                    MappingName="codcompladicional" 
+                    ItemsSource="{Binding Produtos}"
+                    DisplayMember="descricao"
+                    ValueMember="codcompladicional" ColumnSizer="AutoWithLastColumnFill">
+                    <syncfusion:GridMultiColumnDropDownList.Columns>
+                        <syncfusion:Columns>
+                            <syncfusion:GridTextColumn HeaderText="Descrição" MappingName="descricao" ColumnSizer="AutoWithLastColumnFill" />
+                        </syncfusion:Columns>
+                    </syncfusion:GridMultiColumnDropDownList.Columns>
+                </syncfusion:GridMultiColumnDropDownList>
+                <syncfusion:GridNumericColumn MappingName="multiplica" HeaderText="MULTIPLICA" DisplayBinding="{Binding multiplica, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridNumericColumn MappingName="soma" HeaderText="SOMA" DisplayBinding="{Binding soma, Converter={StaticResource ConverterNumber}}"/>
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+    
+</UserControl>
