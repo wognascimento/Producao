@@ -174,7 +174,7 @@
 		<NugetTools>$(PkgNuGet_CommandLine)\tools</NugetTools>
 		<SquirrelTools>$(Pkgsquirrel_windows)\tools</SquirrelTools>
 
-		<Version>0.0.0</Version>
+		<Version>1.0.0</Version>
 
 		<NuspecFile>$(SolutionDir)Producao\Producao.nuspec</NuspecFile>
 	</PropertyGroup>
