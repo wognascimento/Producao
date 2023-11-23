@@ -1489,7 +1489,7 @@ namespace Producao
         {
             try
             {
-                manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/wognascimento/");
+                manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/wognascimento/Producao");
                 var updateInfo = await manager.CheckForUpdate();
                 if (updateInfo.ReleasesToApply.Count > 0)
                 {
