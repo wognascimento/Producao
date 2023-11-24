@@ -88,7 +88,7 @@ namespace Producao
         {
             InitializeComponent();
 			this.Loaded += OnLoaded;
-            StyleManager.ApplicationTheme = new MaterialTheme();
+            StyleManager.ApplicationTheme = new Windows11Theme();
 
 
             var appSettings = ConfigurationManager.GetSection("appSettings") as NameValueCollection;
@@ -1503,16 +1503,15 @@ namespace Producao
                             if (result == true)
                             {
                                 await manager.UpdateApp();
-
                                 RadWindow.Alert("Sistema atualizado!\nFecha e abre o Sistema, para aplicar a atualização.");
                             }
                         }
                     });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                RadWindow.Alert(ex.Message);
             }
         }
     }
