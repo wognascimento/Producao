@@ -12,7 +12,6 @@
     <Grid>
         <Syncfusion:SfDataGrid 
             Name="itens" 
-            FontSize="10" FontFamily="Arial"
             ItemsSource="{Binding Aprovados}" 
             ColumnSizer="AutoLastColumnFill" 
             AllowFiltering="True" AutoGenerateColumns="False"

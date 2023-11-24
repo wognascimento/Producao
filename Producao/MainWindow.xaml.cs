@@ -1134,8 +1134,23 @@ namespace Producao
 
         private void Image_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            RadWindow.Prompt("ANO BANCO DE DADOS", this.OnClosed, BaseSettings.Database);
+            //RadWindow.Prompt("ANO BANCO DE DADOS", this.OnClosed, BaseSettings.Database);
             //RadWindow.Prompt(new DialogParameters { Header = "ANO BANCO DE DADOS", Content = "INFORMA O ANO " }, this.OnClosed);
+
+            RadWindow.Prompt(new DialogParameters()
+            {
+                Header = "Ano Sistema",
+                Content = "Alterar o Ano do Sistema",
+                Closed = (object sender, WindowClosedEventArgs e) => 
+                {
+                    if (e.PromptResult != null)
+                    {
+                        BaseSettings.Database = e.PromptResult;
+                        txtDataBase.Text = BaseSettings.Database;
+                        _mdi.Items.Clear();
+                    }
+                }
+            });
         }
 
         private void OnClosed(object sender, WindowClosedEventArgs e)
