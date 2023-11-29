@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <ApplicationIcon>icones\logo-verde.ico</ApplicationIcon>
     <IsPublishable>True</IsPublishable>
   </PropertyGroup>
   <ItemGroup>
@@ -115,6 +115,7 @@
     <Resource Include="icones\icons8-usu_0025c3_0025a1rio-de-g_0025c3_0025aanero-neutro-windows-metro-16.png" />
     <Resource Include="icones\icons8-vassoura-40.png" />
     <Resource Include="icones\icons8-vassoura-80.png" />
+    <Content Include="icones\logo-verde.ico" />
     <Content Include="Modelos\DESCRICOES_CONSTRUCAO_MODELO.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
