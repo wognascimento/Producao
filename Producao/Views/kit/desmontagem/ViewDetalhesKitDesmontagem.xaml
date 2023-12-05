@@ -1,0 +1,463 @@
+﻿<UserControl x:Class="Producao.Views.kit.desmontagem.ViewDetalhesKitDesmontagem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.kit.desmontagem" 
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:syncfusionSfDataGrid="clr-namespace:Syncfusion.UI.Xaml.Grid;assembly=Syncfusion.SfGrid.WPF" 
+             xmlns:grid="clr-namespace:Syncfusion.UI.Xaml.Grid;assembly=Syncfusion.SfGrid.WPF"
+             xmlns:vewModel="clr-namespace:Producao"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+
+
+    <UserControl.Resources>
+        <vewModel:ConverterNumber x:Key="ConverterNumber"/>
+        <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
+        <!--<local:NameButtonConverter x:Key="NameButtonConverter" />-->
+
+        <vewModel:CheclistRevisaoColorConverter x:Key="converterCollor"/>
+
+    </UserControl.Resources>
+
+
+    <Grid >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+
+        <StackPanel Grid.Row="0" Orientation="Vertical">
+
+            <StackPanel Orientation="Horizontal" Height="39" >
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4"
+                    HintFloatMode="Float" 
+                    Hint="Shopping" 
+                    Width="260" 
+                    IsEnabled="False"
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed" >
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="cbSiglaShopping"/>
+                </syncfusion:SfTextInputLayout>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Height="39">
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4" 
+                    HintFloatMode="Float" 
+                    Hint="ID" 
+                    Width="150" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed">
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="tbId"
+                        IsEnabled="False"/>
+                </syncfusion:SfTextInputLayout>
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4"
+                    HintFloatMode="Float" 
+                    Hint="ITEM" 
+                    Width="100" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed" Margin="5,0,0,0">
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="tbItem" 
+                        IsEnabled="False"/>
+                </syncfusion:SfTextInputLayout>
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4"
+                    HintFloatMode="Float" 
+                    Hint="LOCAL DO SHOPPING" 
+                    Width="455" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed" Margin="5,0,0,0">
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="tbLocalShopping"
+                        IsEnabled="False"/>
+                </syncfusion:SfTextInputLayout>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Height="39">
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4"
+                    HintFloatMode="Float" 
+                    Hint="PLANILHA" 
+                    Width="260" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed" 
+                    Margin="0,0,5,0">
+
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="cbPlanilha"
+                        SearchItemPath="planilha"
+                        ValueMemberPath="planilha"
+                        ShowDropDownButton="False"
+                        AutoCompleteMode="SuggestAppend"
+
+                        AutoCompleteSource="{Binding Planilhas}" 
+                        SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedItemChanged="OnPlanilhaSelectionChanged" 
+                        ShowSuggestionsOnFocus="True"
+                        ShowClearButton="True"/>
+
+                </syncfusion:SfTextInputLayout>
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4"
+                    HintFloatMode="Float" 
+                    Hint="DESCRIÇÃO" 
+                    Width="450" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed"
+                    Margin="0,0,5,0">
+
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="cbDescricao"
+                        SearchItemPath="descricao"
+                        ValueMemberPath="codigo"
+                        ShowDropDownButton="False"
+                        AutoCompleteMode="SuggestAppend"
+
+                        AutoCompleteSource="{Binding Produtos}" 
+                        SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedValue="{Binding ComplementoCheckList.codproduto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedItemChanged="OnDescricaoSelectionChanged" 
+                        ShowSuggestionsOnFocus="True"
+                        ShowClearButton="True"/>
+
+                </syncfusion:SfTextInputLayout>
+
+
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Height="39">
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4" 
+                    HintFloatMode="Float" 
+                    Hint="DESCRIÇÃO ADICIONAL" 
+                    Width="560" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed" Margin="0,0,5,0">
+
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="cbDescricaoAdicional"
+                        SearchItemPath="descricao_adicional"
+                        ValueMemberPath="coduniadicional"
+                        ShowDropDownButton="False"
+                        AutoCompleteMode="SuggestAppend"
+
+                        AutoCompleteSource="{Binding DescAdicionais}" 
+                        SelectedItem="{Binding DescAdicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        SelectedValue="{Binding ComplementoCheckList.coduniadicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        ShowSuggestionsOnFocus="True"
+                        ShowClearButton="True"/>
+
+                </syncfusion:SfTextInputLayout>
+
+                <Button 
+                    Content="..." 
+                    Margin="0,0,5,0"
+                    Width="50" 
+                    Height="25"
+                    Click="OnProdutos" />
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4"
+                    HintFloatMode="Float" 
+                    Hint="QTDE" 
+                    Width="100" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed"
+                    Margin="0,0,5,0">
+                    <syncfusion:DoubleTextBox 
+                        x:Name="tbQtde" 
+                        UseNullOption="True"
+                        NullValue="{x:Null}"
+                        MinimumNumberDecimalDigits="0"
+                        Value="{Binding ComplementoCheckList.qtd}"/>
+                </syncfusion:SfTextInputLayout>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Height="39">
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4" 
+                    HintFloatMode="Float" 
+                    Hint="ORIENTAÇÃO DE PRODUÇÃO" 
+                    Width="720" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed"
+                    Margin="0,0,5,0">
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="tbOrientacaoProducao" 
+                        ShowClearButton="True"
+                        Text="{Binding ComplementoCheckList.obs}"/>
+                </syncfusion:SfTextInputLayout>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Height="39">
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4" 
+                    HintFloatMode="Float" 
+                    Hint="ORIENTAÇÃO DE MONTAGEM" 
+                    Width="720" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed"
+                    Margin="0,0,5,0">
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="tbOrientacaoMontagem" 
+                        ShowClearButton="True"
+                        Text="{Binding ComplementoCheckList.orient_montagem}"/>
+                </syncfusion:SfTextInputLayout>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Height="39">
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4" 
+                    HintFloatMode="Float" 
+                    Hint="ORIENTAÇÃO DE DESMONTAGEM" 
+                    Width="720" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed"
+                    Margin="0,0,5,0">
+                    <syncfusion:SfTextBoxExt 
+                        x:Name="tbOrientacaoDesmontagem" 
+                        ShowClearButton="True"
+                        Text="{Binding ComplementoCheckList.orient_desmont}"/>
+                </syncfusion:SfTextInputLayout>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Height="auto">
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4" 
+                    HintFloatMode="Float" 
+                    Width="260"
+                    Hint="CLASSIFICAÇÃO" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed"
+                    Margin="0,0,5,0">
+                    <syncfusion:ComboBoxAdv 
+                        x:Name="cmbClassificacoes" 
+                        ItemsSource="{Binding Classificacoes}" 
+                        SelectionChanged="ComboBoxAdv_SelectionChanged"/>
+                </syncfusion:SfTextInputLayout>
+
+
+                <syncfusion:SfTextInputLayout 
+                    InputViewPadding="4" 
+                    HintFloatMode="Float" 
+                    Width="260"
+                    Hint="MOTIVO" 
+                    CharCountVisibility="Collapsed" 
+                    HelperTextVisibility="Collapsed"
+                    Margin="0,0,5,0">
+                    <syncfusion:ComboBoxAdv x:Name="cmbMotivos" ItemsSource="{Binding Motivos}"/>
+                </syncfusion:SfTextInputLayout>
+
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
+
+                <syncfusion:ButtonAdv 
+                    Margin="2" 
+                    SmallIcon="/icones/icons8-vassoura-40.png" 
+                    LargeIcon="/icones/icons8-vassoura-80.png" 
+                    SizeMode="Large" 
+                    Label="LIMPAR" 
+                    Content="_LIMPAR" 
+                    Click="OnLimparClick" />
+
+                <syncfusion:ButtonAdv 
+                    Margin="2" 
+                    SmallIcon="/icones/icons8-adicionar-propriedade-40.png" 
+                    LargeIcon="/icones/icons8-adicionar-propriedade-80.png" 
+                    SizeMode="Large" Label="ADICIONAR" 
+                    Click="OnAdicionar_Click"/>
+
+                <syncfusion:ButtonAdv 
+                    Margin="2" 
+                    SmallIcon="/icones/icons8-editar-propriedade-40.png" 
+                    LargeIcon="/icones/icons8-editar-propriedade-80.png" 
+                    SizeMode="Large" Label="EDITAR" 
+                    Click="OnEditClick"/>
+
+                <syncfusion:ButtonAdv 
+                    Margin="2" 
+                    SmallIcon="/icones/icons8-impressão-40.png" 
+                    LargeIcon="/icones/icons8-impressão-80.png" 
+                    SizeMode="Large" 
+                    Label="IMPRIMIR" 
+                    Click="OnPrintClick"/>
+
+            </StackPanel>
+
+
+        </StackPanel>
+
+        <syncfusion:SfDataGrid
+            x:Name="dgCheckListGeral" 
+            Grid.Row="1"
+            AutoGenerateColumns="False" 
+            AllowResizingColumns="True"
+            AllowDraggingColumns="True"
+            ColumnSizer="AutoWithLastColumnFill" AllowFiltering="True"
+            ShowRowHeader="True" 
+            ItemsSource="{Binding CheckListGerais}"
+            SelectedItem="{Binding CheckListGeral, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectionChanged="OnSelectionChanged" FontSize="10" RowValidating="dgCheckListGeral_RowValidating">
+            <syncfusion:SfDataGrid.Columns>
+
+                <syncfusion:GridTextColumn 
+                    MappingName="class_solucao"
+                    ColumnSizer="SizeToCells"/>
+
+                <syncfusion:GridTextColumn 
+                    MappingName="motivos"
+                    ColumnSizer="SizeToCells"/>
+
+                <syncfusion:GridTextColumn HeaderText="ID" MappingName="id" ColumnSizer="SizeToCells" AllowEditing="True"/>
+                <syncfusion:GridTextColumn HeaderText="ITEM" MappingName="item_memorial"/>
+                <syncfusion:GridTextColumn HeaderText="LOCAL DO SHOPPING" MappingName="local_shoppings"/>
+                <syncfusion:GridTextColumn HeaderText="PLANILHA" MappingName="planilha">
+                    <syncfusion:GridTextColumn.CellStyle>
+                        <Style TargetType="syncfusionSfDataGrid:GridCell">
+                            <Setter Property="Background" Value="{Binding Converter={StaticResource converterCollor}}" />
+                        </Style>
+                    </syncfusion:GridTextColumn.CellStyle>
+                </syncfusion:GridTextColumn>
+                <syncfusion:GridTextColumn HeaderText="DESCRIÇÃO" MappingName="descricao"/>
+                <syncfusion:GridTextColumn HeaderText="DESCRIÇÃO ADICIONAL" MappingName="descricao_adicional"/>
+                <syncfusion:GridNumericColumn 
+                    HeaderText="QTDE" 
+                    MappingName="qtd" 
+                    DisplayBinding="{Binding qtd, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" AllowEditing="True" />
+                <syncfusion:GridNumericColumn 
+                    HeaderText="CODCOMPL" 
+                    MappingName="codcompl" 
+                    DisplayBinding="{Binding codcompl, Converter={StaticResource ConverterNumber}}" 
+                    ColumnSizer="SizeToHeader" />
+                <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE PRODUÇÃO" MappingName="obs" ColumnSizer="SizeToHeader" AllowEditing="True"/>
+                <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE MONTAGEM" MappingName="orient_montagem" ColumnSizer="SizeToHeader" AllowEditing="True"/>
+                <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE DESMONTAGEM" MappingName="orient_desmont" ColumnSizer="SizeToHeader" AllowEditing="True"/>
+
+                <syncfusion:GridTextColumn MappingName="inserido_por" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridDateTimeColumn MappingName="inserido_em" ColumnSizer="SizeToHeader"/>
+
+                <syncfusion:GridTextColumn MappingName="alterado_por" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridDateTimeColumn MappingName="alterado_em" ColumnSizer="SizeToHeader"/>
+
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+        <syncfusion:SfGridSplitter HorizontalAlignment="Stretch" Width="auto" Grid.Row="2"/>
+
+
+        <Grid Grid.Row="3" >
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <syncfusion:SfDataGrid
+                Grid.Row="1"
+                x:Name="dgComplemento"
+                AddNewRowPosition="Bottom"
+                ShowRowHeader="True"
+                AutoGenerateColumns="False"
+                ColumnSizer="SizeToHeader"
+                ItemsSource="{Binding CheckListGeralComplementos}"
+                SelectedItem="{Binding CheckListGeralComplemento, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                CurrentCellDropDownSelectionChanged="OnCurrentCellDropDownSelectionChanged" 
+                CurrentCellValueChanged="dgComplemento_CurrentCellValueChanged" 
+                FontSize="10" RowValidated="dgComplemento_RowValidated"
+                RowValidating="dgComplemento_RowValidating" 
+                AddNewRowInitiating="dgComplemento_AddNewRowInitiating" AllowResizingColumns="True" AllowResizingHiddenColumns="True" >
+                <syncfusion:SfDataGrid.Columns>
+                    <syncfusion:GridComboBoxColumn
+                        HeaderText="COMPLEMENTO ADICIONAL" 
+                        MappingName="codcompladicional"
+                        ItemsSource="{Binding CompleAdicionais}"
+                        DisplayMemberPath="complementoadicional"
+                        SelectedValuePath="codcompladicional" 
+                        ColumnSizer="Auto"/>
+                    <syncfusion:GridTextColumn
+                        HeaderText="UNID" 
+                        MappingName="unidade" TextAlignment="Center"/>
+                    <syncfusion:GridNumericColumn
+                        HeaderText="ESTOQUE" 
+                        MappingName="saldoestoque"
+                        DisplayBinding="{Binding saldoestoque, Converter={StaticResource ConverterNumber}}" TextAlignment="Center"/>
+                    <syncfusion:GridNumericColumn
+                        AllowEditing="True"
+                        HeaderText="QTDE" 
+                        MappingName="qtd"
+                        DisplayBinding="{Binding qtd, Converter={StaticResource ConverterNumber}}"/>
+                    <syncfusion:GridCheckBoxColumn
+                        AllowEditing="True"
+                        HeaderText="CONFIRMADO" 
+                        MappingName="confirmado"
+                        DisplayBinding="{Binding confirmado, Converter={StaticResource ConverterBoolen}}"
+                        ValueBinding="{Binding confirmado, Converter={StaticResource ConverterBoolen}}" />
+                    <syncfusion:GridNumericColumn
+                        HeaderText="CODDETALHESCOMPL" 
+                        MappingName="coddetalhescompl"
+                        DisplayBinding="{Binding coddetalhescompl, Converter={StaticResource ConverterNumber}}"/>
+                    <syncfusion:GridNumericColumn
+                        HeaderText="QTD EXPEDIDA" 
+                        MappingName="qtd_expedida"
+                        DisplayBinding="{Binding qtd_expedida, Converter={StaticResource ConverterNumber}}" TextAlignment="Center"/>
+                    <!--
+                    <syncfusion:GridTemplateColumn 
+                        HeaderText="REQUISIÇÃO"
+                        MappingName="num_os_produto">
+                        <syncfusion:GridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button 
+                                    Content="{Binding num_os_produto, Converter={StaticResource NameButtonConverter}}" 
+                                    syncfusion:FocusManagerHelper.FocusedElement="True"
+                                    Command="{Binding Path=DataContext.RowDataCommand,ElementName=dgComplemento}" 
+                                    CommandParameter="{Binding ElementName=chklist}"/>
+                            </DataTemplate>
+                        </syncfusion:GridTemplateColumn.CellTemplate>
+                    </syncfusion:GridTemplateColumn>
+                    -->
+                    <syncfusion:GridTextColumn MappingName="alterado_por" />
+                    <syncfusion:GridDateTimeColumn MappingName="data_alteracao" />
+
+
+
+                </syncfusion:SfDataGrid.Columns>
+
+
+            </syncfusion:SfDataGrid>
+
+        </Grid>
+
+    </Grid>
+
+</UserControl>

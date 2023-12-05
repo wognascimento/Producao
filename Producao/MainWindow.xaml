@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="SISTEMA INTEGRADO DE GERENCIAMENTO - PRODUÇÃO"
-        Height="768" Width="1024" WindowState="Maximized" Loaded="Window_Loaded">
+        Height="350" Width="525" WindowState="Maximized" Loaded="Window_Loaded">
 
     <Grid x:Name="Etiqueta">
         <Grid.RowDefinitions>
@@ -149,6 +149,11 @@
                 <syncfusion:MenuItemAdv Header="Manutenção">
                     <syncfusion:MenuItemAdv Header="Checklist" Click="OnKitManutencaoCheckList"/>
                     <syncfusion:MenuItemAdv Header="Consulta" Click="OnQueryKitManutencaoGeral"/>
+                </syncfusion:MenuItemAdv>
+
+                <syncfusion:MenuItemAdv Header="Desmontagem">
+                    <syncfusion:MenuItemAdv Header="Checklist" Click="OnKitDesmontagemCheckList"/>
+                    <syncfusion:MenuItemAdv Header="Consulta" Click="OnQueryKitDesmontagemGeral"/>
                 </syncfusion:MenuItemAdv>
 
                 <syncfusion:MenuItemAdv Header="Controle Geral" Click="OnControleGeral"/>

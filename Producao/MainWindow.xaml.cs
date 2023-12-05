@@ -7,6 +7,7 @@ using Producao.Views.Construcao;
 using Producao.Views.Controlado;
 using Producao.Views.Estoque;
 using Producao.Views.kit;
+using Producao.Views.kit.desmontagem;
 using Producao.Views.kit.manutencao;
 using Producao.Views.kit.solucao;
 using Producao.Views.OrdemServico.Produto;
@@ -15,7 +16,6 @@ using Producao.Views.OrdemServico.Servicos;
 using Producao.Views.Planilha;
 using Squirrel;
 using Syncfusion.SfSkinManager;
-using Syncfusion.UI.Xaml.Spreadsheet;
 using Syncfusion.Windows.Tools.Controls;
 using Syncfusion.XlsIO;
 using System;
@@ -23,13 +23,9 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using Telerik.Windows.Controls;
-using Telerik.Windows.Documents.Spreadsheet.Model;
 using SizeMode = Syncfusion.SfSkinManager.SizeMode;
 namespace Producao
 {
@@ -90,7 +86,6 @@ namespace Producao
 			this.Loaded += OnLoaded;
             StyleManager.ApplicationTheme = new Windows11Theme();
 
-
             var appSettings = ConfigurationManager.GetSection("appSettings") as NameValueCollection;
             if(appSettings[0].Length > 0)
                 BaseSettings.Username = appSettings[0];
@@ -106,7 +101,7 @@ namespace Producao
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             CurrentVisualStyle = "Metro"; // "FluentLight";
-	        //CurrentSizeMode = "Touch";
+	        CurrentSizeMode = "Default";
         }
 		/// <summary>
         /// On Visual Style Changed.
@@ -123,8 +118,42 @@ namespace Producao
                 SfSkinManager.ApplyStylesOnApplication = false;
             }
         }
-		
-		/// <summary>
+
+        UpdateManager manager;
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            
+            try
+            {
+                manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/wognascimento/Producao");
+                var updateInfo = await manager.CheckForUpdate();
+                if (updateInfo.ReleasesToApply.Count > 0)
+                {
+                    RadWindow.Confirm(new DialogParameters()
+                    {
+                        Header = "Atualização",
+                        Content = "Existe uma atualização para o sistema, deseja atualiza?",
+                        Closed = async (object sender, WindowClosedEventArgs e) =>
+                        {
+                            var result = e.DialogResult;
+                            if (result == true)
+                            {
+                                await manager.UpdateApp();
+                                RadWindow.Alert("Sistema atualizado!\nFecha e abre o Sistema, para aplicar a atualização.");
+                            }
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                RadWindow.Alert(ex.Message);
+            }
+            
+        }
+
+        /// <summary>
         /// On Size Mode Changed event.
         /// </summary>
         /// <remarks></remarks>
@@ -1498,35 +1527,44 @@ namespace Producao
             */
         }
 
-        UpdateManager manager;
+        private void OnKitDesmontagemCheckList(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new ViewKitDesmontagem(), "CHECKLIST KIT DESMONTAGEM", "CHECKLIST_KIT_DESMONTAGEM");
+        }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void OnQueryKitDesmontagemGeral(object sender, RoutedEventArgs e)
         {
             try
             {
-                manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/wognascimento/Producao");
-                var updateInfo = await manager.CheckForUpdate();
-                if (updateInfo.ReleasesToApply.Count > 0)
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                using DatabaseContext db = new();
+                //var data = await db.PendenciaProducaos.ToListAsync();
+                var data = await db.KitSolicaoGeral.Where(c => c.local_shoppings == "KIT DESMONTAGEM").ToListAsync();
+
+                using ExcelEngine excelEngine = new ExcelEngine();
+                IApplication application = excelEngine.Excel;
+
+                application.DefaultVersion = ExcelVersion.Xlsx;
+
+                //Create a workbook
+                IWorkbook workbook = application.Workbooks.Create(1);
+                IWorksheet worksheet = workbook.Worksheets[0];
+                //worksheet.IsGridLinesVisible = false;
+                worksheet.ImportData(data, 1, 1, true);
+
+                workbook.SaveAs("Impressos/KITDESMONTAGEM_GERAL.xlsx");
+                Process.Start(new ProcessStartInfo("Impressos\\KITDESMONTAGEM_GERAL.xlsx")
                 {
-                    RadWindow.Confirm(new DialogParameters()
-                    {
-                        Header = "Atualização",
-                        Content = "Existe uma atualização para o sistema, deseja atualiza?",
-                        Closed = async (object sender, WindowClosedEventArgs e) => 
-                        {
-                            var result = e.DialogResult;
-                            if (result == true)
-                            {
-                                await manager.UpdateApp();
-                                RadWindow.Alert("Sistema atualizado!\nFecha e abre o Sistema, para aplicar a atualização.");
-                            }
-                        }
-                    });
-                }
+                    UseShellExecute = true
+                });
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                RadWindow.Alert(ex.Message);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
             }
         }
     }
