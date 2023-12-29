@@ -170,6 +170,8 @@
     </None>
   </ItemGroup>
 
+	
+
 
 	<PropertyGroup>
 		<NugetTools>$(PkgNuGet_CommandLine)\tools</NugetTools>
@@ -180,6 +182,7 @@
 		<NuspecFile>$(SolutionDir)Producao\Producao.nuspec</NuspecFile>
 	</PropertyGroup>
 
+	
 	<Target Name="GenerateRelease" AfterTargets="AfterBuild" Condition="$(Configuration) == Release">
 		<XmlPeek XmlInputPath="$(NuspecFile)" Query="/package/metadata/id/text()">
 			<Output TaskParameter="Result" ItemName="ID" />
@@ -189,5 +192,7 @@
 
 		<Exec Command="$(SquirrelTools)\Squirrel.exe --releasify $(SolutionDir)Deployment\GeneratedNugets\@(ID).$(Version).nupkg --releaseDir=$(SolutionDir)Deployment\Releases -g .\loading.gif" />
 	</Target>
+
+	
 	
 </Project>

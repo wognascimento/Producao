@@ -93,8 +93,8 @@ namespace Producao.Views
                 record.PlantaPca = Environment.UserName;
                 record.LiberacaoPlantaPca = DateTimeOffset.Now;
 
-                (dataRow.RowData as AprovadoModel).PlantaPca = Environment.UserName;
-                (dataRow.RowData as AprovadoModel).LiberacaoPlantaPca = DateTimeOffset.Now;
+                ((AprovadoModel)dataRow.RowData).PlantaPca = Environment.UserName;
+                ((AprovadoModel)dataRow.RowData).LiberacaoPlantaPca = DateTimeOffset.Now;
             }
             else if (column.MappingName.Equals("OkPlantaBase"))
             {
@@ -134,7 +134,7 @@ namespace Producao.Views
                 ViewAprovadoViewModel vm = (ViewAprovadoViewModel)DataContext;
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                var record = sfdatagrid.View.CurrentEditItem as AprovadoModel;
+                AprovadoModel record = (AprovadoModel)sfdatagrid?.View.CurrentEditItem;
                 await Task.Run(() => vm.SaveAsync(record));
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });

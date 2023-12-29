@@ -7,6 +7,6 @@ namespace Producao
     public class ClasseSolicitCompra
     {
         [Key]
-        public string classe_solicit_compra { get; set; }
+        public string? classe_solicit_compra { get; set; }
     }
 }

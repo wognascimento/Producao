@@ -23,12 +23,18 @@
             ColumnSizer="AutoLastColumnFill" 
             AllowFiltering="True" 
             AllowResizingColumns="True" 
-            AutoGenerateColumns="False">
+            AutoGenerateColumns="False"
+            AllowResizingHiddenColumns="True" 
+            SelectionUnit="Row"
+            SelectionMode="Extended"
+            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat" >
             <Syncfusion:SfDataGrid.Columns>
                 <Syncfusion:GridTextColumn MappingName="codcompladicional"/>
                 <Syncfusion:GridTextColumn MappingName="planilha" />
                 <Syncfusion:GridTextColumn MappingName="familia" />
-                <Syncfusion:GridTextColumn MappingName="descricao_completa" />
+                <Syncfusion:GridTextColumn MappingName="descricao" ColumnSizer="SizeToHeader"/>
+                <Syncfusion:GridTextColumn MappingName="descricao_adicional" ColumnSizer="SizeToHeader"/>
+                <Syncfusion:GridTextColumn MappingName="complementoadicional" ColumnSizer="SizeToHeader"/>
                 <Syncfusion:GridTextColumn MappingName="unidade"/>
                 <Syncfusion:GridTextColumn MappingName="descricaofiscal"/>
                 <Syncfusion:GridTextColumn MappingName="descricaoespanhol"/>

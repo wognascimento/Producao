@@ -124,8 +124,8 @@ namespace Producao.Views.kit.desmontagem
                 vm.ComplementoCheckList.ordem = tbId.Text;
                 vm.ComplementoCheckList.item_memorial = tbItem.Text;
                 vm.ComplementoCheckList.local_shoppings = tbLocalShopping.Text;
-                vm.ComplementoCheckList.class_solucao = cmbClassificacoes.SelectedItem.ToString();
-                vm.ComplementoCheckList.motivos = cmbMotivos.SelectedItem.ToString();
+                //vm.ComplementoCheckList.class_solucao = cmbClassificacoes?.SelectedItem.ToString();
+                //vm.ComplementoCheckList.motivos = cmbMotivos?.SelectedItem.ToString();
                 vm.ComplementoCheckList.inserido_por = Environment.UserName;
                 vm.ComplementoCheckList.inserido_em = DateTime.Now;
 
@@ -154,8 +154,8 @@ namespace Producao.Views.kit.desmontagem
             {
                 ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.ComplementoCheckList.class_solucao = cmbClassificacoes!.SelectedItem!.ToString();
-                vm.ComplementoCheckList.motivos = cmbMotivos!.SelectedItem!.ToString();
+                //vm.ComplementoCheckList.class_solucao = cmbClassificacoes!.SelectedItem!.ToString();
+                //vm.ComplementoCheckList.motivos = cmbMotivos!.SelectedItem!.ToString();
                 vm.ComplementoCheckList.alterado_por = Environment.UserName;
                 vm.ComplementoCheckList.alterado_em = DateTime.Now;
                 ComplementoCheckListModel compl = await vm.AddComplementoCheckListAsync(vm.ComplementoCheckList);
@@ -187,7 +187,7 @@ namespace Producao.Views.kit.desmontagem
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                DetalhesKitSolucaoViewModel vm = (DetalhesKitSolucaoViewModel)DataContext;
+                ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
 
                 //QryRequisicaoDetalheModel requi = (from r in vm.QryRequisicaoDetalhes select r).FirstOrDefault();
 
@@ -464,7 +464,7 @@ namespace Producao.Views.kit.desmontagem
         {
             try
             {
-                DetalhesKitSolucaoViewModel vm = (DetalhesKitSolucaoViewModel)DataContext;
+                ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 var dado = e.RowData as QryCheckListGeralModel; //e.RowData = {Producao.QryCheckListGeralModel}
                 ComplementoCheckListModel CompleChkList = new()
@@ -494,7 +494,7 @@ namespace Producao.Views.kit.desmontagem
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                DetalhesKitSolucaoViewModel vm = (DetalhesKitSolucaoViewModel)DataContext;
+                ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
                 var record = vm.CheckListGeral;
 
 
@@ -520,8 +520,8 @@ namespace Producao.Views.kit.desmontagem
                     codcompl = vm?.CheckListGeral?.codcompl,
                     nivel = vm?.CheckListGeral?.nivel,
                     carga = vm?.CheckListGeral?.carga,
-                    class_solucao = vm?.CheckListGeral?.class_solucao,
-                    motivos = vm?.CheckListGeral?.motivos,
+                    //class_solucao = vm?.CheckListGeral?.class_solucao,
+                    //motivos = vm?.CheckListGeral?.motivos,
                     id_aprovado = vm?.CheckListGeral?.id_aprovado,
                     historico = vm?.CheckListGeral?.historico,
                     agrupar = vm?.CheckListGeral?.agrupar,
@@ -538,8 +538,8 @@ namespace Producao.Views.kit.desmontagem
                 vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(vm?.CheckListGeral?.coduniadicional));
                 vm.CheckListGeralComplementos = await Task.Run(() => vm.GetCheckListGeralComplementoAsync(vm?.CheckListGeral?.codcompl));
 
-                cmbClassificacoes.SelectedItem = record?.class_solucao;
-                cmbMotivos.SelectedItem = record?.motivos;
+                //cmbClassificacoes.SelectedItem = record?.class_solucao;
+                //cmbMotivos.SelectedItem = record?.motivos;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -553,7 +553,7 @@ namespace Producao.Views.kit.desmontagem
         {
             try
             {
-                DetalhesKitSolucaoViewModel vm = (DetalhesKitSolucaoViewModel)DataContext;
+                ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
                 ((QryCheckListGeralComplementoModel)e.NewObject).codcompl = vm.CheckListGeral.codcompl;
             }
             catch (Exception ex)
@@ -568,7 +568,7 @@ namespace Producao.Views.kit.desmontagem
             try
             {
                 var sfdatagrid = sender as SfDataGrid;
-                var viewModel = (DetalhesKitSolucaoViewModel)sfdatagrid.DataContext;
+                var viewModel = (ViewDetalhesKitDesmontagemViewModel)sfdatagrid.DataContext;
                 int rowIndex = sfdatagrid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
 
                 QryCheckListGeralComplementoModel record;
@@ -597,7 +597,7 @@ namespace Producao.Views.kit.desmontagem
         private async void dgComplemento_RowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
         {
             var sfdatagrid = sender as SfDataGrid;
-            DetalhesKitSolucaoViewModel vm = (DetalhesKitSolucaoViewModel)DataContext;
+            ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
@@ -638,12 +638,12 @@ namespace Producao.Views.kit.desmontagem
 
         private async void ComboBoxAdv_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
+            /*
             try
             {
-                string classificacao = cmbClassificacoes.SelectedItem?.ToString(); //e.AddedItems[0].ToString(); 
-                //sender = {Syncfusion.Windows.Tools.Controls.ComboBoxAdv Items.Count:6}
+                string classificacao = cmbClassificacoes.SelectedItem?.ToString();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                DetalhesKitSolucaoViewModel vm = (DetalhesKitSolucaoViewModel)DataContext;
+                ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
                 vm.Motivos = await Task.Run(async () => await vm.GetMotivosAsync(classificacao));
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -652,11 +652,12 @@ namespace Producao.Views.kit.desmontagem
                 MessageBox.Show(ex.Message);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+            */
         }
 
         void Limpar()
         {
-            DetalhesKitSolucaoViewModel vm = (DetalhesKitSolucaoViewModel)DataContext;
+            ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
 
             //tbId.Text = string.Empty;
             //tbItem.Text = string.Empty;
@@ -677,9 +678,9 @@ namespace Producao.Views.kit.desmontagem
 
 
             //cmbClassificacoes.SelectedItem = null;
-            cmbClassificacoes.SelectedIndex = -1;
+            //cmbClassificacoes.SelectedIndex = -1;
             vm.Motivos = null;
-            cmbMotivos.SelectedItem = null;
+            //cmbMotivos.SelectedItem = null;
             //btnAddicionar.Visibility = Visibility.Collapsed;
 
             vm.ComplementoCheckList = new ComplementoCheckListModel();
@@ -691,7 +692,7 @@ namespace Producao.Views.kit.desmontagem
         {
             try
             {
-                DetalhesKitSolucaoViewModel vm = (DetalhesKitSolucaoViewModel)DataContext;
+                ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
 
                 var window = new Window
                 {

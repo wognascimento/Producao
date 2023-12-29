@@ -157,7 +157,7 @@ namespace Producao.Views.Construcao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EtiquetaConstrucaoViewModel vm = (EtiquetaConstrucaoViewModel)DataContext;
-                TblComplementoAdicionalModel? complemento = e.NewValue as TblComplementoAdicionalModel;
+                TblComplementoAdicionalModel complemento = (TblComplementoAdicionalModel)e.NewValue;
                 vm.Compledicional = complemento;
 
 
@@ -293,17 +293,17 @@ namespace Producao.Views.Construcao
             {
                 try
                 {
-                    long volume = (long)volumes[i].Key;
+                    long volume = Convert.ToInt32(volumes[i].Key);
                     switch (etiqueta)
                     {
                         case Etiqueta.Primeira:
                             {
-                                worksheet.Range["A1"].Text = vm.ChecklistPrduto.sigla;
+                                worksheet.Range["A1"].Text = vm?.ChecklistPrduto.sigla;
                                 worksheet.Range["B2"].Text = $"{volume} / {count}"; //item.volumes_total > 1 ? item.volumes + " / " + item.volumes_total : item.qtd.ToString();
                                 worksheet.Range["C2"].Number = DateTime.Now.Year;
-                                worksheet.Range["D2"].Number = (double)vm.ChecklistPrduto.coddetalhescompl;
-                                worksheet.Range["B5"].Text = vm.ChecklistPrduto.local_shoppings;
-                                worksheet.Range["A8"].Text = vm.Descricao.descricao_completa.Replace("ÚNICO", null);
+                                worksheet.Range["D2"].Number = Convert.ToDouble( vm?.ChecklistPrduto.coddetalhescompl );
+                                worksheet.Range["B5"].Text = vm?.ChecklistPrduto.local_shoppings;
+                                worksheet.Range["A8"].Text = vm?.Descricao?.descricao_completa?.Replace("ÚNICO", null);
 
                                 var inx = 12;
                                 worksheet.Range["A12"].Text = "";
@@ -397,7 +397,7 @@ namespace Producao.Views.Construcao
                                 worksheet.Range["F18"].Text = vm.ChecklistPrduto.sigla;
                                 worksheet.Range["G19"].Text = $"{volume} / {count}"; //item.volumes_total > 1 ? item.volumes + " / " + item.volumes_total : item.qtd.ToString();
                                 worksheet.Range["H19"].Number = DateTime.Now.Year;
-                                worksheet.Range["I19"].Number = (double)vm.ChecklistPrduto.coddetalhescompl;
+                                worksheet.Range["I19"].Number = Convert.ToDouble( vm?.ChecklistPrduto?.coddetalhescompl );
                                 worksheet.Range["G22"].Text = vm.ChecklistPrduto.local_shoppings;
                                 worksheet.Range["F25"].Text = vm.Descricao.descricao_completa.Replace("ÚNICO", null);
 

@@ -247,7 +247,7 @@
                 </syncfusion:SfTextInputLayout>
 
             </StackPanel>
-
+<!--
             <StackPanel Orientation="Horizontal" Height="auto">
 
                 <syncfusion:SfTextInputLayout 
@@ -276,9 +276,8 @@
                     <syncfusion:ComboBoxAdv x:Name="cmbMotivos" ItemsSource="{Binding Motivos}"/>
                 </syncfusion:SfTextInputLayout>
 
-
             </StackPanel>
-
+-->
             <StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
 
                 <syncfusion:ButtonAdv 

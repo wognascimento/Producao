@@ -126,6 +126,7 @@ namespace Producao
             
             try
             {
+
                 manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/wognascimento/Producao");
                 var updateInfo = await manager.CheckForUpdate();
                 if (updateInfo.ReleasesToApply.Count > 0)
@@ -145,6 +146,7 @@ namespace Producao
                         }
                     });
                 }
+
             }
             catch (Exception ex)
             {
