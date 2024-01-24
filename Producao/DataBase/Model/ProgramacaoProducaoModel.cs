@@ -22,7 +22,7 @@ namespace Producao.DataBase.Model
         public string? programacao_observacao { get; set; }
         public DateTime? data_emissao_os { get; set; }
         //public DateTime? fechamento_shopp { get; set; }
-        public double? distancia { get; set; }
+        //public double? distancia { get; set; }
         public string? cancelada_os { get; set; }
         public long? codigo_setor { get; set; }
         public DateTime? data_conclusao_os { get; set; }
@@ -31,8 +31,8 @@ namespace Producao.DataBase.Model
         public double? ht { get; set; }
         public string? programacao_inserido_por { get; set; }
         public DateTime? programacao_inserido_data { get; set; }
-        public double? custo { get; set; }
-        public double? custo_recuperacao { get; set; }
+        //public double? custo { get; set; }
+        //public double? custo_recuperacao { get; set; }
         public double? custo_mao_obra { get; set; }
         //public string? dias_fechamento { get; set; }
         public int? dias_expedicao { get; set; }

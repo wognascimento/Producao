@@ -758,6 +758,7 @@ namespace Producao.Views.CheckList
                     orient_desmont = dado?.orient_desmont,
                     ordem = dado?.id,
                     carga = dado?.carga,
+                    local_shoppings = dado?.local_shoppings,
                     alterado_por = Environment.UserName,
                     alterado_em = DateTime.Now
                 };

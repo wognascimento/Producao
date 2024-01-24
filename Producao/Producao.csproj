@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
@@ -62,23 +62,22 @@
     <None Include="Project_Readme.html" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EPPlus" Version="6.2.7" />
-    <PackageReference Include="itext7" Version="8.0.0" />
+    <PackageReference Include="EPPlus" Version="7.0.7" />
+    <PackageReference Include="itext7" Version="8.0.2" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.5" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageReference Include="NuGet.CommandLine" Version="6.8.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="squirrel.windows" Version="1.9.0" />
-    <PackageReference Include="syncfusion.ui.wpf.net" Version="20.3.0.56" />
-    <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
+    <PackageReference Include="syncfusion.ui.wpf.net" Version="24.1.47" />
     <PackageReference Include="Telerik.UI.for.Wpf.70.Xaml">
-      <Version>2023.1.117.0</Version>
+      <Version>2023.2.718</Version>
     </PackageReference>
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="7.22.4" />
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="8.101.2.1" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="App.ico" />
@@ -149,6 +148,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Impressos\" />
+    <Folder Include="Views\Helpers\" />
+    <Folder Include="Views\SearchControl\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icones\icons8-detalhes-40.png" />

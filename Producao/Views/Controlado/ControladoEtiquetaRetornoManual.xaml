@@ -1,0 +1,58 @@
+﻿<UserControl x:Class="Producao.Views.Controlado.ControladoEtiquetaRetornoManual"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.Controlado" 
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:app="clr-namespace:Producao"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+
+    <UserControl.Resources>
+        <app:ConverterNumber x:Key="ConverterNumber"/>
+        <app:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+
+    <Grid>
+
+
+        <syncfusion:SfDataGrid 
+            x:Name="retornos"
+            Grid.Row="1"
+            AutoGenerateColumns="False" 
+            AllowResizingColumns="True"
+            ColumnSizer="AutoWithLastColumnFill"
+            ShowRowHeader="True" 
+            ItemsSource="{Binding Retornos}" 
+            SelectedItem="{Binding Retorno, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            RowValidated="OnRowValidated" 
+            RowValidating="OnRowValidating" 
+            AllowFiltering="True" 
+            AddNewRowPosition="Bottom"   
+            CurrentCellValidating="retornos_CurrentCellValidating">
+            <syncfusion:SfDataGrid.Columns>
+
+                <syncfusion:GridNumericColumn 
+                    MappingName="codigo"
+                    DisplayBinding="{Binding codigo , Converter={StaticResource ConverterNumber}}"
+                    AllowEditing="True"
+                    ColumnSizer="SizeToHeader" NumberDecimalDigits="0"/>
+
+                <syncfusion:GridTextColumn 
+                    MappingName="planilha"
+                    ColumnSizer="SizeToHeader"
+                    AllowEditing="False"/>
+
+                <syncfusion:GridTextColumn 
+                    MappingName="descricao_completa"
+                    ColumnSizer="SizeToHeader" 
+                    AllowEditing="False"/>
+
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+
+    </Grid>
+    
+</UserControl>

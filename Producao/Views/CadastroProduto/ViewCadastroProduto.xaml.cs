@@ -76,9 +76,34 @@ namespace Producao.Views.CadastroProduto
 
         }
 
-        private void OnCurrentCellValueChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValueChangedEventArgs e)
+        private async void OnCurrentCellValueChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValueChangedEventArgs e)
         {
-            
+            CadastroProdutoViewModel vm = (CadastroProdutoViewModel)DataContext;
+            SfDataGrid? grid = sender as SfDataGrid;
+            int columnindex = grid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
+            var column = grid.Columns[columnindex];
+            if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "inativo")
+            {
+                var rowIndex = grid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
+                var record = grid.View.Records[rowIndex].Data as ProdutoModel;
+                var value = record.inativo;
+
+                try
+                {
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                    await Task.Run(() => vm.SaveAsync(record));
+                    grid.View.Refresh();
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                }
+
+
+            }
+
         }
 
         private async void OnRowValidated(object sender, RowValidatedEventArgs e)

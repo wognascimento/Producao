@@ -88,6 +88,9 @@ namespace Producao
         public DbSet<TransformaRequisicaoModel> TransformaRequisicoes { get; set; }
         public DbSet<EtiquetaZebraModel> EtiquetasZebra { get; set; }
         public DbSet<ControladoShoppingModel> ControladoShoppings { get; set; }
+        public DbSet<ControladoShoppingRetornoModel> ControladoShoppingRetornos { get; set; }
+        public DbSet<QryControladoEtiquetaRetornoModel> qryControladoEtiquetaRetornos { get; set; }
+        public DbSet<QryGeralRequisicaoModel> qryGeralRequisicaos { get; set; }
         public DbSet<PlanilhaConstrucaoModel> PlanilhasConstrucao { get; set; }
         public DbSet<ConstrucaoDetalheModel> ConstrucaoDetalhes { get; set; }
         public DbSet<ConstrucaoPecaModel> ConstrucaoPecas { get; set; }
@@ -144,6 +147,9 @@ namespace Producao
 
             modelBuilder.Entity<ControladoRecebidoModel>()
                 .HasKey(a => new { a.id_aprovado, a.codcompladicional });
+
+            modelBuilder.Entity<ControladoShoppingRetornoModel>()
+                .HasKey(a => new { a.barcode, a.inserido_em });
         }
     }
 }

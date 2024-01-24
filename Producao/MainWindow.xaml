@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="SISTEMA INTEGRADO DE GERENCIAMENTO - PRODUÇÃO"
-        Height="350" Width="525" WindowState="Maximized" Loaded="Window_Loaded">
+        Height="350" Width="800" WindowState="Maximized" Loaded="Window_Loaded">
 
     <Grid x:Name="Etiqueta">
         <Grid.RowDefinitions>
@@ -40,6 +40,7 @@
                 <syncfusion:MenuItemAdv Header="Análise ShowRoom"/>
                 <syncfusion:MenuItemAdv Header="Controle por Grupo" Click="ControleGrupoClick"/>
                 <syncfusion:MenuItemAdv Header="Pendência de Produção" Click="OnPendenciaProducaoClick"/>
+                <syncfusion:MenuItemAdv Header="Pendência de Produção SHOWROOM/TREINAMENTO" Click="OnPendenciaProducaoTreinamentoClick"/>
             </syncfusion:MenuItemAdv>
             
             <!--<syncfusion:MenuItemAdv Header="Agenda Visita Técnica"/>-->
@@ -76,7 +77,7 @@
                 <syncfusion:MenuItemAdv Header="Impedimento Checklist"/>
             </syncfusion:MenuItemAdv>
             
-            <syncfusion:MenuItemAdv Header="Adereçamento"/>
+            <!--<syncfusion:MenuItemAdv Header="Adereçamento"/>-->
             
             <syncfusion:MenuItemAdv Header="Central de Modelos">
                 <syncfusion:MenuItemAdv Header="Modelos">
@@ -95,7 +96,10 @@
 
             <syncfusion:MenuItemAdv Header="Controlados">
                 <syncfusion:MenuItemAdv Header="Imprimir" Click="OnImprimirEtiquetaControlado"/>
-                <syncfusion:MenuItemAdv Header="Vincular Etiqueta" Click="OnVinculoRequisicao"/>
+                <syncfusion:MenuItemAdv Header="Etiqueta">
+                    <syncfusion:MenuItemAdv Header="Vincular" Click="OnVinculoRequisicao"/>
+                    <syncfusion:MenuItemAdv Header="Retorno Manual" Click="OnRetornoEtiquetaManualClick"/>
+                </syncfusion:MenuItemAdv>
                 <syncfusion:MenuItemAdv Header="Cobrança"/>
                 <syncfusion:MenuItemAdv Header="Retorno" Click="OnRetornoControlado"/>
                 <syncfusion:MenuItemAdv Header="Relatórios">

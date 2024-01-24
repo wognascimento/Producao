@@ -356,20 +356,8 @@
                     ColumnSizer="SizeToHeader"/>
 
                 <syncfusion:GridCurrencyColumn 
-                    MappingName="custo"
-                    ColumnSizer="SizeToHeader"/>
-
-                <syncfusion:GridCurrencyColumn 
-                    MappingName="custo_recuperacao"
-                    ColumnSizer="SizeToHeader"/>
-
-                <syncfusion:GridCurrencyColumn 
                     MappingName="custo_mao_obra"
                     ColumnSizer="SizeToHeader"/>
-
-
-
-
 
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>

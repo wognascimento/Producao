@@ -123,7 +123,7 @@ namespace Producao
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            
+            /*
             try
             {
 
@@ -152,7 +152,7 @@ namespace Producao
             {
                 RadWindow.Alert(ex.Message);
             }
-            
+            */
         }
 
         /// <summary>
@@ -552,6 +552,42 @@ namespace Producao
 
                 workbook.SaveAs("Impressos/PENDENCIA_PRODUCAO.xlsx");
                 Process.Start(new ProcessStartInfo("Impressos\\PENDENCIA_PRODUCAO.xlsx")
+                {
+                    UseShellExecute = true
+                });
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private async void OnPendenciaProducaoTreinamentoClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                using DatabaseContext db = new();
+                //var data = await db.PendenciaProducaos.ToListAsync();
+                var data = await db.PendenciaProducaos.ToListAsync();
+
+                using ExcelEngine excelEngine = new ExcelEngine();
+                IApplication application = excelEngine.Excel;
+
+                application.DefaultVersion = ExcelVersion.Xlsx;
+
+                //Create a workbook
+                IWorkbook workbook = application.Workbooks.Create(1);
+                IWorksheet worksheet = workbook.Worksheets[0];
+                //worksheet.IsGridLinesVisible = false;
+                worksheet.ImportData(data, 1, 1, true);
+
+                workbook.SaveAs("Impressos/PENDENCIA_PRODUCAO_TREINAMENTO.xlsx");
+                Process.Start(new ProcessStartInfo("Impressos\\PENDENCIA_PRODUCAO_TREINAMENTO.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -1568,6 +1604,11 @@ namespace Producao
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void OnRetornoEtiquetaManualClick(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new ControladoEtiquetaRetornoManual(), "CONTOLADO RETORNO MANUAL", "CONTOLADO_RETORNO_MANUAL");
         }
     }
 }
