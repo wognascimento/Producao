@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -88,6 +90,14 @@ namespace Producao.Views.CheckList
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                     vm.Itens = await Task.Run(async () => await vm.GetFechaAsync(tema));
                     vm.Links = await Task.Run(async () => await vm.GetFechaLinksAsync(sigla.sigla, tema.tema));
+
+                    if (vm.Links.Count == 0)
+                    {
+                        vm.Link = new FechaLinkModel { links = "CLIQUE PARA ADICIONAR LINK" };
+                    }
+
+                    //vm.Link = vm.Links.FirstOrDefault();
+
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 else
@@ -102,10 +112,42 @@ namespace Producao.Views.CheckList
                 MessageBox.Show(ex.Message);
             }
         }
-
-        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        //private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e) => System.Diagnostics.Process.Start(e.Uri.ToString());
+        private async void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            System.Diagnostics.Process.Start(e.Uri.ToString());
+            try
+            {
+                ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
+                if (e.Uri.OriginalString == "CLIQUE PARA ADICIONAR LINK")
+                {
+                    var folderDialog = new OpenFolderDialog
+                    {
+                        Title = "Selecione a pasta",
+                        InitialDirectory = @"\\servidor\clientes" //Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+                    };
+
+                    if (folderDialog.ShowDialog() == true)
+                    {
+                        var folderName = folderDialog.FolderName;
+
+                       vm.Link =  await Task.Run(async () => await vm.SaveLinksAsync( new FechaLinkModel { idtema = vm.Tema.idtema, tema = vm.Tema.tema, sigla = vm.Sigla.sigla, data_link = DateTime.Now, links = folderName } ));
+                        
+                    }
+                    return;
+                }
+
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = e.Uri.LocalPath,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
         }
 
         private void SfDataGrid_CurrentCellRequestNavigate(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellRequestNavigateEventArgs e)
@@ -222,6 +264,22 @@ namespace Producao.Views.CheckList
                 using DatabaseContext db = new();
                 var data = await db.FechaLinks.Where(c => c.sigla == sigla && c.tema == tema).ToListAsync();
                 return new ObservableCollection<FechaLinkModel>(data);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<FechaLinkModel> SaveLinksAsync(FechaLinkModel fechaLink)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                await db.FechaLinks.AddAsync(fechaLink);
+                await db.SaveChangesAsync();
+
+                return fechaLink;
             }
             catch (Exception)
             {

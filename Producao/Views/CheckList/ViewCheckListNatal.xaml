@@ -445,11 +445,13 @@
             AutoGenerateColumns="False" 
             AllowResizingColumns="True"
             AllowDraggingColumns="True"
-            ColumnSizer="AutoWithLastColumnFill" AllowFiltering="True"
+            ColumnSizer="AutoWithLastColumnFill" 
+            AllowFiltering="True"
             ShowRowHeader="True" 
             ItemsSource="{Binding CheckListGerais}"
             SelectedItem="{Binding CheckListGeral, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            SelectionChanged="OnSelectionChanged" FontSize="10" RowValidating="dgCheckListGeral_RowValidating">
+            SelectionChanged="OnSelectionChanged" 
+            RowValidating="dgCheckListGeral_RowValidating">
             <syncfusion:SfDataGrid.Columns>
 
                 <syncfusion:GridNumericColumn 

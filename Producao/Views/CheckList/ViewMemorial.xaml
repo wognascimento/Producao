@@ -21,7 +21,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
-            <RowDefinition Height="150"/>
+            <!--<RowDefinition Height="150"/>-->
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Height="39" >
@@ -46,16 +46,28 @@
 
             </syncfusion:SfTextInputLayout>
 
+            <!--
             <syncfusion:SfTextInputLayout
                 InputViewPadding="4" 
                 HintFloatMode="Float" 
                 Hint="Tema" 
                 Width="450"
-                IsEnabled="False" 
                 CharCountVisibility="Collapsed" 
                 HelperTextVisibility="Collapsed" Margin="5,0,0,0" >
                 <syncfusion:SfTextBoxExt Text="{Binding Sigla.tema}"/>
             </syncfusion:SfTextInputLayout>
+            -->
+
+            <TextBlock Margin="5,0,0,0" VerticalAlignment="Center">
+                <Hyperlink 
+                    NavigateUri="{Binding Link.links}" 
+                    RequestNavigate="Hyperlink_RequestNavigate">
+                    <Hyperlink.Inlines>
+                        <Run Text="{Binding Link.links}"/>
+                    </Hyperlink.Inlines>
+                </Hyperlink>
+            </TextBlock>
+            
         </StackPanel>
 
 
@@ -142,25 +154,26 @@
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
 
-
+        <!--
         <syncfusion:SfDataGrid  
             Grid.Row="4"
             AutoGenerateColumns="False" 
             AllowResizingColumns="True"
             AllowDraggingColumns="True"
             ColumnSizer="AutoWithLastColumnFill"
-            AllowFiltering="True"
             ShowRowHeader="True" 
             ItemsSource="{Binding Links}"
             SelectedItem="{Binding Link, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            Margin="5,5,5,0" CurrentCellRequestNavigate="SfDataGrid_CurrentCellRequestNavigate">
+            Margin="5,5,5,0" 
+
+            AddNewRowPosition="Top">
             <syncfusion:SfDataGrid.Columns>
 
                 <syncfusion:GridHyperlinkColumn MappingName="links"/>
 
             </syncfusion:SfDataGrid.Columns>                    
         </syncfusion:SfDataGrid>
-
+        -->
 
 
 
