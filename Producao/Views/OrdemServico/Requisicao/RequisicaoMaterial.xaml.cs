@@ -415,6 +415,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                     txtDescricao.Text = vm.Descricao.descricao;
                     txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
                     txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
+                    txtUnidade.Text = vm.Descricao.unidade;
                     txtQuantidade.Focus();
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });

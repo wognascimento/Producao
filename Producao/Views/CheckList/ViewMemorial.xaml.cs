@@ -1,24 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using Producao.DataBase.Model;
+using Syncfusion.XlsIO;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Security;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Producao.Views.CheckList
 {
@@ -171,6 +164,151 @@ namespace Producao.Views.CheckList
             }
             
         }
+
+        private async void OnPrintMemorial(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
+                DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+                using ExcelEngine excelEngine = new ExcelEngine();
+                IApplication application = excelEngine.Excel;
+
+                application.DefaultVersion = ExcelVersion.Xlsx;
+
+                //Create a workbook
+                IWorkbook workbook = application.Workbooks.Create(1);
+                IWorksheet worksheet = workbook.Worksheets[0];
+                worksheet.IsGridLinesVisible = false;
+
+                IStyle headerStyle;
+                IStyle bodyStyle;
+
+                bodyStyle = workbook.Styles.Add("BodyStyle");
+                bodyStyle.BeginUpdate();
+                bodyStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
+                bodyStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
+                bodyStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                bodyStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                bodyStyle.Borders[ExcelBordersIndex.EdgeTop].Color = ExcelKnownColors.Grey_25_percent;
+                bodyStyle.Borders[ExcelBordersIndex.EdgeBottom].Color = ExcelKnownColors.Grey_25_percent;
+                bodyStyle.Borders[ExcelBordersIndex.EdgeLeft].Color = ExcelKnownColors.Grey_25_percent;
+                bodyStyle.Borders[ExcelBordersIndex.EdgeRight].Color = ExcelKnownColors.Grey_25_percent;
+                bodyStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                bodyStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                bodyStyle.Font.Bold = true;
+                bodyStyle.WrapText = true;
+                bodyStyle.EndUpdate();
+
+                headerStyle = workbook.Styles.Add("headerStyle");
+                headerStyle.BeginUpdate();
+                headerStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
+                headerStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
+                headerStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                headerStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                headerStyle.Borders[ExcelBordersIndex.EdgeTop].Color = ExcelKnownColors.Grey_25_percent;
+                headerStyle.Borders[ExcelBordersIndex.EdgeBottom].Color = ExcelKnownColors.Grey_25_percent;
+                headerStyle.Borders[ExcelBordersIndex.EdgeLeft].Color = ExcelKnownColors.Grey_25_percent;
+                headerStyle.Borders[ExcelBordersIndex.EdgeRight].Color = ExcelKnownColors.Grey_25_percent;
+                headerStyle.WrapText = true;
+                headerStyle.EndUpdate();
+
+                //vm.Itens
+
+                worksheet.Range["A1"].Text = $"{vm.Sigla.sigla} MEMORIAL {BaseSettings.Database}";
+                worksheet.Range["A1"].CellStyle.Font.Bold = true;
+                worksheet.Range["A1"].CellStyle.Font.Size = 25;
+
+                worksheet.Range["A2"].Text = $"ITEM";
+                worksheet.Range["A2"].ColumnWidth = 5;
+
+                worksheet.Range["B2"].Text = $"LOCAL";
+                worksheet.Range["B2"].ColumnWidth = 20;
+
+                worksheet.Range["C2"].Text = $"DESCRIÇÃO";
+                worksheet.Range["C2"].ColumnWidth = 25;
+                worksheet.Range["C2"].WrapText = true;
+
+                worksheet.Range["D2"].Text = $"QTDE";
+                worksheet.Range["D2"].ColumnWidth = 5;
+                worksheet.Range["D2"].WrapText = true;
+
+                worksheet.Range["E2"].Text = $"DIMENSÃO";
+                worksheet.Range["E2"].ColumnWidth = 25;
+                worksheet.Range["D2"].WrapText = true;
+
+                worksheet.Range["F2"].Text = $"OBSERVAÇÃO";
+                worksheet.Range["F2"].ColumnWidth = 20;
+                worksheet.Range["D2"].WrapText = true;
+
+                worksheet.Range["G2"].Text = $"OBS INTERNA";
+                worksheet.Range["G2"].ColumnWidth = 20;
+                worksheet.Range["D2"].WrapText = true;
+
+                worksheet.Range["H2"].Text = $"OBS ALTERAÇÃO";
+                worksheet.Range["H2"].ColumnWidth = 20;
+                worksheet.Range["H2"].WrapText = true;
+
+                worksheet.Rows[1].CellStyle = bodyStyle;
+
+                var dados = vm.Itens.Select(m => new {m.item, m.localitem, m.descricao, m.qtd, m.dimensao, m.obs, m.obs_interna, m.obs_alteracao}).ToList(); // await Task.Run(() => vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado));
+                worksheet.ImportData(dados, 3, 1, false);
+
+                worksheet.Range[$"A3:H{dados.Count + 2}"].CellStyle = headerStyle;
+
+                worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                worksheet.Range[$"B3:B{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                worksheet.Range[$"C3:C{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                worksheet.Range[$"D3:D{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                worksheet.Range[$"D3:D{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+
+                //worksheet.Range[$"E3:E{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                worksheet.Range[$"E3:E{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                //worksheet.Range[$"F3:G{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                worksheet.Range[$"F3:G{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                worksheet.Range[$"G3:G{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                //worksheet.Range[$"H3:H{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                worksheet.Range[$"H3:H{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                worksheet.PageSetup.PrintTitleColumns = "$A:$H";
+                worksheet.PageSetup.PrintTitleRows = "$1:$2";
+                worksheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+                worksheet.PageSetup.LeftMargin = 0;
+                worksheet.PageSetup.RightMargin = 0;
+                worksheet.PageSetup.TopMargin = 0;
+                worksheet.PageSetup.BottomMargin = 0.5;
+                worksheet.PageSetup.RightFooter = "&P";
+                worksheet.PageSetup.LeftFooter = "&D";
+                //worksheet.PageSetup.CenterVertically = true;
+                worksheet.PageSetup.CenterHorizontally = true;
+
+                workbook.SaveAs("Impressos/MEMORIAL.xlsx");
+                Process.Start(new ProcessStartInfo("Impressos\\MEMORIAL.xlsx")
+                {
+                    UseShellExecute = true
+                });
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+        }
+
     }
 
     public class ViewMemorialViewModel : INotifyPropertyChanged
