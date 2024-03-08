@@ -537,7 +537,9 @@
                 CurrentCellValueChanged="dgComplemento_CurrentCellValueChanged" 
                 FontSize="10" RowValidated="dgComplemento_RowValidated"
                 RowValidating="dgComplemento_RowValidating" 
-                AddNewRowInitiating="dgComplemento_AddNewRowInitiating" AllowResizingColumns="True" AllowResizingHiddenColumns="True" >
+                AddNewRowInitiating="dgComplemento_AddNewRowInitiating" 
+                AllowResizingColumns="True" 
+                AllowResizingHiddenColumns="True" >
                 <syncfusion:SfDataGrid.Columns>
                     <syncfusion:GridComboBoxColumn
                         HeaderText="COMPLEMENTO ADICIONAL" 

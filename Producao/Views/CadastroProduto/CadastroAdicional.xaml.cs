@@ -81,11 +81,11 @@ namespace Producao.Views.CadastroProduto
             SfDataGrid? grid = sender as SfDataGrid;
             int columnindex = grid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
             var column = grid.Columns[columnindex];
-            if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "inativo")
+            //if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "inativo")
+            if ( column.GetType() == typeof(GridCheckBoxColumn) )
             {
                 var rowIndex = grid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
                 var record = grid.View.Records[rowIndex].Data as TabelaDescAdicionalModel;
-                var value = record.inativo;
 
                 try
                 {
@@ -99,8 +99,6 @@ namespace Producao.Views.CadastroProduto
                     MessageBox.Show(ex.Message);
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
-
-                
             }
 
             /*
