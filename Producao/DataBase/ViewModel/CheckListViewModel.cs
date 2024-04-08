@@ -900,6 +900,16 @@ namespace Producao
                         comple.carga = compChkList.carga;
                         db.Entry(comple).Property(p => p.carga).IsModified = true;
                     }
+                    if (compChkList.local_shoppings != "")
+                    {
+                        comple.local_shoppings = compChkList.local_shoppings;
+                        db.Entry(comple).Property(p => p.local_shoppings).IsModified = true;
+                    }
+                    if (compChkList.item_memorial != "")
+                    {
+                        comple.item_memorial = compChkList.item_memorial;
+                        db.Entry(comple).Property(p => p.item_memorial).IsModified = true;
+                    }
                     if (compChkList.alterado_por != "")
                     {
                         comple.alterado_por = compChkList.alterado_por;

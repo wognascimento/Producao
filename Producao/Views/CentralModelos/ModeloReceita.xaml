@@ -453,6 +453,10 @@
                 <syncfusion:GridTextColumn MappingName="unidade" Width="55" HeaderText="UNID."/>
                 <syncfusion:GridNumericColumn MappingName="qtd_modelo" HeaderText="MODELO" Width="90"/>
                 <syncfusion:GridNumericColumn MappingName="qtd_producao" HeaderText="PRODUÇÃO" Width="100"/>
+                <syncfusion:GridNumericColumn MappingName="saldoestoque" HeaderText="ESTOQUE" Width="100"/>
+                <syncfusion:GridCurrencyColumn MappingName="custo" HeaderText="CUSTO" Width="100"/>
+                <syncfusion:GridCurrencyColumn MappingName="custo_total" HeaderText="CUSTO TOTAL" Width="100"/>
+                
                 <syncfusion:GridTextColumn MappingName="observacao" HeaderText="OBSERVAÇÃO" Width="100"/>
 
                 <syncfusion:GridTextColumn MappingName="cadastrado_por"/>

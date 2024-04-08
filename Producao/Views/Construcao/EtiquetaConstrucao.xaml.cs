@@ -514,11 +514,11 @@ namespace Producao.Views.Construcao
                 vm.ChecklistPrduto = await Task.Run(() => vm.GetChecklistPrdutoAsync(vm.Compledicional.codcompladicional));
 
                 worksheet.Range["A1"].Text = vm.Descricao.descricao_completa;
-                worksheet.Range["A4"].Text = vm.ChecklistPrduto.sigla;
+                worksheet.Range["A4"].Text = vm?.ChecklistPrduto?.sigla;
                 worksheet.Range["A5"].Number = DateTime.Now.Year;
                 worksheet.Range["A6"].Text = "CÓD. DET. COMPL.:";
-                worksheet.Range["A7"].Number = (double)vm.ChecklistPrduto.coddetalhescompl;
-                worksheet.Range["A8"].Text = vm.ChecklistPrduto.local_shoppings;
+                worksheet.Range["A7"].Number = Convert.ToDouble(vm?.ChecklistPrduto?.coddetalhescompl);
+                worksheet.Range["A8"].Text = vm?.ChecklistPrduto?.local_shoppings;
                 worksheet.Range["A9"].Text = $"( {vm.Pecas.Count()} VOLUMES )"; //itens.View.Records.Count()
                 worksheet.Range["A10"].Text = $"PEÇAS";
                 //worksheet.Range["C3"].Text = Modelo.planilha;
@@ -569,10 +569,10 @@ namespace Producao.Views.Construcao
                     index++;
                 }
                 
-                workbook.SaveAs($"Impressos/DESCRICOES_CONSTRUCAO_MODELO_{vm.ChecklistPrduto.coddetalhescompl}.xlsx");
+                workbook.SaveAs($"Impressos/DESCRICOES_CONSTRUCAO_MODELO_{vm?.ChecklistPrduto?.coddetalhescompl}.xlsx");
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo($"Impressos\\DESCRICOES_CONSTRUCAO_MODELO_{vm.ChecklistPrduto.coddetalhescompl}.xlsx")
+                Process.Start(new ProcessStartInfo($"Impressos\\DESCRICOES_CONSTRUCAO_MODELO_{vm?.ChecklistPrduto?.coddetalhescompl}.xlsx")
                 {
                     UseShellExecute = true
                 });

@@ -470,7 +470,7 @@
                         DisplayBinding="{Binding ok_revisao_alterada, Converter={StaticResource ConverterBoolen}}"
                         ValueBinding="{Binding ok_revisao_alterada, Converter={StaticResource ConverterBoolen}}" />
                 <syncfusion:GridTextColumn HeaderText="ID" MappingName="id" ColumnSizer="SizeToCells" AllowEditing="True"/>
-                <syncfusion:GridTextColumn HeaderText="ITEM" MappingName="item_memorial"/>
+                <syncfusion:GridTextColumn HeaderText="ITEM" MappingName="item_memorial" AllowEditing="True"/>
                 <syncfusion:GridTextColumn HeaderText="LOCAL DO SHOPPING" MappingName="local_shoppings" AllowEditing="True"/>
                 <syncfusion:GridTextColumn HeaderText="PLANILHA" MappingName="planilha">
                     <syncfusion:GridTextColumn.CellStyle>

@@ -759,6 +759,7 @@ namespace Producao.Views.CheckList
                     ordem = dado?.id,
                     carga = dado?.carga,
                     local_shoppings = dado?.local_shoppings,
+                    item_memorial = dado?.item_memorial,
                     alterado_por = Environment.UserName,
                     alterado_em = DateTime.Now
                 };
