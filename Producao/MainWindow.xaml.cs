@@ -503,6 +503,11 @@ namespace Producao
             adicionarFilho(new SolicitacaoOrdemServicoProduto(), "SOLICITAR ORDEM DE SERVIÇO DE PRODUTO", "SOLICITAR_ORDEM_SERVICO_PRODUTO");
         }
 
+        private void OnSolicitarOSProdutoUnificadoClick(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new SolicitacaoOrdemServicoProdutoAgrupado(), "SOLICITAR ORDEM DE SERVIÇO DE PRODUTO UNIFICADO", "SOLICITAR_ORDEM_SERVICO_PRODUTO_UNIFICADO");
+        }
+
         private void OnEmitirOSProdutoClick(object sender, RoutedEventArgs e)
         {
             /*
@@ -1610,5 +1615,6 @@ namespace Producao
         {
             adicionarFilho(new ControladoEtiquetaRetornoManual(), "CONTOLADO RETORNO MANUAL", "CONTOLADO_RETORNO_MANUAL");
         }
+
     }
 }

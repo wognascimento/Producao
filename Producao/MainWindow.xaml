@@ -52,6 +52,7 @@
                 </syncfusion:MenuItemAdv>
                 <syncfusion:MenuItemAdv Header="Produção">
                     <syncfusion:MenuItemAdv Header="Solicitar" Click="OnSolicitarOSProdutoClick"/>
+                    <syncfusion:MenuItemAdv Header="Solicitar Unificado" Click="OnSolicitarOSProdutoUnificadoClick"/>
                     <syncfusion:MenuItemAdv Header="Alterar Solicitação" Click="OnAlterarSolicitacaoOSProdutoClick"/>
                     <syncfusion:MenuItemAdv Header="Emitir" Click="OnEmitirOSProdutoClick"/>
                     <syncfusion:MenuItemAdv Header="Baixa" Click="OnBaixaProdutoClick"/>

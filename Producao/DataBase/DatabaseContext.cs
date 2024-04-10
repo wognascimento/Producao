@@ -150,6 +150,15 @@ namespace Producao
 
             modelBuilder.Entity<ControladoShoppingRetornoModel>()
                 .HasKey(a => new { a.barcode, a.inserido_em });
+
+            // Configuração do relacionamento um para muitos
+            modelBuilder.Entity<ObsOsModel>()
+                .HasOne(o => o.ProdutoOs)         // Cada observação pertence a um produto
+                .WithMany(p => p.Observacoes)     // Um produto pode ter várias observações
+                .HasForeignKey(o => o.num_os_produto)  // Chave estrangeira
+                .OnDelete(DeleteBehavior.Cascade); // Define a ação de exclusão em cascata se um produto for excluído
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

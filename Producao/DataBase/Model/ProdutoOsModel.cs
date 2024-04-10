@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -20,5 +21,9 @@ namespace Producao
         public long? id_modelo {set; get;}
         public string? solicitado_por {set; get;}
         public long? codigo_saida { set; get; }
+        public string? cliente { set; get; }
+
+        // Propriedade de navegação para as observações associadas a este produto
+        public ICollection<ObsOsModel>? Observacoes { get; set; } = [];
     }
 }

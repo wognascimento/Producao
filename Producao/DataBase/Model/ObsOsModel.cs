@@ -9,6 +9,7 @@ namespace Producao
     {
         [Key]
         public long? cod_obs { get; set; }
+        [ForeignKey("ProdutoOs")]
         public long? num_os_produto { get; set; }
         public long? cod_compl_adicional { get; set; }
         public long? num_caminho { get; set; }
@@ -24,5 +25,10 @@ namespace Producao
         public bool? cancelar { get; set; }
         public string? cancelado_por { get; set; }
         public DateTime? cancelado_em { get; set; }
+
+        // Chave estrangeira para referenciar o produto associado a esta observação
+        //[ForeignKey("ProdutoOs")]
+        //public long? num_os_produto { get; set; }
+        public ProdutoOsModel? ProdutoOs { get; set; }
     }
 }
