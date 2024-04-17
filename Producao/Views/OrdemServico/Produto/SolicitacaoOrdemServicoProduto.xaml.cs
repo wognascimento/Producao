@@ -27,8 +27,6 @@ namespace Producao.Views.OrdemServico.Produto
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            //ObsOSs
-
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
@@ -391,7 +389,7 @@ namespace Producao.Views.OrdemServico.Produto
             set { _distribuirOS = value; RaisePropertyChanged("DistribuirOS"); }
         }
 
-        private List<string> _ipoOS = new List<string> { "PEÇA NOVA", "RECUPERAÇÃO", "RETRABALHO", "KIT"};
+        private List<string> _ipoOS = new List<string> { "PEÇA NOVA", "RECUPERAÇÃO", "RETRABALHO", "KIT", "PREPARAÇÃO" };
         public List<string> TpoOS
         {
             get { return _ipoOS; }

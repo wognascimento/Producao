@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Producao.Views.CentralModelos;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -86,8 +87,12 @@ namespace Producao.Views.Controlado
                                 inserido_em = DateTime.Now, 
                                 num_requisicao = vm.Requisicao.num_requisicao
                             }));
-                        
                     }
+
+                    long requisicao = long.Parse(txtRequisicao.Text);
+                    vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(requisicao));
+
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (Exception ex)
                 {
@@ -110,6 +115,7 @@ namespace Producao.Views.Controlado
                 }
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show("Baixa efetuada com sucesso!!!", "Baixa controlado.");
             }
             catch (Exception ex)
             {
@@ -228,6 +234,7 @@ namespace Producao.Views.Controlado
             {
                 using DatabaseContext db = new();
                 await db.ControladoShoppings.AddAsync(controlado);
+                await db.SaveChangesAsync();
             }
             catch (Exception)
             {
@@ -254,6 +261,7 @@ namespace Producao.Views.Controlado
                 {
                     var det = new DetalheRequisicaoModel
                     {
+                        num_requisicao = model.num_requisicao,
                         codcompladicional = model.codcompladicional,
                         quantidade = model.quantidade,
                         data = DateTime.Now,

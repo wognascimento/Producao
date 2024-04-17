@@ -895,11 +895,6 @@ namespace Producao
                         comple.ordem = compChkList.ordem;
                         db.Entry(comple).Property(p => p.ordem).IsModified = true;
                     }
-                    if (compChkList.carga != "")
-                    {
-                        comple.carga = compChkList.carga;
-                        db.Entry(comple).Property(p => p.carga).IsModified = true;
-                    }
                     if (compChkList.local_shoppings != "")
                     {
                         comple.local_shoppings = compChkList.local_shoppings;
@@ -919,6 +914,28 @@ namespace Producao
                     {
                         comple.alterado_em = compChkList.alterado_em;
                         db.Entry(comple).Property(p => p.alterado_em).IsModified = true;
+                    }
+                    await db.SaveChangesAsync();
+                }
+            }
+            catch (NpgsqlException)
+            {
+                throw;
+            }
+        }
+
+        public async Task CargaCaminhaoListAsync(ComplementoCheckListModel compChkList)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                var comple = await db.ComplementoCheckLists.FirstOrDefaultAsync(p => p.codcompl == compChkList.codcompl);
+                if (compChkList != null)
+                {
+                    if (compChkList.carga != "")
+                    {
+                        comple.carga = compChkList.carga;
+                        db.Entry(comple).Property(p => p.carga).IsModified = true;
                     }
                     await db.SaveChangesAsync();
                 }

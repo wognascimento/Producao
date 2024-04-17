@@ -1,9 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Syncfusion.UI.Xaml.Grid;
+using Syncfusion.UI.Xaml.Utility;
+using Syncfusion.XlsIO;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -125,6 +128,66 @@ namespace Producao.Views.OrdemServico.Servicos
             catch (Exception)
             {
                 throw;
+            }
+        }
+    }
+
+    public static class ContextMenuCommandsEmissaoServicoEmitidas
+    {
+        static BaseCommand? cancelarOS;
+        public static BaseCommand CancelarOS
+        {
+            get
+            {
+                cancelarOS ??= new BaseCommand(OnCancelarOSClicked);
+                return cancelarOS;
+            }
+        }
+
+        private static async void OnCancelarOSClicked(object obj)
+        {
+            var record = ((GridRecordContextMenuInfo)obj).Record as TblServicoModel;
+            var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
+            var OS = grid.SelectedItem as TblServicoModel;
+            EmissaoServicoEmitidasViewModel vm = (EmissaoServicoEmitidasViewModel)grid.DataContext;
+
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                using ExcelEngine excelEngine = new ExcelEngine();
+                IApplication application = excelEngine.Excel;
+                application.DefaultVersion = ExcelVersion.Xlsx;
+                IWorkbook workbook = application.Workbooks.Open("Modelos/ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                IWorksheet worksheet = workbook.Worksheets[0];
+                worksheet.Range["A1"].Text = $"ORDEM DE SERVIÇO {OS.data_emissao.Value.Year} ";
+                worksheet.Range["F5"].Text = OS.num_os.ToString();
+                worksheet.Range["C7"].Text = OS.data_emissao.Value.ToString();
+                worksheet.Range["C9"].Text = OS.tipo;
+                worksheet.Range["C11"].Text = OS.descricao_setor;
+                worksheet.Range["C13"].Text = OS.planilha;
+                worksheet.Range["C15"].Text = OS.descricao_servico;
+                worksheet.Range["C17"].Text = OS.quantidade.ToString();
+                worksheet.Range["C19"].Text = OS.cliente;
+                worksheet.Range["C21"].Text = OS.orientacao;
+                worksheet.Range["C26"].Text = OS.data_conclusao.Value.ToString();
+                worksheet.Range["C28"].Text = OS.emitido_por;
+
+                workbook.SaveAs($"Impressos/ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                workbook.Close();
+
+                Process.Start(new ProcessStartInfo($"Impressos\\ORDEM_SERVICO_SERVICO_MODELO.xlsx")
+                {
+                    UseShellExecute = true
+                });
+
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
             }
         }
     }

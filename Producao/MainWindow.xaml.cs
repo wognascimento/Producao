@@ -10,6 +10,7 @@ using Producao.Views.kit;
 using Producao.Views.kit.desmontagem;
 using Producao.Views.kit.manutencao;
 using Producao.Views.kit.solucao;
+using Producao.Views.OrdemServico.Desbaiamento;
 using Producao.Views.OrdemServico.Produto;
 using Producao.Views.OrdemServico.Requisicao;
 using Producao.Views.OrdemServico.Servicos;
@@ -758,7 +759,7 @@ namespace Producao
             this._mdi.CanMDIMaximize = true;
             this._mdi.Items.Add(view);
             */
-            //adicionarFilho(new ViewComplementoCheckListNatal(), "COMPLETAR CHECKLIST NATAL", "COMPLETAR_CHECKLIST_NATAL");
+            adicionarFilho(new BaixaOrdemServico(), "BAIXA ORDEM DE SERVIÇO", "BAIXA_ORDEM_SERVICO");
         }
 
         private void OnBaixaProdutoClick(object sender, RoutedEventArgs e)
@@ -1616,5 +1617,44 @@ namespace Producao
             adicionarFilho(new ControladoEtiquetaRetornoManual(), "CONTOLADO RETORNO MANUAL", "CONTOLADO_RETORNO_MANUAL");
         }
 
+        private void OnEmitirOsDesbaiamento(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new EmitirOSDesbaiamento(), "EMITIR ORDEM DE SERVIÇO DE DESBAIAMENTO", "EMITIR_ORDEM_SERVICO_DESBAIAMENTO");
+        }
+
+        private async void OnConsultaGeralClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                using DatabaseContext db = new();
+                var data = await db.qryGeralRequisicaos.ToListAsync();
+
+                using ExcelEngine excelEngine = new ExcelEngine();
+                IApplication application = excelEngine.Excel;
+
+                application.DefaultVersion = ExcelVersion.Xlsx;
+
+                //Create a workbook
+                IWorkbook workbook = application.Workbooks.Create(1);
+                IWorksheet worksheet = workbook.Worksheets[0];
+                //worksheet.IsGridLinesVisible = false;
+                worksheet.ImportData(data, 1, 1, true);
+
+                workbook.SaveAs("Impressos/CONTROLADO_GERAL.xlsx");
+                Process.Start(new ProcessStartInfo("Impressos\\CONTROLADO_GERAL.xlsx")
+                {
+                    UseShellExecute = true
+                });
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
+            }
+        }
     }
 }

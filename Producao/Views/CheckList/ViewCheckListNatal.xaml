@@ -451,7 +451,7 @@
             ItemsSource="{Binding CheckListGerais}"
             SelectedItem="{Binding CheckListGeral, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             SelectionChanged="OnSelectionChanged" 
-            RowValidating="dgCheckListGeral_RowValidating">
+            RowValidating="dgCheckListGeral_RowValidating" CurrentCellValueChanged="dgCheckListGeral_CurrentCellValueChanged">
             <syncfusion:SfDataGrid.Columns>
 
                 <syncfusion:GridNumericColumn 

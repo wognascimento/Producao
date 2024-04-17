@@ -175,7 +175,10 @@
             SelectedItem="{Binding ProdutoOs}"
             RowValidated="dgClientes_RowValidated" 
             RowValidating="dgClientes_RowValidating" 
-            AddNewRowInitiating="dgClientes_AddNewRowInitiating">
+            AddNewRowInitiating="dgClientes_AddNewRowInitiating"
+            SelectionUnit="Row"
+            SelectionMode="Extended"
+            GridCopyOption="CopyData,IncludeHeaders" >
 
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:GridMultiColumnDropDownList
@@ -210,7 +213,12 @@
                             RowValidating="FirstLevelNestedGrid_RowValidating" 
                             AddNewRowInitiating="FirstLevelNestedGrid_AddNewRowInitiating" 
                             AddNewRowPosition="Bottom" 
-                            CurrentCellDropDownSelectionChanged="FirstLevelNestedGrid_CurrentCellDropDownSelectionChanged">
+                            CurrentCellDropDownSelectionChanged="FirstLevelNestedGrid_CurrentCellDropDownSelectionChanged" 
+                            ShowRowHeader="True"
+                            SelectionUnit="Row"
+                            SelectionMode="Single"
+                            GridCopyOption="CopyData,IncludeHeaders" 
+                            AllowDeleting="True" RecordDeleting="FirstLevelNestedGrid_RecordDeleting">
                             <syncfusion:SfDataGrid.Columns>
                                 
                                 <syncfusion:GridNumericColumn 
@@ -249,7 +257,7 @@
         </syncfusion:SfDataGrid>
 
 
-        <!--
+<!--
         <syncfusion:SfDataGrid
             x:Name="caminhos" 
             Grid.Row="10"

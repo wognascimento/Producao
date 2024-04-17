@@ -748,8 +748,43 @@ namespace Producao.Views.CheckList
             try
             {
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
+                var dado = e.RowData as QryCheckListGeralModel;
+                var grid = sender as SfDataGrid;
+                if (grid.CurrentColumn.MappingName == "carga")
+                {
+                    var confirm = MessageBox.Show("Deseja acresentar para os demais itens?", "Aletrta itens", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
+                    if (confirm == MessageBoxResult.Yes)
+                    {
+                        var filteredResult = vm.CheckListGerais.Where(x => x.item_memorial == dado.item_memorial).ToList();
+                        foreach (var item in filteredResult)
+                        {
+                            ComplementoCheckListModel Comple = new()
+                            {
+                                codcompl = item?.codcompl,
+                                carga = dado?.carga,
+                            };
+                            item.carga = Comple.carga;
+                            int i = vm.CheckListGerais.IndexOf(item);
+                            vm.CheckListGerais[i] = item;
+                            await vm.CargaCaminhaoListAsync(Comple);
+                            grid.View.Refresh();
+                        }
+                    }
+                    else
+                    {
+                        ComplementoCheckListModel Comple = new()
+                        {
+                            codcompl = dado?.codcompl,
+                            carga = dado?.carga,
+                        };
+                        await vm.CargaCaminhaoListAsync(Comple);
+                    }
+                    return;
+                }
+
+
+                
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                var dado = e.RowData as QryCheckListGeralModel; //e.RowData = {Producao.QryCheckListGeralModel}
                 ComplementoCheckListModel CompleChkList = new()
                 {
                     codcompl = dado?.codcompl,
@@ -757,7 +792,7 @@ namespace Producao.Views.CheckList
                     orient_montagem = dado?.orient_montagem,
                     orient_desmont = dado?.orient_desmont,
                     ordem = dado?.id,
-                    carga = dado?.carga,
+                    //carga = dado?.carga,
                     local_shoppings = dado?.local_shoppings,
                     item_memorial = dado?.item_memorial,
                     alterado_por = Environment.UserName,
@@ -771,6 +806,61 @@ namespace Producao.Views.CheckList
                 MessageBox.Show(ex?.InnerException?.Message, "Erro ao inserir", MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+        }
+
+        private async void dgCheckListGeral_CurrentCellValueChanged(object sender, CurrentCellValueChangedEventArgs e)
+        {
+            /*
+            QryCheckListGeralModel? dado = e.Record as QryCheckListGeralModel; 
+            CheckListViewModel vm = (CheckListViewModel)DataContext;
+
+            SfDataGrid? grid = sender as SfDataGrid;
+            int columnindex = grid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
+            var column = grid.Columns[columnindex];
+            var rowIndex = grid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
+
+            try
+            {
+                if (column.GetType() == typeof(GridTextColumn) && column.MappingName == "carga")
+                {
+                    var confirm =  MessageBox.Show("Deseja acresentar para os demais itens?", "Aletrta itens", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
+                    if (confirm == MessageBoxResult.Yes)
+                    {
+                        //var filteredResult = grid.View.Records.Select(recordentry => recordentry.Data);
+                        var filteredResult = vm.CheckListGerais.Where(x => x.item_memorial == dado.item_memorial);
+                        foreach (var item in filteredResult)
+                        {
+                            ComplementoCheckListModel CompleChkList = new()
+                            {
+                                codcompl = dado?.codcompl,
+                                carga = dado?.carga,
+                            };
+                            await vm.CargaCaminhaoListAsync(CompleChkList);
+                        }
+
+                        //CargaCaminhaoListAsync()
+                    }
+                    else
+                    {
+                        
+                        ComplementoCheckListModel CompleChkList = new()
+                        {
+                            codcompl = dado?.codcompl,
+                            carga = dado?.carga,
+                        };
+                        await vm.CargaCaminhaoListAsync(CompleChkList);
+                        
+                    }
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            */
         }
     }
 

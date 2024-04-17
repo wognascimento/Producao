@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Producao.Views.OrdemServico.Produto.Helper;
 using Producao.Views.PopUp;
 using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Grid;
@@ -18,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Telerik.Windows.Controls.Scheduling;
 
 namespace Producao.Views.OrdemServico.Produto
 {
@@ -29,6 +31,7 @@ namespace Producao.Views.OrdemServico.Produto
         public SolicitacaoOrdemServicoProdutoAgrupado()
         {
             InitializeComponent();
+            //this.FirstLevelNestedGrid.GridCopyPaste = new CustomPasteCaminhoOrdemServicoProducao(dgClientes);
             DataContext = new SolicitacaoOrdemServicoProdutoAgrupadoViewModel();
         }
 
@@ -247,12 +250,34 @@ namespace Producao.Views.OrdemServico.Produto
         private async void dgClientes_RowValidated(object sender, RowValidatedEventArgs e)
         {
             var sfdatagrid = sender as SfDataGrid;
+            ProdutoOsModel? primeiroCliente;
             SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ProdutoOsModel data = (ProdutoOsModel)e.RowData;
-                vm.ProdutoOs = await Task.Run(() => vm.SaveProdutoOsAsync(data));
+                var ProdutoOs = await Task.Run(() => vm.SaveProdutoOsAsync(data));
+
+                primeiroCliente = sfdatagrid.View.Records[0].Data as ProdutoOsModel;
+                foreach (var item in primeiroCliente.Observacoes)
+                {
+                    ObsOsModel obsOs = new()
+                    {
+                        num_caminho = item.num_caminho,
+                        num_os_produto = ProdutoOs.num_os_produto,
+                        cliente = ProdutoOs.cliente,
+                        cod_compl_adicional = ProdutoOs.cod_compl_adicional,
+                        distribuir_os = "No setor",
+                        solicitado_por = Environment.UserName,
+                        solicitado_data = DateTime.Now,
+                        cancelar = false,
+                        codigo_setor = item.codigo_setor,
+                        setor_caminho = item.setor_caminho,
+                        orientacao_caminho = item.orientacao_caminho
+                    };
+                    obsOs = await Task.Run(() => vm.SaveObsOsAsync(obsOs));
+                    ((ProdutoOsModel)e.RowData).Observacoes.Add(obsOs);
+                }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -268,6 +293,8 @@ namespace Producao.Views.OrdemServico.Produto
         private void dgClientes_RowValidating(object sender, RowValidatingEventArgs e)
         {
             ProdutoOsModel rowData = (ProdutoOsModel)e.RowData;
+            var sfdatagrid = sender as SfDataGrid;
+            ProdutoOsModel? primeiroCliente;
 
             if (rowData.cliente == "")
             {
@@ -279,6 +306,21 @@ namespace Producao.Views.OrdemServico.Produto
                 e.IsValid = false;
                 e.ErrorMessages.Add("quantidade", "Informe a quantidade da O.S.");
             }
+            else if (sfdatagrid.View.Records.Count > 0)
+            {
+                primeiroCliente = sfdatagrid.View.Records[0].Data as ProdutoOsModel;
+                if (primeiroCliente.Observacoes.Count == 0)
+                {
+                    //MessageBox.Show("Preencha todos os caminhos no primeiro cliente,\n para que seja copiado para os demais.", "Primeiro caminho em branco");
+                    //var toRemove = vm.ProdutoOSs.Where(x => x.num_os_produto == null).ToList();
+                    //foreach (var item in toRemove)
+                    //vm.ProdutoOSs.Remove(item);
+                    //return;
+                    e.IsValid = false;
+                    e.ErrorMessages.Add("cliente", "Preencha todos os caminhos no primeiro cliente");
+                    e.ErrorMessages.Add("quantidade", "Preencha todos os caminhos no primeiro cliente");
+                }
+            }
 
         }
 
@@ -288,6 +330,7 @@ namespace Producao.Views.OrdemServico.Produto
             SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
             try
             {
+                
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ObsOsModel data = (ObsOsModel)e.RowData;
                 data.setor_caminho = vm.Setores.Where(x => x.codigo_setor == data.codigo_setor).Select(setor => setor.setor).FirstOrDefault();
@@ -361,6 +404,23 @@ namespace Producao.Views.OrdemServico.Produto
             }
             */
         }
+
+        private async void FirstLevelNestedGrid_RecordDeleting(object sender, RecordDeletingEventArgs args)
+        {
+            var item = args.Items[0] as ObsOsModel; //[0] = {Producao.ObsOsModel}
+            SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                await Task.Run(() => vm.DeleteObsOsAsync(item));
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 
     class SolicitacaoOrdemServicoProdutoAgrupadoViewModel : INotifyPropertyChanged
@@ -404,7 +464,7 @@ namespace Producao.Views.OrdemServico.Produto
             set { _distribuirOS = value; RaisePropertyChanged("DistribuirOS"); }
         }
 
-        private List<string> _ipoOS = new List<string> { "PEÇA NOVA", "RECUPERAÇÃO", "RETRABALHO", "KIT" };
+        private List<string> _ipoOS = new List<string> { "PEÇA NOVA", "RECUPERAÇÃO", "RETRABALHO", "KIT", "PREPARAÇÃO" };
         public List<string> TpoOS
         {
             get { return _ipoOS; }
@@ -643,6 +703,20 @@ namespace Producao.Views.OrdemServico.Produto
                 await db.ObsOs.SingleMergeAsync(obsOs);
                 await db.SaveChangesAsync();
                 return obsOs;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task DeleteObsOsAsync(ObsOsModel obsOs)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                await db.ObsOs.SingleDeleteAsync(obsOs);
+                await db.SaveChangesAsync();
             }
             catch (Exception)
             {

@@ -1,0 +1,58 @@
+﻿<UserControl x:Class="Producao.Views.OrdemServico.Desbaiamento.EmitirOSDesbaiamento"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.OrdemServico.Desbaiamento"
+             xmlns:app="clr-namespace:Producao" xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+
+    <UserControl.Resources>
+        <app:ConverterNumber x:Key="ConverterNumber"/>
+        <app:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+
+
+    <Grid>
+
+        <syncfusion:SfDataGrid
+            ShowRowHeader="True"
+            AutoGenerateColumns="False"
+            AllowFiltering="True"
+            ColumnSizer="SizeToHeader"
+            ItemsSource="{Binding Itens}"
+            AllowResizingHiddenColumns="True" 
+            AllowResizingColumns="True" 
+            SelectionUnit="Row"
+            SelectionMode="Extended"
+            GridCopyOption="CopyData,IncludeHeaders" 
+            RowValidated="SfDataGrid_RowValidated" 
+            AddNewRowPosition="Bottom" >
+<!--
+            <syncfusion:SfDataGrid.RecordContextMenu>
+                <ContextMenu Style="{x:Null}">
+
+                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsBaixaOrdemServicoProduto.CancelarOS}}"
+                              CommandParameter="{Binding}"
+                              Header="Imprimir"/>
+
+                </ContextMenu>
+            </syncfusion:SfDataGrid.RecordContextMenu>
+-->
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridTextColumn  MappingName="coddetalhescompl" DisplayBinding="{Binding coddetalhescompl, Converter={StaticResource ConverterNumber}}" HeaderText="COD.DET"/>
+                <syncfusion:GridTextColumn  MappingName="quantidade" DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}" HeaderText="QTDE"/>
+                <syncfusion:GridTextColumn  MappingName="codvol" ColumnSizer="SizeToHeader" AllowEditing="True" HeaderText="VOL(s)"/>
+                <syncfusion:GridDateTimeColumn  MappingName="data" ColumnSizer="SizeToHeader" AllowEditing="True" HeaderText="DATA"/>
+                <syncfusion:GridTextColumn  MappingName="resp" HeaderText="RESP" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridTextColumn  MappingName="solicitante" HeaderText="SOLICITANTE" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridTextColumn  MappingName="setor" HeaderText="SETOR" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridTextColumn  MappingName="obs" HeaderText="OBS" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridTextColumn  MappingName="n_os_desbaiamento" HeaderText="Nº O.S" DisplayBinding="{Binding n_os_desbaiamento, Converter={StaticResource ConverterNumber}}"/>
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+
+    </Grid>
+
+</UserControl>

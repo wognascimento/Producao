@@ -27,7 +27,20 @@
             ColumnSizer="SizeToHeader"
             ShowRowHeader="True" 
             ItemsSource="{Binding OrdemServicos}"
-            SelectedItem="{Binding OrdemServico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CurrentCellValueChanged="itens_CurrentCellValueChanged">
+            SelectedItem="{Binding OrdemServico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+            CurrentCellValueChanged="itens_CurrentCellValueChanged">
+
+
+            <syncfusion:SfDataGrid.RecordContextMenu>
+                <ContextMenu Style="{x:Null}">
+
+                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsEmissaoServicoEmitidas.CancelarOS}}"
+                          CommandParameter="{Binding}"
+                          Header="Imprimir"/>
+
+                </ContextMenu>
+            </syncfusion:SfDataGrid.RecordContextMenu>
+
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:GridNumericColumn
                     MappingName="num_os"
