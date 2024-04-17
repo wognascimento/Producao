@@ -1656,5 +1656,72 @@ namespace Producao
                 MessageBox.Show(ex.Message);
             }
         }
+
+        private async void OnConsultaReceitaRequisicao(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                using DatabaseContext db = new();
+                //var data = await db.qryGeralRequisicaos.ToListAsync();
+
+                var resultado = await db.RequisicaoReceitas
+                    .Join(
+                        db.Descricoes,
+                        a => a.codcompladicional_produto,
+                        b => b.codcompladicional,
+                        (a, b) => new { ModeloA = a, ModeloB = b })
+                    .Join(
+                        db.Descricoes,
+                        ab => ab.ModeloA.codcompladicional_produto,
+                        c => c.codcompladicional,
+                        (ab, c) => new { ab.ModeloA, ab.ModeloB, ModeloC = c })
+                    .Select(joinResult => new
+                    {
+                        joinResult.ModeloA.codcompladicional_produto,
+
+                        joinResult.ModeloB.planilha,
+                        joinResult.ModeloB.descricao_completa,
+                        joinResult.ModeloB.unidade,
+
+                        joinResult.ModeloA.codcompladicional_receita,
+                        planilha_receita = joinResult.ModeloC.planilha,
+                        descricao_completa_receita = joinResult.ModeloC.descricao_completa,
+                        unidade_receita = joinResult.ModeloC.unidade,
+
+                        joinResult.ModeloA.quantidade,
+                        joinResult.ModeloA.inserido_por,
+                        joinResult.ModeloA.inserido_em
+                    })
+                    //.Where(t => t.planilha == planilha)
+                    .ToListAsync();
+
+
+                using ExcelEngine excelEngine = new ExcelEngine();
+                IApplication application = excelEngine.Excel;
+
+                application.DefaultVersion = ExcelVersion.Xlsx;
+
+                //Create a workbook
+                IWorkbook workbook = application.Workbooks.Create(1);
+                IWorksheet worksheet = workbook.Worksheets[0];
+                //worksheet.IsGridLinesVisible = false;
+                worksheet.ImportData(resultado, 1, 1, true);
+
+                workbook.SaveAs("Impressos/CONSULTA_RECEITA_GERAL.xlsx");
+                Process.Start(new ProcessStartInfo("Impressos\\CONSULTA_RECEITA_GERAL.xlsx")
+                {
+                    UseShellExecute = true
+                });
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
+            }
+        }
     }
 }

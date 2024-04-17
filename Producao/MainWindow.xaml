@@ -68,7 +68,11 @@
                 <syncfusion:MenuItemAdv Header="Desbaiamento" Click="OnEmitirOsDesbaiamento"/>
                 <syncfusion:MenuItemAdv Header="Transformação"/>
                 <syncfusion:MenuItemAdv Header="Requisição">
-                    <syncfusion:MenuItemAdv Header="Receita" Click="OnCreateReceitaRequisicao"/>
+                    <syncfusion:MenuItemAdv Header="Receita">
+                        <syncfusion:MenuItemAdv Header="Criar" Click="OnCreateReceitaRequisicao" />
+                        <syncfusion:MenuItemAdv Header="Consulta" Click="OnConsultaReceitaRequisicao" />
+
+                    </syncfusion:MenuItemAdv>
                     <syncfusion:MenuItemAdv Header="Emitir" Click="OnRequisicaClick"/>
                     <syncfusion:MenuItemAdv Header="Alterar" Click="OnAlterarRequisicoes"/>
                     <syncfusion:MenuItemAdv Header="Consultas">
