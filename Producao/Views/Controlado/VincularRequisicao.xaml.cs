@@ -123,6 +123,27 @@ namespace Producao.Views.Controlado
                 MessageBox.Show(ex.Message);
             }
         }
+
+        private void SfDataGrid_RecordDeleted(object sender, Syncfusion.UI.Xaml.Grid.RecordDeletedEventArgs e)
+        {
+
+        }
+
+        private async void SfDataGrid_RecordDeleting(object sender, Syncfusion.UI.Xaml.Grid.RecordDeletingEventArgs e)
+        {
+            VincularRequisicaoViewModel vm = (VincularRequisicaoViewModel)DataContext;
+            var confirma = MessageBox.Show("Deseja Adicionar o produto na lista?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+            var item = e.Items[0] as TransformaRequisicaoModel;
+            if (confirma == MessageBoxResult.Yes)
+            {
+                await Task.Run(() => vm.DeleteControladoAsync((long)item.num_requisicao, item.barcode));
+                   
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+        }
     }
 
     public class VincularRequisicaoViewModel : INotifyPropertyChanged
@@ -234,6 +255,23 @@ namespace Producao.Views.Controlado
             {
                 using DatabaseContext db = new();
                 await db.ControladoShoppings.AddAsync(controlado);
+                await db.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task DeleteControladoAsync(long num_requisicao, string barcode)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+
+                var controlado = await db.ControladoShoppings.Where(x => x.num_requisicao == num_requisicao && x.barcode == barcode).FirstOrDefaultAsync();
+
+                await db.ControladoShoppings.SingleDeleteAsync(controlado);
                 await db.SaveChangesAsync();
             }
             catch (Exception)

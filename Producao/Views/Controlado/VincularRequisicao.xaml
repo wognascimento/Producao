@@ -94,10 +94,11 @@
             AutoGenerateColumns="False" 
             AllowResizingColumns="True"
             AllowDraggingColumns="True"
+            AllowDeleting="True"
             ColumnSizer="AutoWithLastColumnFill" AllowFiltering="True"
             ShowRowHeader="True" 
             ItemsSource="{Binding Produtos}"
-            SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" RecordDeleted="SfDataGrid_RecordDeleted" RecordDeleting="SfDataGrid_RecordDeleting">
 
             <Syncfusion:SfDataGrid.Columns>
                 

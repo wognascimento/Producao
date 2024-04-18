@@ -88,8 +88,10 @@ namespace Producao.Views.CheckList
                     {
                         vm.Link = new FechaLinkModel { links = "CLIQUE PARA ADICIONAR LINK" };
                     }
-
-                    //vm.Link = vm.Links.FirstOrDefault();
+                    else
+                    {
+                        vm.Link = vm.Links.FirstOrDefault();
+                    }
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
