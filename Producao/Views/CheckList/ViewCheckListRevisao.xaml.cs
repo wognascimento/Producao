@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Telerik.Windows.Persistence.Core;
 
 namespace Producao.Views
 {
@@ -27,7 +28,7 @@ namespace Producao.Views
         {
             InitializeComponent();
             this.DataContext = new ViewModel();
-            itens.Columns["ok"].FilterPredicates.Add(new FilterPredicate() { FilterType = FilterType.Equals, FilterValue = "0    " });
+            //itens.Columns["ok"].FilterPredicates.Add(new FilterPredicate() { FilterType = FilterType.Equals, FilterValue = "0    " });
         }
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -151,6 +152,24 @@ namespace Producao.Views
                 MessageBox.Show(ex.Message);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+        }
+
+        private void itens_PasteGridCellContent(object sender, GridCopyPasteCellEventArgs e)
+        {
+            var sfdatagrid = sender as SfDataGrid;
+            if (e.Column.MappingName == "resp_revisao")
+            {
+                sfdatagrid.SelectionController.CurrentCellManager.BeginEdit();
+                (e.RowData as ControleMemorialModel).resp_revisao = (string?)e.ClipBoardValue;
+                sfdatagrid.SelectionController.CurrentCellManager.EndEdit();
+            }
+            else if(e.Column.MappingName == "prazo_revisao")
+            {
+                sfdatagrid.SelectionController.CurrentCellManager.BeginEdit();
+                (e.RowData as ControleMemorialModel).prazo_revisao = Convert.ToDateTime(e.ClipBoardValue); 
+                sfdatagrid.SelectionController.CurrentCellManager.EndEdit();
+            }
+            sfdatagrid.View.Refresh();
         }
     }
 

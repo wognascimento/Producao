@@ -862,6 +862,20 @@ namespace Producao.Views.CheckList
             }
             */
         }
+
+        private void dgCheckListGeral_PasteGridCellContent(object sender, GridCopyPasteCellEventArgs e)
+        {
+            var sfdatagrid = sender as SfDataGrid;
+            if (e.Column.MappingName == "local_shoppings")
+            {
+                sfdatagrid.SelectionController.CurrentCellManager.BeginEdit();
+                (e.RowData as QryCheckListGeralModel).local_shoppings = (string?)e.ClipBoardValue;
+                sfdatagrid.SelectionController.CurrentCellManager.EndEdit();
+
+
+            }
+            sfdatagrid.View.Refresh();
+        }
     }
 
     public class NameButtonConverter : IValueConverter

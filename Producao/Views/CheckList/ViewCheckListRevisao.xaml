@@ -28,12 +28,13 @@
             AutoGenerateColumns="False"
             FrozenColumnCount="9" 
             AllowResizingColumns="True" 
-            SelectionUnit="Row"
+            SelectionUnit="Any"
             SelectionMode="Extended"
             GridCopyOption="CopyData,IncludeHeaders,IncludeFormat"
             CurrentCellEndEdit="itens_CurrentCellEndEdit" 
             CurrentCellValueChanged="itens_CurrentCellValueChanged" 
-            RowValidating="itens_RowValidating">
+            RowValidating="itens_RowValidating"
+            ShowRowHeader="True" PasteGridCellContent="itens_PasteGridCellContent">
 
             <Syncfusion:SfDataGrid.Columns>
 
@@ -55,6 +56,10 @@
                     HeaderText="Tema" 
                     MappingName="tema" 
                     ColumnSizer="SizeToHeader"/>
+                <Syncfusion:GridTextColumn 
+                    HeaderText="Bloco" 
+                    MappingName="bloco" 
+                    ColumnSizer="SizeToCells"/>
                 <Syncfusion:GridTextColumn 
                     HeaderText="Item" 
                     MappingName="item" 
