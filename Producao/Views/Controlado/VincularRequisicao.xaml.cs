@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Producao.DataBase.Model;
 using Producao.Views.CentralModelos;
 using System;
 using System.Collections.ObjectModel;
@@ -175,8 +176,8 @@ namespace Producao.Views.Controlado
             set { _requisicao = value; RaisePropertyChanged("Requisicao"); }
         }
 
-        private EtiquetaZebraModel _etiqueta;
-        public EtiquetaZebraModel Etiqueta
+        private ControladoZebraModel _etiqueta;
+        public ControladoZebraModel Etiqueta
         {
             get { return _etiqueta; }
             set { _etiqueta = value; RaisePropertyChanged("Etiqueta"); }
@@ -223,12 +224,12 @@ namespace Producao.Views.Controlado
             }
         }
 
-        public async Task<EtiquetaZebraModel> GetEtiquetaAsync(long codigo)
+        public async Task<ControladoZebraModel> GetEtiquetaAsync(long codigo)
         {
             try
             {
                 using DatabaseContext db = new();
-                return await db.EtiquetasZebra.FindAsync(codigo);
+                return await db.ControladosZebra.FindAsync(codigo);
             }
             catch (Exception)
             {
