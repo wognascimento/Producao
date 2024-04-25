@@ -86,6 +86,8 @@ namespace Producao
         public DbSet<OsExpModel> OsExps { get; set; }
         public DbSet<ProgramacaoProducaoModel> ProgramacaoProducoes { get; set; }
         public DbSet<ControladoEtiquetaModel> ControladoEtiquetas { get; set; }
+        public DbSet<ControladoEtiquetaImpressaModel> ControladoEtiquetaImpressas { get; set; }
+
         public DbSet<TransformaRequisicaoModel> TransformaRequisicoes { get; set; }
         public DbSet<EtiquetaZebraModel> EtiquetasZebra { get; set; }
         public DbSet<ControladoShoppingModel> ControladoShoppings { get; set; }

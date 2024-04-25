@@ -19,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Telerik.Windows.Controls;
 
 namespace Producao.Views.Controlado
 {
@@ -91,11 +92,7 @@ namespace Producao.Views.Controlado
         static BaseCommand? imprimir;
         public static BaseCommand Imprimir
         {
-            get
-            {
-                imprimir ??= new BaseCommand(OnImprimir);
-                return imprimir;
-            }
+            get { imprimir ??= new BaseCommand(OnImprimir); return imprimir; }
         }
         private static async void OnImprimir(object obj)
         {
@@ -103,16 +100,18 @@ namespace Producao.Views.Controlado
             var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
             var item = grid.SelectedItem as ControladoEtiquetaModel;
             ImprimirEtiquetaViewModel vm = (ImprimirEtiquetaViewModel)grid.DataContext;
+
+            if (record.etiquetas == 0) 
+            {
+
+            }
         }
 
         static BaseCommand? adicionar;
         public static BaseCommand Adicionar
         {
             get
-            {
-                adicionar ??= new BaseCommand(OnAdicionar);
-                return adicionar;
-            }
+            { adicionar ??= new BaseCommand(OnAdicionar); return adicionar; }
         }
         private static async void OnAdicionar(object obj)
         {
@@ -125,11 +124,7 @@ namespace Producao.Views.Controlado
         static BaseCommand? remover;
         public static BaseCommand Remover
         {
-            get
-            {
-                remover ??= new BaseCommand(OnRemover);
-                return remover;
-            }
+            get { remover ??= new BaseCommand(OnRemover); return remover; }
         }
         private static async void OnRemover(object obj)
         {
@@ -142,11 +137,7 @@ namespace Producao.Views.Controlado
         static BaseCommand? impressas;
         public static BaseCommand Impressas
         {
-            get
-            {
-                impressas ??= new BaseCommand(OnImpressas);
-                return impressas;
-            }
+            get { impressas ??= new BaseCommand(OnImpressas); return impressas; }
         }
         private static async void OnImpressas(object obj)
         {
@@ -154,16 +145,22 @@ namespace Producao.Views.Controlado
             var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
             var item = grid.SelectedItem as ControladoEtiquetaModel;
             ImprimirEtiquetaViewModel vm = (ImprimirEtiquetaViewModel)grid.DataContext;
+
+            Impressas radWindow = new(item.codcompladicional)
+            {
+                Width = 400,
+                Height = 300,
+                ResizeMode = ResizeMode.NoResize,
+                CanMove = false
+            };
+            //StyleManager.SetTheme(radWindow, new Windows8Theme());
+            radWindow.ShowDialog();
         }
 
         static BaseCommand? gerar;
         public static BaseCommand Gerar
         {
-            get
-            {
-                gerar ??= new BaseCommand(OnGerar);
-                return gerar;
-            }
+            get { gerar ??= new BaseCommand(OnGerar); return gerar; }
         }
         private static async void OnGerar(object obj)
         {
