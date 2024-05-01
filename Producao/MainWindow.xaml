@@ -170,7 +170,12 @@
 
             </syncfusion:MenuItemAdv>
 
-            <syncfusion:MenuItemAdv Header="Sobre" Click="MenuItemAdv_Click_1"/>
+            <syncfusion:MenuItemAdv Header="Relatórios Técnicos">
+                <syncfusion:MenuItemAdv Header="Carga Elétrica" Click="OnCargaEletrica"/>
+                
+            </syncfusion:MenuItemAdv>
+
+                <!--<syncfusion:MenuItemAdv Header="Sobre" Click="MenuItemAdv_Click_1"/>-->
         </syncfusion:MenuAdv>
 
         <syncfusion:DocumentContainer 

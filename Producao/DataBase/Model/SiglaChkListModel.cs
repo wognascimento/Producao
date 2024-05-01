@@ -8,8 +8,10 @@ namespace Producao
     [Keyless]
     [Table("view_sigla_chkgeral", Schema = "producao")]
     public class SiglaChkListModel
-    {//[Column("ordem")]
+    {
+        public string? sigla { get; set; }
         public string? sigla_serv { get; set; }
+        public string? nome { get; set; }
         public string? tema { get; set; }
         public DateTime? data_de_expedicao { get; set; }
         public int? nivel { get; set; }

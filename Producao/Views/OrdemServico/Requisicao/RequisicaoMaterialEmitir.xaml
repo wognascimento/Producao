@@ -8,7 +8,7 @@
              mc:Ignorable="d" 
              d:DesignWidth="250" Unloaded="UserControl_Unloaded">
     
-    <Grid Margin="5">
+    <Grid Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Height="180" Width="240">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -37,7 +37,7 @@
             CharCountVisibility="Collapsed" 
             HelperTextVisibility="Collapsed">
             <syncfusion:SfTextBoxExt 
-                Text="{Binding ProdutoServico.setor_caminho}"
+                Text="{Binding TGlobal.descricao_setor}"
                 IsEnabled="False" 
                 TextAlignment="Center" />
         </syncfusion:SfTextInputLayout>

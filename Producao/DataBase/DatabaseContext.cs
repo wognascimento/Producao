@@ -100,10 +100,13 @@ namespace Producao
         public DbSet<ConstrucaoPecaModel> ConstrucaoPecas { get; set; }
         public DbSet<ChecklistPrdutoConstrucaoModel> ChecklistPrdutoConstrucaos { get; set; }
         public DbSet<ChecklistPrdutoRequisicaoModel> ChecklistPrdutooRequisicoes { get; set; }
+
         public DbSet<PropostaFechaSiglaModel> PropostaFechaSiglas { get; set; }
         public DbSet<PropostaFechaTemaModel> PropostaFechaTemas { get; set; }
         public DbSet<ViewFechaModel> ViewFechas { get; set; }
         public DbSet<FechaLinkModel> FechaLinks { get; set; }
+        public DbSet<PropostaDimensaoDescricaoComercialModel> propostaDimensoes { get; set; }
+
         public DbSet<OsKitSolucaoModel> OsKitSolucaos { get; set; }
         public DbSet<ClassificacaoSolucaoModel> ClassificacaoSolucaos { get; set; }
         public DbSet<KitChkGeralModel> KitChkGerals { get; set; }

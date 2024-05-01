@@ -37,8 +37,9 @@ namespace Producao.Views.OrdemServico.Requisicao
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                     string text = ((TextBox)sender).Text;
                     RequisicaoMaterialEmitirViewModel vm = (RequisicaoMaterialEmitirViewModel)DataContext;
-                    vm.ProdutoServico = await Task.Run(() => vm.GetProdutoServicoAsync(long.Parse(text)));
-                    if (vm.ProdutoServico == null)
+                    //vm.ProdutoServico = await Task.Run(() => vm.GetProdutoServicoAsync(long.Parse(text)));
+                    vm.TGlobal = await Task.Run(() => vm.GetGlobalAsync(long.Parse(text)));
+                    if (vm.TGlobal == null) //descricao_setor = "TODOS - TODOS"
                     {
                         MessageBox.Show("Número de serviço não encontrado", "Busca de número de serviço");
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -62,7 +63,8 @@ namespace Producao.Views.OrdemServico.Requisicao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 RequisicaoMaterialEmitirViewModel vm = (RequisicaoMaterialEmitirViewModel)DataContext;
-                var requisicao = await Task.Run(() => vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.ProdutoServico.num_os_servico, data = DateTime.Now, alterado_por = Environment.UserName}));
+                //var requisicao = await Task.Run(() => vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.ProdutoServico.num_os_servico, data = DateTime.Now, alterado_por = Environment.UserName}));
+                var requisicao = await Task.Run(() => vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.TGlobal.num_os, data = DateTime.Now, alterado_por = Environment.UserName}));
                 RequisicaoMaterial detailsWindow = new RequisicaoMaterial(vm.ProdutoServico); //ProdutoServico
                 detailsWindow.Owner = Window.GetWindow((DependencyObject)sender);  //(Window)obj;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -91,12 +93,32 @@ namespace Producao.Views.OrdemServico.Requisicao
             set { _produtoServico = value; RaisePropertyChanged("ProdutoServico"); }
         }
 
+        private TGlobalModel _tGlobal;
+        public TGlobalModel TGlobal
+        {
+            get { return _tGlobal; }
+            set { _tGlobal = value; RaisePropertyChanged("TGlobal"); }
+        }
+
         public async Task<ProdutoServicoModel> GetProdutoServicoAsync(long num_os_servico)
         {
             try
             {
                 using DatabaseContext db = new();
                 return await db.ProdutoServicos.FindAsync(num_os_servico);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<TGlobalModel> GetGlobalAsync(long num_os_servico)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                return await db.Globais.FindAsync(num_os_servico);
             }
             catch (Exception)
             {

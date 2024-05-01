@@ -15,6 +15,7 @@ using Producao.Views.OrdemServico.Produto;
 using Producao.Views.OrdemServico.Requisicao;
 using Producao.Views.OrdemServico.Servicos;
 using Producao.Views.Planilha;
+using Producao.Views.RelatoriosTecnicos;
 using Squirrel;
 using Syncfusion.SfSkinManager;
 using Syncfusion.Windows.Tools.Controls;
@@ -1722,6 +1723,11 @@ namespace Producao
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void OnCargaEletrica(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new CargaEletrica(), "CARGA ELÉTRICA APROXIMADA", "CARGA_ELETRICA");
         }
     }
 }

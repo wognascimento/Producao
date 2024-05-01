@@ -157,6 +157,11 @@
     <Resource Include="icones\icons8-detalhes-40.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Localization\GridViewResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>GridViewResources.resx</DependentUpon>
+    </Compile>
     <Compile Update="Views\kit\manutencao\ViewDetalhesKitManutencao.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -166,6 +171,12 @@
     <Compile Update="Views\OrdemServico\Produto\AlterarSolicitacaoOrdemServicoProduto.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Localization\GridViewResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>GridViewResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Update="App.config">

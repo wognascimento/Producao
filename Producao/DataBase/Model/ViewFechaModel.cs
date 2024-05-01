@@ -52,5 +52,8 @@ namespace Producao
         public string? est { get; set; }
         public double? intervalo { get; set; }
         public double? fator { get; set; }
+        public double? peso { get; set; }
+        public double? cargaeletrica_led { get; set; }
+        public double? cargaeletrica { get; set; }
     }
 }
