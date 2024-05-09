@@ -62,6 +62,13 @@ namespace Producao
             set { _compledicional = value; RaisePropertyChanged("Compledicional"); }
         }
 
+        private TGlobalModel _tGlobal;
+        public TGlobalModel TGlobal
+        {
+            get { return _tGlobal; }
+            set { _tGlobal = value; RaisePropertyChanged("TGlobal"); }
+        }
+
         private ProdutoServicoModel _produtoServico;
         public ProdutoServicoModel ProdutoServico
         {

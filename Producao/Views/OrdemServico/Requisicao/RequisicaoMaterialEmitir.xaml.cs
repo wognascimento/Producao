@@ -65,7 +65,8 @@ namespace Producao.Views.OrdemServico.Requisicao
                 RequisicaoMaterialEmitirViewModel vm = (RequisicaoMaterialEmitirViewModel)DataContext;
                 //var requisicao = await Task.Run(() => vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.ProdutoServico.num_os_servico, data = DateTime.Now, alterado_por = Environment.UserName}));
                 var requisicao = await Task.Run(() => vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.TGlobal.num_os, data = DateTime.Now, alterado_por = Environment.UserName}));
-                RequisicaoMaterial detailsWindow = new RequisicaoMaterial(vm.ProdutoServico); //ProdutoServico
+                //RequisicaoMaterial detailsWindow = new RequisicaoMaterial(vm.ProdutoServico); //ProdutoServico
+                RequisicaoMaterial detailsWindow = new RequisicaoMaterial(vm.TGlobal); //ProdutoServico
                 detailsWindow.Owner = Window.GetWindow((DependencyObject)sender);  //(Window)obj;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 detailsWindow.Width = 800;

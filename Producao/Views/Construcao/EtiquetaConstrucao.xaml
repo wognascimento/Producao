@@ -350,7 +350,7 @@
             AllowFiltering="True" 
             RowValidating="itens_RowValidating" 
             RowValidated="itens_RowValidated" 
-            AddNewRowInitiating="itens_AddNewRowInitiating">
+            AddNewRowInitiating="itens_AddNewRowInitiating" AllowDeleting="True" RecordDeleting="itens_RecordDeleting">
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:GridTextColumn 
                     MappingName="item"

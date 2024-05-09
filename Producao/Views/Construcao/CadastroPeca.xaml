@@ -135,7 +135,7 @@
             ItemsSource="{Binding Detalhes}" 
             AddNewRowPosition="Top" 
             AllowEditing="True" 
-            AllowFiltering="True" AddNewRowInitiating="itens_AddNewRowInitiating" RowValidating="itens_RowValidating" RowValidated="itens_RowValidated">
+            AllowFiltering="True" AddNewRowInitiating="itens_AddNewRowInitiating" RowValidating="itens_RowValidating" RowValidated="itens_RowValidated" RecordDeleting="itens_RecordDeleting" AllowDeleting="True">
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:GridTextColumn 
                     MappingName="item"

@@ -31,7 +31,8 @@ namespace Producao.Views.OrdemServico.Requisicao
             DataContext = new RequisicaoViewModel();
 
             RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
-            vm.ProdutoServico = (ProdutoServicoModel)obj;
+            //vm.ProdutoServico = (ProdutoServicoModel)obj;
+            vm.TGlobal = (TGlobalModel)obj;
             
             //cbVoltagem.ItemsSource= lVoltagem;
             //cbLocalShopping.ItemsSource= lLocalShopping;
@@ -45,7 +46,8 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
                 vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
-                vm.Requisicao = await Task.Run(() => vm.GetRequisicaoAsync(vm.ProdutoServico.num_os_servico));
+                //vm.Requisicao = await Task.Run(() => vm.GetRequisicaoAsync(vm.ProdutoServico.num_os_servico));
+                vm.Requisicao = await Task.Run(() => vm.GetRequisicaoAsync(vm.TGlobal.num_os));
                 vm.QryRequisicaoDetalhes = await Task.Run(() => vm.GetRequisicaoDetalhesAsync(vm.Requisicao.num_requisicao));
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }

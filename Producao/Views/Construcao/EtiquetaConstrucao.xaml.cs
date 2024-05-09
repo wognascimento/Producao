@@ -600,7 +600,7 @@ namespace Producao.Views.Construcao
 
                 var rDados = new Dictionary<string, object>();
 
-                string ip = "192.168.2.192";
+                string ip = "192.168.0.142";
                 int porta = 9100;
                 var temperatura = "";
 
@@ -751,6 +751,30 @@ namespace Producao.Views.Construcao
             txt_peso.Text = null;
             txt_tamanho.Text = null;
             txt_dificuldade.Text = null;
+        }
+
+        private async void itens_RecordDeleting(object sender, RecordDeletingEventArgs e)
+        {
+            try
+            {
+                EtiquetaConstrucaoViewModel vm = (EtiquetaConstrucaoViewModel)DataContext;
+                var confirma = MessageBox.Show("Deseja Deletar esta item?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+                var item = e.Items[0] as ConstrucaoDetalheModel;
+                if (confirma == MessageBoxResult.Yes)
+                {
+                    await Task.Run(() => vm.DeleteControladoAsync((long)item.id_contrucao_detalhes));
+
+                }
+                else
+                {
+                    e.Cancel = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
         }
     }
 
@@ -985,6 +1009,21 @@ namespace Producao.Views.Construcao
                 await db.ConstrucaoPecas.SingleMergeAsync(construcaoPeca);
                 await db.SaveChangesAsync();
                 return construcaoPeca;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task DeleteControladoAsync(long idDetalhes)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                var peca = await db.ConstrucaoPecas.FindAsync(idDetalhes);
+                await db.ConstrucaoPecas.SingleDeleteAsync(peca);
+                await db.SaveChangesAsync();
             }
             catch (Exception)
             {

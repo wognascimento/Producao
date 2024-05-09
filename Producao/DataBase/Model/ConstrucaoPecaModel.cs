@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
@@ -6,6 +7,7 @@ namespace Producao
     [Table("tbl_construcao_peca", Schema = "projetos")]
     public class ConstrucaoPecaModel
     {
+        [Key]
         public long? id_detalhes { get; set; }
         public long? codcompladicional { get; set; }
         public long? id_construcao { get; set; }

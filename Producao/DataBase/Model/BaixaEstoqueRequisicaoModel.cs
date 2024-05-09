@@ -8,6 +8,7 @@ namespace Producao
     [Table("qry_baixa_estoque_requisicao", Schema = "producao")]
     public class BaixaEstoqueRequisicaoModel
     {
+        public long? codigo_saida { get; set; }
         public long? codcompladicional { get; set; }
         public string? planilha { get; set; }
         public string? descricao_completa { get; set; }

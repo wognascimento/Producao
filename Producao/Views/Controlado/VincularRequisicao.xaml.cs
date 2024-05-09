@@ -133,7 +133,7 @@ namespace Producao.Views.Controlado
         private async void SfDataGrid_RecordDeleting(object sender, Syncfusion.UI.Xaml.Grid.RecordDeletingEventArgs e)
         {
             VincularRequisicaoViewModel vm = (VincularRequisicaoViewModel)DataContext;
-            var confirma = MessageBox.Show("Deseja Adicionar o produto na lista?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+            var confirma = MessageBox.Show("Deseja Deletar o produto da lista?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
             var item = e.Items[0] as TransformaRequisicaoModel;
             if (confirma == MessageBoxResult.Yes)
             {

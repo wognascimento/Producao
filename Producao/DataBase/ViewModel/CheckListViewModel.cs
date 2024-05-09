@@ -450,8 +450,10 @@ namespace Producao
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                         SetorProducao = (SetorProducaoModel)sfMultiColumn.SelectedItem;
                         var produtoServico = await Task.Run(() => CriateOsChklistAsync(SetorProducao)); 
+                        var tGlobal = await Task.Run(() => GetTGlobalAsync(produtoServico.num_os_servico)); 
                         window.Close();
-                        RequisicaoMaterial detailsWindow = new RequisicaoMaterial(produtoServico);
+                        //RequisicaoMaterial detailsWindow = new RequisicaoMaterial(produtoServico);
+                        RequisicaoMaterial detailsWindow = new RequisicaoMaterial(tGlobal);
                         detailsWindow.Owner = Window.GetWindow((DependencyObject)obj); //Window.GetWindow((DependencyObject)obj)
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                         detailsWindow.ShowDialog();
@@ -464,7 +466,7 @@ namespace Producao
                 };
 
                 var produtoServico = await Task.Run(async () => await GetProdutoServicoAsync(CheckListGeralComplemento.coddetalhescompl));
-
+                
                 if (produtoServico == null)
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -483,10 +485,11 @@ namespace Producao
                 }
                 else
                 {
-
+                    var tGlobal = await Task.Run(() => GetTGlobalAsync(produtoServico.num_os_servico));
                     Requisicao = await Task.Run(() => GetRequisicaoAsync(produtoServico.num_os_servico));
                     QryRequisicaoDetalhes = await Task.Run(() => GetRequisicaoDetalhesAsync(Requisicao.num_requisicao));
-                    RequisicaoMaterial detailsWindow = new RequisicaoMaterial(produtoServico); //ProdutoServico
+                    //RequisicaoMaterial detailsWindow = new RequisicaoMaterial(produtoServico); //ProdutoServico
+                    RequisicaoMaterial detailsWindow = new RequisicaoMaterial(tGlobal); //ProdutoServico
                     detailsWindow.Owner = Window.GetWindow((DependencyObject)obj);  //(Window)obj;
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     detailsWindow.ShowDialog();
@@ -630,6 +633,7 @@ namespace Producao
                 throw;
             }
         }
+
         public async Task<ProdutoServicoModel> GetProdutoServicoAsync(long? coddetalhescompl)
         {
             try
@@ -638,6 +642,20 @@ namespace Producao
                 var data = await db.ProdutoServicos
                     .Where(p => p.cod_detalhe_compl == coddetalhescompl)
                     .FirstOrDefaultAsync();
+                return data;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<TGlobalModel> GetTGlobalAsync(long? num_os)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                var data = await db.Globais.FindAsync(num_os);
                 return data;
             }
             catch (Exception)

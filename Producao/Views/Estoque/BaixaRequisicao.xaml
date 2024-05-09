@@ -58,7 +58,7 @@
                 <syncfusion:GridTextColumn MappingName="planilha" ColumnSizer="SizeToHeader"/>
                 <syncfusion:GridTextColumn MappingName="descricao_completa"/>
                 <syncfusion:GridTextColumn MappingName="unidade" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridNumericColumn MappingName="qtd_req" AllowEditing="True" DisplayBinding="{Binding qtd_baixa, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridNumericColumn MappingName="qtd_req" AllowEditing="false" DisplayBinding="{Binding qtd_req, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToHeader"/>
                 <syncfusion:GridNumericColumn MappingName="qtd_baixa" AllowEditing="True" DisplayBinding="{Binding qtd_baixa, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToHeader"/>
                 <!--<syncfusion:GridTextColumn MappingName="destino" ColumnSizer="SizeToHeader"/>-->
                 <syncfusion:GridDateTimeColumn MappingName="saida_data" ColumnSizer="SizeToHeader"/>

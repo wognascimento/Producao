@@ -58,6 +58,7 @@ namespace Producao.Views.Estoque
                 BaixaEstoqueRequisicaoModel data = (BaixaEstoqueRequisicaoModel)e.RowData;
                 var saida = new SaidaEstoqueModel
                 {
+                    codigo_saida = data?.codigo_saida,
                     quantidade = data.qtd_baixa, //Convert.ToDouble(txtQuantidade.Text),
                     destino = "PRODUÇÃO",
                     saida_data = DateTime.Now,

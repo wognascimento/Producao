@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Producao.Views.Controlado;
 using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections;
@@ -189,6 +190,30 @@ namespace Producao.Views.Construcao
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
+
+        private async void itens_RecordDeleting(object sender, RecordDeletingEventArgs e)
+        {
+            try
+            {
+                CadastroPecaViewModel vm = (CadastroPecaViewModel)DataContext;
+                var confirma = MessageBox.Show("Deseja Deletar esta item?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+                var item = e.Items[0] as ConstrucaoDetalheModel;
+                if (confirma == MessageBoxResult.Yes)
+                {
+                    await Task.Run(() => vm.DeleteControladoAsync((long)item.id_contrucao_detalhes));
+
+                }
+                else
+                {
+                    e.Cancel = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
+        }
     }
 
     public class CadastroPecaViewModel : INotifyPropertyChanged
@@ -368,7 +393,22 @@ namespace Producao.Views.Construcao
             }
         }
 
-        
+        public async Task DeleteControladoAsync(long idContrucaoDetalhes)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                var peca = await db.ConstrucaoDetalhes.FindAsync(idContrucaoDetalhes);
+                await db.ConstrucaoDetalhes.SingleDeleteAsync(peca);
+                await db.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
 
     }
 }
