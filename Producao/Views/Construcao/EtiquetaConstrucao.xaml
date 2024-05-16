@@ -336,6 +336,10 @@
 
         <syncfusion:SfDataGrid
             x:Name="itens" 
+            ItemsSource="{Binding Pecas}" 
+            SelectionUnit="Row"
+            SelectionMode="Extended"
+            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat"
             Grid.Row="7"
             Grid.Column="0"
             Grid.ColumnSpan="4"
@@ -344,13 +348,14 @@
             AllowDraggingColumns="True"
             ColumnSizer="AutoWithLastColumnFill"
             ShowRowHeader="True" 
-            ItemsSource="{Binding Pecas}" 
             AddNewRowPosition="Top" 
             AllowEditing="True" 
             AllowFiltering="True" 
             RowValidating="itens_RowValidating" 
             RowValidated="itens_RowValidated" 
-            AddNewRowInitiating="itens_AddNewRowInitiating" AllowDeleting="True" RecordDeleting="itens_RecordDeleting">
+            AddNewRowInitiating="itens_AddNewRowInitiating" 
+            AllowDeleting="True" 
+            RecordDeleting="itens_RecordDeleting">
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:GridTextColumn 
                     MappingName="item"

@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic.ApplicationServices;
-using Producao.Views.CheckList;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.XlsIO;
 using System;
@@ -9,8 +7,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -19,7 +15,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Producao.Views.Construcao
 {
@@ -759,10 +754,44 @@ namespace Producao.Views.Construcao
             {
                 EtiquetaConstrucaoViewModel vm = (EtiquetaConstrucaoViewModel)DataContext;
                 var confirma = MessageBox.Show("Deseja Deletar esta item?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
-                var item = e.Items[0] as ConstrucaoDetalheModel;
+                //var item = e.Items[0] as ConstrucaoPecaModel; //[0] = {Producao.ConstrucaoPecaModel}
                 if (confirma == MessageBoxResult.Yes)
                 {
-                    await Task.Run(() => vm.DeleteControladoAsync((long)item.id_contrucao_detalhes));
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                    foreach (ConstrucaoPecaModel item in e.Items.Cast<ConstrucaoPecaModel>())
+                    {
+                        await Task.Run(() => vm.DeleteControladoAsync((long)item.id_detalhes));
+                    }
+
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+
+                    var reload = MessageBox.Show("Deseja Recarregar as peças?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+                    if (reload == MessageBoxResult.Yes) 
+                    {
+                        vm.Pecas = await Task.Run(() => vm.GetPecasAsync(vm.Compledicional?.codcompladicional));
+                        if (vm.Pecas.Count == 0)
+                        {
+                            Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                            vm.Detalhes = await Task.Run(() => vm.GetDetalhesAsync(vm.Compledicional?.codcompladicional));
+                            foreach (var det in vm.Detalhes)
+                            {
+                                await Task.Run(() => vm.SaveConstrucaoDetalheAsync(
+                                    new ConstrucaoPecaModel
+                                    {
+                                        ano = DateTime.Now.Year,
+                                        codcompladicional = det.codcompladicional,
+                                        item = det.item,
+                                        descricao_peca = det.descricao_peca,
+                                        volume_etiqueta = det.volume,
+                                    }));
+                            }
+                            vm.Pecas = await Task.Run(() => vm.GetPecasAsync(vm.Compledicional?.codcompladicional));
+
+                            Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                        }
+                    }
 
                 }
                 else
@@ -773,6 +802,7 @@ namespace Producao.Views.Construcao
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             
         }
@@ -1021,7 +1051,7 @@ namespace Producao.Views.Construcao
             try
             {
                 using DatabaseContext db = new();
-                var peca = await db.ConstrucaoPecas.FindAsync(idDetalhes);
+                var peca = await db.ConstrucaoPecas.FirstOrDefaultAsync(x => x.id_detalhes == idDetalhes);
                 await db.ConstrucaoPecas.SingleDeleteAsync(peca);
                 await db.SaveChangesAsync();
             }
