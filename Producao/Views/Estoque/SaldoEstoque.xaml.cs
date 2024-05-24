@@ -152,7 +152,8 @@ namespace Producao.Views.Estoque
             try
             {
                 using DatabaseContext db = new();
-                return new ObservableCollection<SaldoDetalhadoModel>(await db.SaldoDetalhados.Where(c => c.planilha == planilha).ToListAsync());
+                var result = await db.SaldoDetalhados.Where(c => c.planilha == planilha).ToListAsync();
+                return new ObservableCollection<SaldoDetalhadoModel>(result);
             }
             catch (Exception)
             {

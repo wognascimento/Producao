@@ -62,7 +62,16 @@
                 <Syncfusion:GridTextColumn HeaderText="Resp Memo Visual" MappingName="RespMemoVisual" AllowEditing="True"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Data Memo Visual" MappingName="DataMemoVisual" AllowEditing="True"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Data Reunião Conceito" MappingName="DataReuniaoConceito" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Resp Planta Pça" MappingName="RespPlantaPca" AllowEditing="True"/>
+                
+                <!--<Syncfusion:GridTextColumn HeaderText="Resp Planta Pça" MappingName="RespPlantaPca" AllowEditing="True"/>-->
+                
+                <Syncfusion:GridComboBoxColumn
+                    ItemsSource="{Binding RespPlantaPca}"
+                    AllowEditing="True"
+                    HeaderText="Resp Planta Pça" 
+                    MappingName="RespPlantaPca"
+                    ColumnSizer="SizeToHeader"/>
+                
                 <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Pça" MappingName="PrazoPlantaPca" AllowEditing="True"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Conclusão Planta Pça" MappingName="ConclusaoPlantaPca" AllowEditing="True"/>
                 <Syncfusion:GridTextColumn HeaderText="Resp Revisão Planta" MappingName="RespRevisaoPlanta" AllowEditing="True"/>
@@ -71,7 +80,16 @@
                 <Syncfusion:GridCheckBoxColumn HeaderText="Ok Planta Pça" MappingName="OkPlantaPca" AllowEditing="True"/>
                 <Syncfusion:GridTextColumn HeaderText="Planta Pça" MappingName="PlantaPca"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Liberação Planta Pça" MappingName="LiberacaoPlantaPca"/>
-                <Syncfusion:GridTextColumn HeaderText="Resp Planta Base" MappingName="RespPlantaBase" AllowEditing="True"/>
+                
+                <!--<Syncfusion:GridTextColumn HeaderText="Resp Planta Base" MappingName="RespPlantaBase" AllowEditing="True"/>-->
+
+                <Syncfusion:GridComboBoxColumn
+                    ItemsSource="{Binding RespPlantaBase}"
+                    AllowEditing="True"
+                    HeaderText="Resp Planta Base" 
+                    MappingName="RespPlantaBase"
+                    ColumnSizer="SizeToHeader"/>
+
                 <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Base" MappingName="PrazoPlantaBase" AllowEditing="True"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Conclusão Planta Base" MappingName="ConclusaoPlantaBase" AllowEditing="True"/>
                 <Syncfusion:GridTextColumn HeaderText="Resp Revisão Planta Base" MappingName="RespRevisaoPlantaBase" AllowEditing="True"/>
@@ -79,12 +97,32 @@
                 <Syncfusion:GridCheckBoxColumn HeaderText="Ok Planta Base" MappingName="OkPlantaBase" AllowEditing="True"/>
                 <Syncfusion:GridTextColumn HeaderText="Planta Base" MappingName="PlantaBase"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Liberação Planta Base" MappingName="LiberacaoPlantaBase"/>
-                <Syncfusion:GridTextColumn HeaderText="Resp Planta Mall" MappingName="RespPlantaMall" AllowEditing="True"/>
+                
+                <!--<Syncfusion:GridTextColumn HeaderText="Resp Planta Mall" MappingName="RespPlantaMall" AllowEditing="True"/>-->
+
+                <Syncfusion:GridComboBoxColumn
+                    ItemsSource="{Binding RespPlantaMall}"
+                    AllowEditing="True"
+                    IsEditable="True"
+                    HeaderText="Resp Planta Mall" 
+                    MappingName="RespPlantaMall"
+                    ColumnSizer="SizeToHeader"/>
+
                 <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Mall" MappingName="PrazoPlantaMall" AllowEditing="True"/>
                 <Syncfusion:GridCheckBoxColumn HeaderText="Ok Planta Mall" MappingName="OkPlantaMall" AllowEditing="True"/>
                 <Syncfusion:GridTextColumn HeaderText="Planta Mall" MappingName="PlantaMall"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Conclusão Planta Mall" MappingName="ConclusaoPlantaMall"/>
-                <Syncfusion:GridTextColumn HeaderText="Resp Planta Fachada" MappingName="RespPlantaFachada" AllowEditing="True"/>
+                
+                <!--<Syncfusion:GridTextColumn HeaderText="Resp Planta Fachada" MappingName="RespPlantaFachada" AllowEditing="True"/>-->
+
+                <Syncfusion:GridComboBoxColumn
+                    ItemsSource="{Binding RespPlantaFachada}"
+                    AllowEditing="True"
+                    IsEditable="True"
+                    HeaderText="Resp Planta Fachada" 
+                    MappingName="RespPlantaFachada"
+                    ColumnSizer="SizeToHeader"/>
+
                 <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Fachada" MappingName="PrazoPlantaFachada" AllowEditing="True"/>
                 <Syncfusion:GridCheckBoxColumn HeaderText="Ok Planta Fachada" MappingName="OkPlantaFachada" AllowEditing="True"/>
                 <Syncfusion:GridTextColumn HeaderText="Planta Fachada" MappingName="PlantaFachada"/>

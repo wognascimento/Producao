@@ -138,6 +138,9 @@ namespace Producao
                 $"user id={BaseSettings.Username};" +
                 $"password={BaseSettings.Password};" +
                 $"database={BaseSettings.Database};" +
+                $"Pooling=false;" +
+                $"Timeout=300;" +
+                $"CommandTimeout=300;" +
                 $"Application Name=SIG Producao <{BaseSettings.Database}>;" ,
                 options => { options.EnableRetryOnFailure(); }
                 );
