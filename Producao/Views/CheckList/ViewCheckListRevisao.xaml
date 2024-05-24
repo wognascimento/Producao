@@ -57,10 +57,6 @@
                     MappingName="tema" 
                     ColumnSizer="SizeToHeader"/>
                 <Syncfusion:GridTextColumn 
-                    HeaderText="Bloco" 
-                    MappingName="bloco" 
-                    ColumnSizer="SizeToCells"/>
-                <Syncfusion:GridTextColumn 
                     HeaderText="Item" 
                     MappingName="item" 
                     ColumnSizer="SizeToCells"/>
@@ -85,6 +81,10 @@
                     HeaderText="Dimensão" 
                     MappingName="dimensao" 
                     ColumnSizer="SizeToHeader"/>
+                <Syncfusion:GridTextColumn 
+                    HeaderText="Bloco" 
+                    MappingName="bloco" 
+                    ColumnSizer="SizeToCells"/>
                 <Syncfusion:GridComboBoxColumn
                     ItemsSource="{Binding Revisores}"
                     AllowEditing="True"
