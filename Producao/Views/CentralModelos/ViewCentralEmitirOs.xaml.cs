@@ -150,7 +150,12 @@ namespace Producao.Views.CentralModelos
                     p.planilha == "PONTEIRA" || 
                     p.planilha == "TOPIÁRIA" || 
                     p.planilha == "VASO" || 
-                    p.planilha == "WALL TREE")
+                    p.planilha == "WALL TREE" ||
+                    p.planilha == "FUNDO DE CENA" ||
+                    p.planilha == "MARC L" ||
+                    p.planilha == "PÓRTICO" ||
+                    p.planilha == "TRENÓ" ||
+                    p.planilha == "TRILHA")
                     .ToListAsync();
                 return new ObservableCollection<ModeloGerarOsModel>(data);
             }
