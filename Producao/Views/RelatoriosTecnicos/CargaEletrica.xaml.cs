@@ -246,12 +246,12 @@ namespace Producao.Views.RelatoriosTecnicos
         private ViewFechaModel _item;
         public ViewFechaModel Item { get { return _item; } set { _item = value; RaisePropertyChanged("Item"); } }
 
-        private ObservableCollection<ClienteModel> _siglas;
-        public ObservableCollection<ClienteModel> Siglas { get { return _siglas; } set { _siglas = value; RaisePropertyChanged("Siglas"); } }
-        private ClienteModel _sigla;
-        public ClienteModel Sigla { get { return _sigla; } set { _sigla = value; RaisePropertyChanged("Sigla"); } }
+        private ObservableCollection<ClientesModel> _siglas;
+        public ObservableCollection<ClientesModel> Siglas { get { return _siglas; } set { _siglas = value; RaisePropertyChanged("Siglas"); } }
+        private ClientesModel _sigla;
+        public ClientesModel Sigla { get { return _sigla; } set { _sigla = value; RaisePropertyChanged("Sigla"); } }
 
-        public async Task<ObservableCollection<ClienteModel>> GetSiglasAsync()
+        public async Task<ObservableCollection<ClientesModel>> GetSiglasAsync()
         {
             try
             {
@@ -260,12 +260,12 @@ namespace Producao.Views.RelatoriosTecnicos
                 var data = await db.Siglas
                     .GroupBy(item => new { item.sigla, item.nome })
                     .OrderBy(group => group.Key.sigla) // Ordenar os grupos pela sigla
-                    .Select(group => new ClienteModel
+                    .Select(group => new ClientesModel
                     {
                         sigla = group.Key.sigla,
                         nome = group.Key.nome
                     }).ToListAsync();
-                return new ObservableCollection<ClienteModel>(data);
+                return new ObservableCollection<ClientesModel>(data);
             }
             catch (Exception)
             {

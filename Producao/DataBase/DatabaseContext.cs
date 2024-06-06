@@ -101,6 +101,12 @@ namespace Producao
         public DbSet<ChecklistPrdutoConstrucaoModel> ChecklistPrdutoConstrucaos { get; set; }
         public DbSet<ChecklistPrdutoRequisicaoModel> ChecklistPrdutooRequisicoes { get; set; }
 
+        public DbSet<InflamabilidadeModel> Inflamabilidades { get; set; }
+        public DbSet<InflamabilidadeDetalheModel> InflamabilidadeDetalhes { get; set; }
+        public DbSet<MaterialPredominanteDecoracaoModel> MaterialPredominanteDecoracoes { get; set; }
+        public DbSet<InflamabilidadeResponsavelModel> InflamabilidadeResponsaveis { get; set; }
+
+        public DbSet<ClienteModel> Clientes { get; set; }
         public DbSet<PropostaFechaSiglaModel> PropostaFechaSiglas { get; set; }
         public DbSet<PropostaFechaTemaModel> PropostaFechaTemas { get; set; }
         public DbSet<ViewFechaModel> ViewFechas { get; set; }
@@ -167,6 +173,9 @@ namespace Producao
                 .WithMany(p => p.Observacoes)     // Um produto pode ter várias observações
                 .HasForeignKey(o => o.num_os_produto)  // Chave estrangeira
                 .OnDelete(DeleteBehavior.Cascade); // Define a ação de exclusão em cascata se um produto for excluído
+
+            modelBuilder.Entity<InflamabilidadeDetalheModel>()
+                .HasKey(a => new { a.sigla, a.tipo });
 
             base.OnModelCreating(modelBuilder);
         }

@@ -44,6 +44,7 @@
     <None Remove="icones\icons8-usu_0025c3_0025a1rio-de-g_0025c3_0025aanero-neutro-windows-metro-16.png" />
     <None Remove="icones\icons8-vassoura-40.png" />
     <None Remove="icones\icons8-vassoura-80.png" />
+    <None Remove="LOCACAO_NOVO.png" />
     <None Remove="Modelos\DESCRICOES_CONSTRUCAO_MODELO.xlsx" />
     <None Remove="Modelos\ETIQUETA_MODELO.xlsx" />
     <None Remove="Modelos\ETIQUETA_REQUISICAO_MODELO.xlsx" />
@@ -155,6 +156,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icones\icons8-detalhes-40.png" />
+    <Content Include="LOCACAO_NOVO.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Localization\GridViewResources.Designer.cs">

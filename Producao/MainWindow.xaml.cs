@@ -1729,5 +1729,15 @@ namespace Producao
         {
             adicionarFilho(new CargaEletrica(), "CARGA ELÉTRICA APROXIMADA", "CARGA_ELETRICA");
         }
+
+        private void OnEstabilidade(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OnInflamabilidade(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new Inflamabilidade(), "RELATÓRIO DE INFLAMABILIDADE", "INFLAMABILIDADE");
+        }
     }
 }

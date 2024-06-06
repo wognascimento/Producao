@@ -171,6 +171,8 @@
 
             <syncfusion:MenuItemAdv Header="Relatórios Técnicos">
                 <syncfusion:MenuItemAdv Header="Carga Elétrica" Click="OnCargaEletrica"/>
+                <syncfusion:MenuItemAdv Header="Inflamabilidade" Click="OnInflamabilidade"/>
+                <syncfusion:MenuItemAdv Header="Estabilidade" Click="OnEstabilidade"/>
                 
             </syncfusion:MenuItemAdv>
 
