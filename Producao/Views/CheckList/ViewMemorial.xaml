@@ -58,7 +58,7 @@
             </syncfusion:SfTextInputLayout>
             -->
 
-            <TextBlock Margin="5,0,0,0" VerticalAlignment="Center">
+            <TextBlock Margin="5,0,5,0" VerticalAlignment="Center">
                 <Hyperlink 
                     NavigateUri="{Binding Link.links}" 
                     RequestNavigate="Hyperlink_RequestNavigate">
@@ -67,7 +67,38 @@
                     </Hyperlink.Inlines>
                 </Hyperlink>
             </TextBlock>
-            
+
+            <syncfusion:SfTextInputLayout
+                InputViewPadding="4"
+                HintFloatMode="Float" 
+                Hint="Responsável Tema" 
+                Width="200" 
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed" Margin="0,0,5,0" >
+
+                <syncfusion:SfTextBoxExt  
+                    Text="{Binding Tema.resp_tema, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="False"/>
+
+            </syncfusion:SfTextInputLayout>
+
+
+            <syncfusion:SfTextInputLayout
+                InputViewPadding="4"
+                HintFloatMode="Float" 
+                Hint="Resp cliente" 
+                Width="200" 
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed" >
+
+                <syncfusion:SfTextBoxExt  
+                    Text="{Binding Sigla.diretorcliente, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="False"/>
+
+            </syncfusion:SfTextInputLayout>
+
+
+
         </StackPanel>
 
 
