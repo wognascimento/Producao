@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections.ObjectModel;
@@ -13,7 +12,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using Telerik.Windows.Persistence.Core;
 
 namespace Producao.Views
 {
@@ -104,14 +102,14 @@ namespace Producao.Views
             if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "altera_ok")
             {
                 record.confirma_alteracao_por = Environment.UserName;
-                record.confirma_alteracao_data = DateTime.Now;
+                record.confirma_alteracao_data = DateTime.Now.Date;
                 //var value = record.inativo;
             }
             
             if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "motivo_alt_pos_revisao")
             {
                 record.ok_revisao_alterada = "-1";
-                record.data_alt_revisao = DateTime.Now;
+                record.data_alt_revisao = DateTime.Now.Date;
                 record.revisao_alt_por = Environment.UserName;
                 //var value = record.inativo;
             }
@@ -119,7 +117,7 @@ namespace Producao.Views
             if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "ok")
             {
                 record.revisado_por = Environment.UserName;
-                record.data_revisado_por = DateTime.Now;
+                record.data_revisado_por = DateTime.Now.Date;
                 record.ok_revisao_alterada = "-1";
                 //var value = record.inativo;
             }
@@ -257,7 +255,7 @@ namespace Producao.Views
             if (data == null)
                 return DependencyProperty.UnsetValue;
 
-            return data.ok.Trim().Contains('0') && data?.prazo_revisao < DateTime.Now
+            return data.ok.Trim().Contains('0') && data?.prazo_revisao.Value.Date < DateTime.Now.Date
                 ? new SolidColorBrush(Colors.Red)
                 : DependencyProperty.UnsetValue;
         }
