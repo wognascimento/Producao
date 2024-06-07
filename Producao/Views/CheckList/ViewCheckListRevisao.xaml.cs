@@ -255,7 +255,7 @@ namespace Producao.Views
             if (data == null)
                 return DependencyProperty.UnsetValue;
 
-            return data.ok.Trim().Contains('0') && data?.prazo_revisao.Value.Date < DateTime.Now.Date
+            return data.ok.Trim().Contains('0') && data?.prazo_revisao < DateTime.Now
                 ? new SolidColorBrush(Colors.Red)
                 : DependencyProperty.UnsetValue;
         }
