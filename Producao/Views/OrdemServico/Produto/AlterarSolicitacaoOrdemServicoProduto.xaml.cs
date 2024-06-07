@@ -215,6 +215,7 @@ namespace Producao.Views.OrdemServico.Produto
 
                     if (pagina == 1)
                     {
+                        /*
                         worksheet.Range["E2"].Text = servico.cliente;
                         worksheet.Range["G2"].Text = servico.num_os_produto.ToString();
                         worksheet.Range["I2"].Text = servico.num_os_servico.ToString();
@@ -237,6 +238,29 @@ namespace Producao.Views.OrdemServico.Produto
                         worksheet.Range["A21"].Text = servico.acabamento_moveis;
                         worksheet.Range["A23"].Text = servico.laco;
                         worksheet.Range["A25"].Text = servico.obs_iluminacao;
+                        */
+
+
+                        worksheet.Range["E2"].Text = servico.cliente;
+                        worksheet.Range["G2"].Text = servico.num_os_produto.ToString();
+                        worksheet.Range["I2"].Text = servico.num_os_servico.ToString();
+                        worksheet.Range["B4"].Text = servico.tipo;
+                        worksheet.Range["D4"].Text = $"{servico.data_inicio:dd/MM/yy}";
+                        worksheet.Range["B5"].Text = servico.setor_caminho;
+                        worksheet.Range["F5"].Text = servico.solicitado_por;
+                        worksheet.Range["G4"].Text = $"META HT: {servico.meta_peca_hora}";
+                        worksheet.Range["B6"].Text = servico.planilha;
+                        worksheet.Range["F6"].Text = Convert.ToString(servico.cod_compl_adicional);
+                        worksheet.Range["B7"].Text = servico.descricao_completa;
+                        worksheet.Range["G7"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
+                        worksheet.Range["B9"].Text = Convert.ToString(servico.quantidade);
+                        worksheet.Range["D9"].Text = Convert.ToString(servico?.nivel);
+                        worksheet.Range["B10"].Text = servico.setor_caminho_proximo;
+                        worksheet.Range["B11"].Text = servico.tema;
+                        worksheet.Range["A13"].Text = servico.orientacao_caminho;
+                        worksheet.Range["A23"].Text = servico.laco;
+                        worksheet.Range["A25"].Text = servico.obs_iluminacao;
+
 
                         var setores = await Task.Run(() => vm.GetServicos(vm.OrdemServico.num_os_produto));
                         var idexSetor = 9;
@@ -265,6 +289,7 @@ namespace Producao.Views.OrdemServico.Produto
                     }
                     else if (pagina == 2)
                     {
+                        /*
                         worksheet.Range["E30"].Text = servico.cliente;
                         worksheet.Range["G30"].Text = servico.num_os_produto.ToString();
                         worksheet.Range["I30"].Text = servico.num_os_servico.ToString();
@@ -287,6 +312,29 @@ namespace Producao.Views.OrdemServico.Produto
                         worksheet.Range["A49"].Text = servico.acabamento_moveis;
                         worksheet.Range["A51"].Text = servico.laco;
                         worksheet.Range["A53"].Text = servico.obs_iluminacao;
+                        */
+
+
+                        worksheet.Range["E29"].Text = servico.cliente;
+                        worksheet.Range["G29"].Text = servico.num_os_produto.ToString();
+                        worksheet.Range["I29"].Text = servico.num_os_servico.ToString();
+                        worksheet.Range["B31"].Text = servico.tipo;
+                        worksheet.Range["D31"].Text = $"{servico.data_inicio:dd/MM/yy}";
+                        worksheet.Range["B32"].Text = servico.setor_caminho;
+                        worksheet.Range["F32"].Text = servico.solicitado_por;
+                        worksheet.Range["G31"].Text = $"META HT: {servico.meta_peca_hora}";
+                        worksheet.Range["B33"].Text = servico.planilha;
+                        worksheet.Range["F33"].Text = Convert.ToString(servico.cod_compl_adicional);
+                        worksheet.Range["B34"].Text = servico.descricao_completa;
+                        worksheet.Range["G34"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
+                        worksheet.Range["B36"].Text = Convert.ToString(servico.quantidade);
+                        worksheet.Range["D36"].Text = Convert.ToString(servico?.nivel);
+                        worksheet.Range["B37"].Text = servico.setor_caminho_proximo;
+                        worksheet.Range["B38"].Text = servico.tema;
+                        worksheet.Range["A40"].Text = servico.orientacao_caminho;
+                        worksheet.Range["A50"].Text = servico.laco;
+                        worksheet.Range["A52"].Text = servico.obs_iluminacao;
+
 
                         var setores = await Task.Run(() => vm.GetServicos(vm.OrdemServico.num_os_produto));
                         var idexSetor = 37;
