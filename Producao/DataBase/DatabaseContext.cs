@@ -107,11 +107,13 @@ namespace Producao
         public DbSet<InflamabilidadeResponsavelModel> InflamabilidadeResponsaveis { get; set; }
 
         public DbSet<ClienteModel> Clientes { get; set; }
-        public DbSet<PropostaFechaSiglaModel> PropostaFechaSiglas { get; set; }
-        public DbSet<PropostaFechaTemaModel> PropostaFechaTemas { get; set; }
         public DbSet<ViewFechaModel> ViewFechas { get; set; }
         public DbSet<FechaLinkModel> FechaLinks { get; set; }
+        public DbSet<PropostaFechaTemaModel> PropostaFechaTemas { get; set; }
+        public DbSet<PropostaFechaSiglaModel> PropostaFechaSiglas { get; set; }
+        public DbSet<PropostaDescricaoComercialModel> PropostaDescricaoComercials { get; set; }
         public DbSet<PropostaDimensaoDescricaoComercialModel> propostaDimensoes { get; set; }
+        public DbSet<PropostaFechaQdQuantitativoModel> PropostaFechaQdQuantitativos { get; set; }
 
         public DbSet<OsKitSolucaoModel> OsKitSolucaos { get; set; }
         public DbSet<ClassificacaoSolucaoModel> ClassificacaoSolucaos { get; set; }

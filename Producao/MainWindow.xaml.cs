@@ -1732,7 +1732,7 @@ namespace Producao
 
         private void OnEstabilidade(object sender, RoutedEventArgs e)
         {
-
+            adicionarFilho(new Estabilidade(), "RELATÓRIO DE ESTABILIDADE", "ESTABILIDADE");
         }
 
         private void OnInflamabilidade(object sender, RoutedEventArgs e)

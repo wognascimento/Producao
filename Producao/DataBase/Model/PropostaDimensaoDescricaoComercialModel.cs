@@ -8,6 +8,9 @@ namespace Producao.DataBase.Model
     {
         [Key]
         public long? coddimensao {  get; set; }
+        public long? coddesccoml {  get; set; }
         public double? cargaeletrica_led { get; set; }
+        public string? dimensao { get; set; }
+        public string? relatorio_estabilidade { get; set; }
     }
 }

@@ -53,6 +53,7 @@
     <None Remove="Modelos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx" />
     <None Remove="Modelos\RECEITA_CENTRAL_MODELO.xlsx" />
     <None Remove="Modelos\RELATORIO_CCE_MODELO.xlsx" />
+    <None Remove="Modelos\RELATORIO_ESTABILIDADE_MODELO.xlsx" />
     <None Remove="Modelos\REQUISICAO_KIT_MODELO.xlsx" />
     <None Remove="Modelos\REQUISICAO_MODELO.xlsx" />
   </ItemGroup>
@@ -140,6 +141,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Modelos\RELATORIO_CCE_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\RELATORIO_ESTABILIDADE_MODELO.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Modelos\REQUISICAO_KIT_MODELO.xlsx">
