@@ -126,7 +126,7 @@
                     SelectedItem="{Binding Inflamabilidade.concluido_por, Mode=Default, UpdateSourceTrigger=PropertyChanged}" IsEnabled="False"/>
             </syncfusion:SfTextInputLayout>
 
-            <Button Grid.Column="2" Content="Concluir" Margin="5,0,0,0" Click="OnConcluirClick"/>
+            <Button Grid.Column="2" Content="Imprimir" Margin="5,0,0,0" Click="OnConcluirClick"/>
 
 
         </Grid>
