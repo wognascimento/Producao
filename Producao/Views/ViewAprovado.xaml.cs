@@ -96,34 +96,38 @@ namespace Producao.Views
                 ((AprovadoModel)dataRow.RowData).PlantaPca = Environment.UserName;
                 ((AprovadoModel)dataRow.RowData).LiberacaoPlantaPca = DateTimeOffset.Now;
 
-                //dataGrid.View.Refresh();
+                dataGrid.View.Refresh();
+                await new AprovadoViewModel().SaveAsync(record);
             }
             else if (column.MappingName.Equals("OkPlantaBase"))
             {
                 record.PlantaBase = Environment.UserName;
                 record.LiberacaoPlantaBase = DateTimeOffset.Now;
 
-                //dataGrid.View.Refresh();
+                dataGrid.View.Refresh();
+                await new AprovadoViewModel().SaveAsync(record);
             }
             else if (column.MappingName.Equals("OkPlantaMall"))
             {
                 record.PlantaMall = Environment.UserName;
                 record.ConclusaoPlantaMall = DateTimeOffset.Now;
 
-                //dataGrid.View.Refresh();
+                dataGrid.View.Refresh();
+                await new AprovadoViewModel().SaveAsync(record);
             }
             else if (column.MappingName.Equals("OkPlantaFachada"))
             {
                 record.PlantaFachada = Environment.UserName;
                 record.ConclusaoPlantaFachada = DateTimeOffset.Now;
 
-                //dataGrid.View.Refresh();
+                dataGrid.View.Refresh();
+                await new AprovadoViewModel().SaveAsync(record);
             }
 
             try
             {
-                dataGrid.View.Refresh();
-                await new AprovadoViewModel().SaveAsync(record);
+                //dataGrid.View.Refresh();
+                
             }
             catch (Exception ex)
             {
