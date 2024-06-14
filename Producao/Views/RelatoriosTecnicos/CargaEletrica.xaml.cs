@@ -77,7 +77,7 @@ namespace Producao.Views.RelatoriosTecnicos
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 if (e.Cell.Column.UniqueName == "cargaeletrica_led")
                 {
-                    var propostaDimensao = grid.CurrentItem as ViewFechaModel;
+                    var propostaDimensao = grid.Items.CurrentEditItem as ViewFechaModel; //grid.CurrentItem = {Producao.ViewFechaModel}
                     await Task.Run(() => vm.CargaelEtricaAsync(propostaDimensao));
                 }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
