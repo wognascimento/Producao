@@ -48,5 +48,6 @@ namespace Producao
         public string? tamanho_construcao { get; set; }
         public string? resp_prod { get; set; }
         public string? descricao_completa { get; set; }
+        public string? status_producao { get; set; }
     }
 }

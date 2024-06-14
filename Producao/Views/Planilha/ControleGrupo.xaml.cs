@@ -125,6 +125,13 @@ namespace Producao.Views.Planilha
             set { _controlePlanilhaGrupo = value; RaisePropertyChanged("ControlePlanilhaGrupo"); }
         }
 
+        private ObservableCollection<string>? _statusProducao = ["ACABAMENTO", "ARAMADO", "COMPRAS", "ELÉTRICA", "EMBALAGEM", "ETIQUETAGEM/EXPEDIÇÃO", "FIBRA", "MARCENARIA", "PINTURA", "REVESTIMENTO", "SEPARAÇÃO", "SERRALHERIA"];
+        public ObservableCollection<string> StatusProducao
+        {
+            get { return _statusProducao; }
+            set { _statusProducao = value; RaisePropertyChanged("StatusProducao"); }
+        }
+
         public async Task<ObservableCollection<ControlePlanilhaGrupoModel>> GetItensAsync()
         {
             try
