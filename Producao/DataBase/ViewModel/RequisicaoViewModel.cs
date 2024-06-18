@@ -295,7 +295,7 @@ namespace Producao
             try
             {
                 using DatabaseContext db = new();
-                var data = await db.ReqDetalhes.Where(r => r.num_requisicao == num_requisicao).ToListAsync();
+                var data = await db.ReqDetalhes.Where(r => r.num_requisicao == num_requisicao).OrderBy(x => x.volume).ToListAsync();
                 return new ObservableCollection<ReqDetalhesModel>(data);
             }
             catch (Exception)

@@ -1,22 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Producao.Views.CentralModelos;
 using Syncfusion.UI.Xaml.Grid;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Producao.Views.Planilha
 {
@@ -125,7 +115,7 @@ namespace Producao.Views.Planilha
             set { _controlePlanilhaGrupo = value; RaisePropertyChanged("ControlePlanilhaGrupo"); }
         }
 
-        private ObservableCollection<string>? _statusProducao = ["ACABAMENTO", "ARAMADO", "COMPRAS", "ELÉTRICA", "EMBALAGEM", "ETIQUETAGEM/EXPEDIÇÃO", "FIBRA", "MARCENARIA", "PINTURA", "REVESTIMENTO", "SEPARAÇÃO", "SERRALHERIA"];
+        private ObservableCollection<string>? _statusProducao = ["ACABAMENTO", "ARAMADO", "COMPRAS", "ELÉTRICA", "EMBALAGEM", "ETIQUETAGEM/EXPEDIÇÃO", "FIBRA", "MARCENARIA", "PINTURA", "REVESTIMENTO", "SEPARAÇÃO", "SERRALHERIA", "TERCEIRIZADO MARCENARIA", "TERCEIRIZADO SERRALHERIA"];
         public ObservableCollection<string> StatusProducao
         {
             get { return _statusProducao; }
