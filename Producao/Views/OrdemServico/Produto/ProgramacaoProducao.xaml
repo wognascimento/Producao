@@ -265,7 +265,7 @@
             RowValidated="OnRowValidated" 
             RowValidating="OnRowValidating" 
             CurrentCellDropDownSelectionChanged="OnCurrentCellDropDownSelectionChanged" 
-            AllowFiltering="True">
+            AllowFiltering="True" AllowDraggingColumns="True">
             <syncfusion:SfDataGrid.Columns>
 
                 <syncfusion:GridNumericColumn 
@@ -281,9 +281,9 @@
                     ColumnSizer="SizeToHeader"/>
 
                 <syncfusion:GridDateTimeColumn 
-                    HeaderText="DATA DE EXPEDIÇÃO" 
-                    MappingName="data_de_expedicao"
-                    ColumnSizer="SizeToHeader">
+                   HeaderText="DATA DE EXPEDIÇÃO" 
+                   MappingName="data_de_expedicao"
+                   ColumnSizer="SizeToHeader">
                     <syncfusion:GridDateTimeColumn.CellStyle>
                         <Style TargetType="syncfusionSfDataGrid:GridCell">
                             <Setter Property="Background" Value="{Binding Converter={StaticResource converterCollor}}" />

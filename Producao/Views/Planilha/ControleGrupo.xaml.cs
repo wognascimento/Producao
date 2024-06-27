@@ -115,7 +115,7 @@ namespace Producao.Views.Planilha
             set { _controlePlanilhaGrupo = value; RaisePropertyChanged("ControlePlanilhaGrupo"); }
         }
 
-        private ObservableCollection<string>? _statusProducao = ["ACABAMENTO", "ARAMADO", "COMPRAS", "ELÉTRICA", "EMBALAGEM", "ETIQUETAGEM/EXPEDIÇÃO", "FIBRA", "MARCENARIA", "PINTURA", "REVESTIMENTO", "SEPARAÇÃO", "SERRALHERIA", "TERCEIRIZADO MARCENARIA", "TERCEIRIZADO SERRALHERIA"];
+        private ObservableCollection<string>? _statusProducao = ["ACABAMENTO", "ARAMADO", "COMPRAS", "ELÉTRICA", "EMBALAGEM", "ETIQUETAGEM/EXPEDIÇÃO", "FIBRA", "FILA", "MARCENARIA", "PINTURA", "PROJETOS", "REVESTIMENTO", "SEPARAÇÃO", "SERRALHERIA", "TERCEIRIZADO MARCENARIA", "TERCEIRIZADO SERRALHERIA"];
         public ObservableCollection<string> StatusProducao
         {
             get { return _statusProducao; }
