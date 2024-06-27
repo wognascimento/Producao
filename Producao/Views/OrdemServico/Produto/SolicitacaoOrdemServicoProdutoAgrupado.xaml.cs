@@ -1,25 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Producao.Views.OrdemServico.Produto.Helper;
 using Producao.Views.PopUp;
-using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Telerik.Windows.Controls.Scheduling;
 
 namespace Producao.Views.OrdemServico.Produto
 {
@@ -585,7 +575,7 @@ namespace Producao.Views.OrdemServico.Produto
             try
             {
                 using DatabaseContext db = new();
-                var data = await (from s in db.SetorProducaos where s.inativo == "0    " select new SetorModel { setor = s.setor + " - " + s.galpao, codigo_setor = s.codigo_setor }).ToListAsync();
+                var data = await (from s in db.SetorProducaos orderby s.setor where s.inativo == "0    " select new SetorModel { setor = s.setor + " - " + s.galpao, codigo_setor = s.codigo_setor }).ToListAsync();
                 return new ObservableCollection<SetorModel>(data);
             }
             catch (Exception)
