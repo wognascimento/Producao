@@ -665,14 +665,14 @@ namespace Producao.Views.Construcao
                         {
                             dataToSend.AppendLine("^FO0,672^GFA,06400,06400,00100,:Z64:");
                             dataToSend.AppendLine("eJztzzERgDAAxdAOqEHFFwEeOVQy1ED/EIZenoFcxtCym3b98xE6cNCBKXTAj0rogB+V0AE/KqEDflRCB/yohA74UQkd8KMSOuBHJXRgo4/zhT30hCRJ2sQHZaVmKA==:278C");
-                            dataToSend.AppendLine($@"^FT182,705^AAN,27,15^FH\^FDMOLDURA (FRONTAL) 1/4^FS{item.descricao_peca}^FS");
+                            dataToSend.AppendLine($@"^FT182,705^AAN,27,15^FH\^FD{item.descricao_peca}^FS");
                         }
 
                         if (inx == 5)
                         {
                             dataToSend.AppendLine("^FO0,704^GFA,06400,06400,00100,:Z64:");
                             dataToSend.AppendLine("eJztz0ENgDAAxdAdpgYVX8TwSKaSAwr+oYSQPgNNx5Ak6aNO2nrnI3Rg0oFH6IAfldABPyqhA35UQgf8qIQO+FEJHfCjEjrgRyV0wI9K6MCPPo4Nu+gJCXMDn5xmKA==:B335");
-                            dataToSend.AppendLine($@"^FT182,750^AAN,27,15^FH\^FDMOLDURA (FRONTAL) 1/5^FS{item.descricao_peca}^FS");
+                            dataToSend.AppendLine($@"^FT182,750^AAN,27,15^FH\^FD{item.descricao_peca}^FS");
                         }
 
                         inx++;
