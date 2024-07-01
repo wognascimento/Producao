@@ -84,26 +84,34 @@ namespace Producao.Views.CheckList
         {
             try
             {
+                //RowIndex = 1 NOVA LINHA
+
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
                 vm.Etiqueta = (EtiquetaProducaoModel)e.RowData;
                 EtiquetaProducaoModel data = (EtiquetaProducaoModel)e.RowData;
 
-                for (int i = 0; i < data.volumes_total; i++)
+                if (e.RowIndex == 1)
                 {
-                    vm.Etiqueta.volumes = i+1;
-                    if (i > 0)
+                    for (int i = 0; i < data.volumes_total; i++)
                     {
-                        vm.Etiqueta.codvol = null;
-                        vm.Etiqueta.qtd = 0;
-                        //vm.Etiqueta.criado_por = Environment.UserName;
-                        //vm.Etiqueta.criado_em = DateTime.Now;
+                        vm.Etiqueta.volumes = i + 1;
+                        if (i > 0)
+                        {
+                            vm.Etiqueta.codvol = null;
+                            vm.Etiqueta.qtd = 0;
+                            //vm.Etiqueta.criado_por = Environment.UserName;
+                            //vm.Etiqueta.criado_em = DateTime.Now;
+                        }
+                        vm.Etiqueta = await Task.Run(() => vm.AddEtiquetaAsync(vm.Etiqueta));
                     }
-                        
+                    vm.Etiquetas = await Task.Run(() => vm.GetEtiquetasAsync(data.coddetalhescompl));
+                }
+                else 
+                {
                     vm.Etiqueta = await Task.Run(() => vm.AddEtiquetaAsync(vm.Etiqueta));
                 }
-                vm.Etiquetas = await Task.Run(() => vm.GetEtiquetasAsync(data.coddetalhescompl));
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
