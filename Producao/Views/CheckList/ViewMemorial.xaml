@@ -173,6 +173,10 @@
             <syncfusion:SfDataGrid.Columns>
                 
                 <syncfusion:GridTextColumn 
+                    MappingName="sigla_serv"
+                    ColumnSizer="SizeToCells"/>
+
+                <syncfusion:GridTextColumn 
                     MappingName="item"
                     ColumnSizer="SizeToCells"/>
 
