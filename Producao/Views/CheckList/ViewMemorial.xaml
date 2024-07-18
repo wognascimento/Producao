@@ -169,7 +169,7 @@
             Margin="5,5,5,0"
             SelectionUnit="Row"
             SelectionMode="Extended"
-            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat">
+            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat" CurrentCellValidated="SfDataGrid_CurrentCellValidated">
             <syncfusion:SfDataGrid.Columns>
                 
                 <syncfusion:GridTextColumn 
@@ -194,6 +194,7 @@
                     DisplayBinding="{Binding qtd, Converter={StaticResource ConverterNumber}}" 
                     ColumnSizer="SizeToHeader" />
 
+                <syncfusion:GridTextColumn MappingName="baia_caminhao" ColumnSizer="SizeToHeader" AllowEditing="True"/>
                 <syncfusion:GridTextColumn MappingName="obs"/>
                 <syncfusion:GridTextColumn MappingName="obs_interna" ColumnSizer="SizeToHeader"/>
                 <syncfusion:GridTextColumn MappingName="obs_memorial" ColumnSizer="SizeToHeader"/>

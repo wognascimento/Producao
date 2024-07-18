@@ -89,6 +89,7 @@ namespace Producao
         public DbSet<ControladoEtiquetaImpressaModel> ControladoEtiquetaImpressas { get; set; }
         public DbSet<ControladoEtiquetaLivreModel> ControladoEtiquetaLivres { get; set; }
         public DbSet<ControladoZebraModel> ControladosZebra { get; set; }
+        public DbSet<ControleBaiaEnderecamentoModel> ControleBaias { get; set; }
 
         public DbSet<TransformaRequisicaoModel> TransformaRequisicoes { get; set; }
         public DbSet<ControladoShoppingModel> ControladoShoppings { get; set; }

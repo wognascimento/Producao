@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
+using Telerik.Windows.Persistence.Core;
 
 namespace Producao.Views.CheckList
 {
@@ -311,6 +312,20 @@ namespace Producao.Views.CheckList
             }
         }
 
+        private async void SfDataGrid_CurrentCellValidated(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValidatedEventArgs e)
+        {
+            ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
+            var column = e.Column; //Column = {Syncfusion.UI.Xaml.Grid.GridTextColumn}
+            var data = e.RowData as ViewFechaModel;
+            if (e.Column.MappingName == "baia_caminhao")
+            {
+                if (e.NewValue != e.OldValue)
+                {
+                    await vm.SaveBaiaCaminhaoAsync(new ControleBaiaEnderecamentoModel { sigla_serv = data.sigla_serv, id_aprovado = data.id_aprovado, item_memorial = data.item, baia_caminhao = data.baia_caminhao, inserido_por = Environment.UserName, inserido_em = DateTime.Now.Date});
+                }
+            }
+
+        }
     }
 
     public class ViewMemorialViewModel : INotifyPropertyChanged
@@ -353,6 +368,9 @@ namespace Producao.Views.CheckList
 
         private FechaLinkModel _link;
         public FechaLinkModel Link { get { return _link; } set { _link = value; RaisePropertyChanged("Link"); } }
+
+        private ControleBaiaEnderecamentoModel _baiaCaminhao;
+        public ControleBaiaEnderecamentoModel BaiaCaminhao { get { return _baiaCaminhao; } set { _baiaCaminhao = value; RaisePropertyChanged("BaiaCaminhao"); } }
 
 
         public async Task<ObservableCollection<PropostaFechaSiglaModel>> GetSiglasAsync()
@@ -420,6 +438,39 @@ namespace Producao.Views.CheckList
                 await db.SaveChangesAsync();
 
                 return fechaLink;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<ControleBaiaEnderecamentoModel> SaveBaiaCaminhaoAsync(ControleBaiaEnderecamentoModel controleBaia)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                using (var context = db)
+                {
+                    var baia = await context.ControleBaias.Where(x => x.id_aprovado == controleBaia.id_aprovado && x.item_memorial == controleBaia.item_memorial).FirstOrDefaultAsync();
+                    if (baia != null)
+                    {
+                        baia.baia_caminhao = controleBaia.baia_caminhao;
+                        context.Entry(baia).Property(f => f.baia_caminhao).IsModified = true;
+                        await context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        context.Add(controleBaia).Property(f => f.sigla_serv).IsModified = true;
+                        context.Add(controleBaia).Property(f => f.id_aprovado).IsModified = true;
+                        context.Add(controleBaia).Property(f => f.item_memorial).IsModified = true;
+                        context.Add(controleBaia).Property(f => f.baia_caminhao).IsModified = true;
+                        context.Add(controleBaia).Property(f => f.inserido_por).IsModified = true;
+                        context.Add(controleBaia).Property(f => f.inserido_em).IsModified = true;
+                        await context.SaveChangesAsync();
+                    }
+                }
+                return controleBaia;
             }
             catch (Exception)
             {

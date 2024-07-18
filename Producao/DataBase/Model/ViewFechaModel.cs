@@ -55,5 +55,6 @@ namespace Producao
         public double? peso { get; set; }
         public double? cargaeletrica_led { get; set; }
         public double? cargaeletrica { get; set; }
+        public string? baia_caminhao { get; set; }
     }
 }
