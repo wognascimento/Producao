@@ -365,6 +365,10 @@
                     MappingName="volume_etiqueta" 
                     ColumnSizer="SizeToHeader"
                     DisplayBinding="{Binding volume_etiqueta, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridNumericColumn 
+                    MappingName="volume_expedicao" 
+                    ColumnSizer="SizeToHeader"
+                    DisplayBinding="{Binding volume_expedicao, Converter={StaticResource ConverterNumber}}"/>
 
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
