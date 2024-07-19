@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
+using Npgsql;
 using Producao.DataBase.Model;
 using Syncfusion.XlsIO;
 using System;
@@ -314,17 +315,31 @@ namespace Producao.Views.CheckList
 
         private async void SfDataGrid_CurrentCellValidated(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValidatedEventArgs e)
         {
-            ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
-            var column = e.Column; //Column = {Syncfusion.UI.Xaml.Grid.GridTextColumn}
-            var data = e.RowData as ViewFechaModel;
-            if (e.Column.MappingName == "baia_caminhao")
+            try
             {
-                if (e.NewValue != e.OldValue)
+                ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
+                var column = e.Column; //Column = {Syncfusion.UI.Xaml.Grid.GridTextColumn}
+                var data = e.RowData as ViewFechaModel;
+                if (e.Column.MappingName == "baia_caminhao")
                 {
-                    await vm.SaveBaiaCaminhaoAsync(new ControleBaiaEnderecamentoModel { sigla_serv = data.sigla_serv, id_aprovado = data.id_aprovado, item_memorial = data.item, baia_caminhao = data.baia_caminhao, inserido_por = Environment.UserName, inserido_em = DateTime.Now.Date});
+                    if (e.NewValue != e.OldValue)
+                    {
+                        await vm.SaveBaiaCaminhaoAsync(new ControleBaiaEnderecamentoModel { sigla_serv = data.sigla_serv, id_aprovado = data.id_aprovado, item_memorial = data.item, baia_caminhao = data.baia_caminhao, inserido_por = Environment.UserName, inserido_em = DateTime.Now.Date });
+                    }
                 }
             }
-
+            catch (PostgresException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            catch (DbUpdateException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 
