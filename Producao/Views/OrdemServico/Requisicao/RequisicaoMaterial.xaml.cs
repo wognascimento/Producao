@@ -80,6 +80,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             txtComplementoAdicional.Text = string.Empty;
             txtComplementoAdicional.SelectedItem = null;
             txtQuantidade.Text = string.Empty;
+            txtObservacao.Text = string.Empty;
             txtPlanilha.Focus();
 
         }
@@ -101,6 +102,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                     num_requisicao = long.Parse(tbNumRequisicao.Text),
                     codcompladicional = long.Parse(tbCodproduto.Text),
                     quantidade = Convert.ToDouble(txtQuantidade.Text),
+                    observacao = txtObservacao.Text,
                     data = DateTime.Now,
                     alterado_por = Environment.UserName
                 };
@@ -141,6 +143,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 */
                 vm.RequisicaoDetalhe.codcompladicional = long.Parse(tbCodproduto.Text);
                 vm.RequisicaoDetalhe.quantidade = Convert.ToDouble(txtQuantidade.Text);
+                vm.RequisicaoDetalhe.observacao = txtObservacao.Text;
                 vm.RequisicaoDetalhe.data = DateTime.Now;
                 vm.RequisicaoDetalhe.alterado_por = Environment.UserName;
 

@@ -191,6 +191,22 @@
 
         </syncfusion:SfTextInputLayout>
 
+        <syncfusion:SfTextInputLayout
+            Grid.Row="6"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            InputViewPadding="4" 
+            HintFloatMode="Float" 
+            Hint="OBSERVAÇÃO"
+            CharCountVisibility="Collapsed" 
+            HelperTextVisibility="Collapsed">
+
+            <syncfusion:SfTextBoxExt 
+                x:Name="txtObservacao"
+                ShowClearButton="True"/>
+
+        </syncfusion:SfTextInputLayout>
+
 
 
         <Grid Grid.Row="8" Grid.Column="0">

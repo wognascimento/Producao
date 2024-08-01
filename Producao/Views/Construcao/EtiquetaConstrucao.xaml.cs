@@ -1093,7 +1093,7 @@ namespace Producao.Views.Construcao
             {
                 using DatabaseContext db = new();
                 var data = await db.HistoricoCheckList
-                    .Where(r => r.planilha == "CONSTRUÇÃO" && r.qtd_completada > 0 && r.codcompladicional == codcompladicional)
+                    .Where(r => r.qtd_completada > 0 && r.codcompladicional == codcompladicional)
                     .GroupBy(g => new { g.sigla, g.tema, g.ano })
                     .Select(p => new { p.Key.sigla, p.Key.tema, p.Key.ano })
                     .OrderBy(g => g.ano)
