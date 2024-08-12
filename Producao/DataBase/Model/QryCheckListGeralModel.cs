@@ -14,7 +14,7 @@ namespace Producao
         public string? carga { get; set; }
         public string? local_shoppings { get; set; }
         public string? planilha { get; set; }
-        public double qtd { get; set; }
+        public double? qtd { get; set; }
         public string? descricao { get; set; }
         public string? descricao_adicional { get; set; }
         public string? orient_montagem { get; set; }
