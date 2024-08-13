@@ -473,7 +473,7 @@ namespace Producao.Views.kit.solucao
                     obs = dado?.obs,
                     orient_montagem = dado?.orient_montagem,
                     orient_desmont = dado?.orient_desmont,
-                    qtd = dado.qtd,
+                    qtd = (double)dado.qtd,
                     alterado_por = Environment.UserName,
                     alterado_em = DateTime.Now
                 //ordem = dado?.id
@@ -515,7 +515,7 @@ namespace Producao.Views.kit.solucao
                     incluidopordesc = vm?.CheckListGeral?.incluidopordesc,
                     kp = vm?.CheckListGeral?.kp,
                     orient_desmont = vm?.CheckListGeral?.orient_desmont,
-                    qtd = vm.CheckListGeral.qtd,
+                    qtd = (double)vm.CheckListGeral.qtd,
                     coduniadicional = vm?.CheckListGeral?.coduniadicional,
                     codcompl = vm?.CheckListGeral?.codcompl,
                     nivel = vm?.CheckListGeral?.nivel,
