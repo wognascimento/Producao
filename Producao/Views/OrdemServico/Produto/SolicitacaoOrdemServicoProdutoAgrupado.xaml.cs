@@ -575,7 +575,7 @@ namespace Producao.Views.OrdemServico.Produto
             try
             {
                 using DatabaseContext db = new();
-                var data = await (from s in db.SetorProducaos orderby s.setor where s.inativo == "0    " select new SetorModel { setor = s.setor + " - " + s.galpao, codigo_setor = s.codigo_setor }).ToListAsync();
+                var data = await (from s in db.SetorProducaos where s.inativo == "0    " orderby s.setor, s.galpao select new SetorModel { setor = s.setor + " - " + s.galpao, codigo_setor = s.codigo_setor }).ToListAsync();
                 return new ObservableCollection<SetorModel>(data);
             }
             catch (Exception)

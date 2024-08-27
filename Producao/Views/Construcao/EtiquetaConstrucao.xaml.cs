@@ -626,6 +626,7 @@ namespace Producao.Views.Construcao
                     }
                     */
                     var dataToSend = new StringBuilder();
+                    
                     dataToSend.AppendLine("^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR4,4~SD10^JUS^LRN^CI28");
                     dataToSend.AppendLine("^XA");
                     dataToSend.AppendLine("^MMT");
@@ -696,7 +697,6 @@ namespace Producao.Views.Construcao
                     dataToSend.AppendLine($@"^FT15,190^A0N,80,40^FB351,1,0,C^FR^FH\^FD{vm.ChecklistPrduto.sigla}^FS");
                     dataToSend.AppendLine($@"^FT80,500^A0N,65,45^FB650,3,0,C^FR^FH\^FD{vm.Descricao.descricao_completa}^FS");
                     dataToSend.AppendLine("^PQ1,0,1,Y^XZ");
-                    dataToSend.AppendLine();
                     printQueue.Enqueue(dataToSend.ToString());
 
                     //rDados.Clear();
