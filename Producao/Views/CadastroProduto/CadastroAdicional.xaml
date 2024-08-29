@@ -36,12 +36,15 @@
             AddNewRowInitiating="OnAddNewRowInitiating" AllowEditing="True" >
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:GridNumericColumn
-                        HeaderText="CÓDIGO" 
-                        MappingName="coduniadicional"
-                        DisplayBinding="{Binding coduniadicional, Converter={StaticResource ConverterNumber}}"/>
+                    HeaderText="CÓDIGO" 
+                    MappingName="coduniadicional"
+                    DisplayBinding="{Binding coduniadicional, Converter={StaticResource ConverterNumber}}"/>
                 <syncfusion:GridTextColumn
                         HeaderText="DESCRIÇÃO ADICIONAL" 
                         MappingName="descricao_adicional"/>
+                <syncfusion:GridTextColumn
+                        HeaderText="REVISÃO" 
+                        MappingName="revisao"/>
                 <syncfusion:GridCheckBoxColumn
                         AllowEditing="True"
                         HeaderText="INATIVO" 
