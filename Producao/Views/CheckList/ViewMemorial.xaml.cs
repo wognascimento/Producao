@@ -241,26 +241,30 @@ namespace Producao.Views.CheckList
 
                 worksheet.Range["E2"].Text = $"DIMENSÃO";
                 worksheet.Range["E2"].ColumnWidth = 25;
-                worksheet.Range["D2"].WrapText = true;
+                worksheet.Range["E2"].WrapText = true;
 
-                worksheet.Range["F2"].Text = $"OBSERVAÇÃO";
-                worksheet.Range["F2"].ColumnWidth = 20;
-                worksheet.Range["D2"].WrapText = true;
+                worksheet.Range["F2"].Text = $"Nº CAMINÃO";
+                worksheet.Range["F2"].ColumnWidth = 10;
+                worksheet.Range["F2"].WrapText = true;
 
-                worksheet.Range["G2"].Text = $"OBS INTERNA";
+                worksheet.Range["G2"].Text = $"OBSERVAÇÃO";
                 worksheet.Range["G2"].ColumnWidth = 20;
-                worksheet.Range["D2"].WrapText = true;
+                worksheet.Range["G2"].WrapText = true;
 
-                worksheet.Range["H2"].Text = $"OBS ALTERAÇÃO";
+                worksheet.Range["H2"].Text = $"OBS INTERNA";
                 worksheet.Range["H2"].ColumnWidth = 20;
                 worksheet.Range["H2"].WrapText = true;
 
+                worksheet.Range["I2"].Text = $"OBS ALTERAÇÃO";
+                worksheet.Range["I2"].ColumnWidth = 20;
+                worksheet.Range["I2"].WrapText = true;
+
                 worksheet.Rows[1].CellStyle = bodyStyle;
 
-                var dados = vm.Itens.Select(m => new {m.item, m.localitem, m.descricao, m.qtd, m.dimensao, m.obs, m.obs_interna, m.obs_alteracao}).ToList(); // await Task.Run(() => vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado));
+                var dados = vm.Itens.Select(m => new {m.item, m.localitem, m.descricao, m.qtd, m.dimensao, m.baia_caminhao, m.obs, m.obs_interna, m.obs_alteracao}).ToList(); // await Task.Run(() => vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado));
                 worksheet.ImportData(dados, 3, 1, false);
 
-                worksheet.Range[$"A3:H{dados.Count + 2}"].CellStyle = headerStyle;
+                worksheet.Range[$"A3:I{dados.Count + 2}"].CellStyle = headerStyle;
 
                 worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
@@ -276,13 +280,15 @@ namespace Producao.Views.CheckList
                 //worksheet.Range[$"E3:E{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"E3:E{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
-                //worksheet.Range[$"F3:G{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                worksheet.Range[$"F3:G{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"F3:G{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
                 worksheet.Range[$"G3:G{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
                 //worksheet.Range[$"H3:H{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"H3:H{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                worksheet.Range[$"I3:I{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
                 worksheet.PageSetup.PrintTitleColumns = "$A:$H";
                 worksheet.PageSetup.PrintTitleRows = "$1:$2";
