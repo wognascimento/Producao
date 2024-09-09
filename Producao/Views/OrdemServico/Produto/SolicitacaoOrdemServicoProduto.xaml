@@ -243,7 +243,12 @@
                     MappingName="orientacao_caminho"
                     TextWrapping="Wrap"
                     ColumnSizer="AutoLastColumnFill"/>
-                
+
+                <syncfusion:GridCheckBoxColumn 
+                    HeaderText="PERMISSÃO DE TRABALHO" 
+                    MappingName="pt"
+                    ColumnSizer="SizeToHeader"/>
+
                 <syncfusion:GridComboBoxColumn 
                     HeaderText="DISTRIBUIR" 
                     MappingName="distribuir_os"

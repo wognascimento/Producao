@@ -50,6 +50,7 @@
     <None Remove="Modelos\ETIQUETA_REQUISICAO_MODELO.xlsx" />
     <None Remove="Modelos\ORDEM_SERVICO_MODELO.xlsx" />
     <None Remove="Modelos\ORDEM_SERVICO_SERVICO_MODELO.xlsx" />
+    <None Remove="Modelos\PERMISSAO_TRABALHO.xlsx" />
     <None Remove="Modelos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx" />
     <None Remove="Modelos\RECEITA_CENTRAL_MODELO.xlsx" />
     <None Remove="Modelos\RELATORIO_CCE_MODELO.xlsx" />
@@ -132,6 +133,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Modelos\ORDEM_SERVICO_SERVICO_MODELO.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modelos\PERMISSAO_TRABALHO.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Modelos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx">

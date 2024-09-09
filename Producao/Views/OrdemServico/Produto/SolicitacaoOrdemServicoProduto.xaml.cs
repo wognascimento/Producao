@@ -279,6 +279,7 @@ namespace Producao.Views.OrdemServico.Produto
                 data.solicitado_por = Environment.UserName;
                 data.solicitado_data = DateTime.Now;
                 vm.ObsOs = await Task.Run(() => vm.SaveProdutoOsAsync(data));
+                
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -291,7 +292,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private void caminhos_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void caminhos_RowValidating(object sender, RowValidatingEventArgs e)
         {
             ObsOsModel rowData = (ObsOsModel)e.RowData;
             if (!rowData.num_os_produto.HasValue)
@@ -330,7 +331,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private void caminhos_CurrentCellDropDownSelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellDropDownSelectionChangedEventArgs e)
+        private void caminhos_CurrentCellDropDownSelectionChanged(object sender, CurrentCellDropDownSelectionChangedEventArgs e)
         {
             int rowIndex = caminhos.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
             ObsOsModel record;

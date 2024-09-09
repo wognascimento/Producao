@@ -25,6 +25,7 @@ namespace Producao
         public bool? cancelar { get; set; }
         public string? cancelado_por { get; set; }
         public DateTime? cancelado_em { get; set; }
+        public bool? pt { get; set; }
 
         // Chave estrangeira para referenciar o produto associado a esta observação
         //[ForeignKey("ProdutoOs")]

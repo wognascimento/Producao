@@ -31,5 +31,6 @@ namespace Producao
         public string? descricao_completa {  get; set; }
         public bool? cancelar { get; set; }
         public long? cod_obs { get; set; }
+        public bool? pt { get; set; }
     }
 }

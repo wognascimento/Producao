@@ -248,6 +248,13 @@
                                     TextWrapping="Wrap"
                                     ColumnSizer="AutoLastColumnFill"/>
 
+
+                                <syncfusion:GridCheckBoxColumn 
+                                    HeaderText="PERMISSÃO DE TRABALHO" 
+                                    MappingName="pt"
+                                    ColumnSizer="SizeToHeader"/>
+
+
                             </syncfusion:SfDataGrid.Columns>
                         </syncfusion:SfDataGrid>
                     </syncfusion:GridViewDefinition.DataGrid>

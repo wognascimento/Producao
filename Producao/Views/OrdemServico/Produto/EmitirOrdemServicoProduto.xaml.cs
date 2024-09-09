@@ -162,6 +162,7 @@ namespace Producao.Views.OrdemServico.Produto
                                                             emitida_data = DateTime.Now,
                                                             turno = "DIURNO",
                                                             id_modelo = item.id_modelo,
+                                                            pt = item.pt,
                                                         }
                                                         select produtoServicoModel)
                     {
@@ -275,6 +276,9 @@ namespace Producao.Views.OrdemServico.Produto
                 IWorkbook workbook = excelEngine.Excel.Workbooks.Open("Modelos/ORDEM_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
+                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open("Modelos/PERMISSAO_TRABALHO.xlsx");
+                IWorksheet wsPt = wbPt.Worksheets[0];
+
                 IRange range = worksheet[27, 23, 53, 23];
                 if (servicos.Count == 1)
                     worksheet.ShowRange(range, false);
@@ -361,6 +365,21 @@ namespace Producao.Views.OrdemServico.Produto
                                 Verb = "Print",
                                 UseShellExecute = true,
                             });
+
+                            if (servico.pt == true)
+                            {
+                                wsPt.Range["G2"].Number = (double)servico.num_os_servico;
+                                wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+
+                                Process.Start(
+                                    new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                                    {
+                                        Verb = "Print",
+                                        UseShellExecute = true,
+                                    }
+                                );
+
+                            }
                         }
                     }
                     else if (pagina == 2)
@@ -437,6 +456,22 @@ namespace Producao.Views.OrdemServico.Produto
                                 Verb = "Print",
                                 UseShellExecute = true,
                             });
+
+                        if (servico.pt == true)
+                        {
+                            wsPt.Range["G2"].Number = (double)servico.num_os_servico;
+                            wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+
+                            Process.Start(
+                                new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                                {
+                                    Verb = "Print",
+                                    UseShellExecute = true,
+                                }
+                            );
+
+                        }
+
                     } 
                 }
 

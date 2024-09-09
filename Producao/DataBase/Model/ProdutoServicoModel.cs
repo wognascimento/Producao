@@ -51,5 +51,6 @@ namespace Producao
         public DateTime? programacao_inserido_data {set; get;}
         public DateTime? meta_lider {set; get;}
         public int? pagina { set; get; }
+        public bool? pt { set; get; }
     }
 }

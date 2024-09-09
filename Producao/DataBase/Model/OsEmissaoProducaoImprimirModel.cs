@@ -50,5 +50,6 @@ namespace Producao
         public TimeSpan? meta_peca_hora {  get; set; }
         public long? codigo_setor { get; set; }
         public long? num_caminho { get; set; }
+        public bool? pt { get; set; }
     }
 }

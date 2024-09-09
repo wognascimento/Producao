@@ -1,6 +1,4 @@
-﻿using iText.Commons.Actions.Contexts;
-using Microsoft.EntityFrameworkCore;
-using Producao.Views.PopUp;
+﻿using Microsoft.EntityFrameworkCore;
 using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.XlsIO;
@@ -14,7 +12,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace Producao.Views.OrdemServico.Produto
 {
@@ -196,11 +193,15 @@ namespace Producao.Views.OrdemServico.Produto
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
                 IWorkbook workbook = excelEngine.Excel.Workbooks.Open("Modelos/ORDEM_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
+
+                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open("Modelos/PERMISSAO_TRABALHO.xlsx");
+                IWorksheet wsPt = wbPt.Worksheets[0];
+
 
                 var servicos = await Task.Run(() => vm.GetOsEmitidas(vm.OrdemServico.num_os_produto, list));
 
@@ -279,12 +280,30 @@ namespace Producao.Views.OrdemServico.Produto
 
                         if (tot == servicos.Count)
                         {
+
                             Process.Start(
-                            new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                                new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                                {
+                                    Verb = "Print",
+                                    UseShellExecute = true,
+                                }
+                            );
+
+                            if (servico.pt == true)
                             {
-                                Verb = "Print",
-                                UseShellExecute = true,
-                            });
+                                wsPt.Range["G2"].Number = (double)servico.num_os_servico;
+                                wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+
+                                Process.Start(
+                                    new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                                    {
+                                        Verb = "Print",
+                                        UseShellExecute = true,
+                                    }
+                                );
+
+                            }
+
                         }
                     }
                     else if (pagina == 2)
@@ -356,6 +375,23 @@ namespace Producao.Views.OrdemServico.Produto
                                 Verb = "Print",
                                 UseShellExecute = true,
                             });
+
+
+                        if (servico.pt == true)
+                        {
+                            wsPt.Range["G2"].Number = (double)servico.num_os_servico;
+                            wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+
+                            Process.Start(
+                                new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                                {
+                                    Verb = "Print",
+                                    UseShellExecute = true,
+                                }
+                            );
+
+                        }
+
                     }
                 }
 

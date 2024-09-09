@@ -235,6 +235,7 @@ namespace Producao.Views.OrdemServico.Produto
             ((ObsOsModel)e.NewObject).solicitado_por = Environment.UserName;
             ((ObsOsModel)e.NewObject).solicitado_data = DateTime.Now;
             ((ObsOsModel)e.NewObject).cancelar = false;
+            ((ObsOsModel)e.NewObject).pt = false;
         }
 
         private async void dgClientes_RowValidated(object sender, RowValidatedEventArgs e)
@@ -263,7 +264,8 @@ namespace Producao.Views.OrdemServico.Produto
                         cancelar = false,
                         codigo_setor = item.codigo_setor,
                         setor_caminho = item.setor_caminho,
-                        orientacao_caminho = item.orientacao_caminho
+                        orientacao_caminho = item.orientacao_caminho,
+                        pt = item.pt,
                     };
                     obsOs = await Task.Run(() => vm.SaveObsOsAsync(obsOs));
                     ((ProdutoOsModel)e.RowData).Observacoes.Add(obsOs);
