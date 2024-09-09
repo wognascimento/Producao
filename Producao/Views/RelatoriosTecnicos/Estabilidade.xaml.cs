@@ -212,8 +212,8 @@ namespace Producao.Views.RelatoriosTecnicos
             {
                 using DatabaseContext db = new();
                 var query = from p in db.Siglas
-                            group p by p.sigla
-                                   into g
+                            group p by p.sigla into g
+                            orderby g.Key
                             select g.Key;
 
                 return new ObservableCollection<string>(await query.ToListAsync());
