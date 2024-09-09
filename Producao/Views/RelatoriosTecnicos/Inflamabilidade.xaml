@@ -15,8 +15,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition />
         </Grid.RowDefinitions>
 
         <syncfusion:SfTextInputLayout 
@@ -100,6 +99,7 @@
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
 
             <syncfusion:SfTextInputLayout
@@ -126,7 +126,8 @@
                     SelectedItem="{Binding Inflamabilidade.concluido_por, Mode=Default, UpdateSourceTrigger=PropertyChanged}" IsEnabled="False"/>
             </syncfusion:SfTextInputLayout>
 
-            <Button Grid.Column="2" Content="Imprimir" Margin="5,0,0,0" Click="OnConcluirClick"/>
+            <Button Grid.Column="2" Content="Imprimir" Margin="5,0,0,0" Click="OnImprimirClick"/>
+            <Button Grid.Column="3" Content=" Concluir " Margin="5,0,0,0" Click="OnConcluirClick"/>
 
 
         </Grid>
@@ -157,13 +158,6 @@
                     ColumnSizer="SizeToCells"
                     TextWrapping="Wrap"/>
 
-                <!--
-                <syncfusion:GridTextColumn 
-                    MappingName="classificacao"
-                    TextWrapping="Wrap" 
-                    ColumnSizer="SizeToHeader"
-                    AllowEditing="True"/>
-                -->
                 <syncfusion:GridComboBoxColumn
                     MappingName="classificacao"
                     ItemsSource="{Binding Classificacoes}"
@@ -174,20 +168,6 @@
 
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
-        
-        
-        
-        <!--
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="5">
-            <Grid Name="MainGrid" Margin="5">
-            </Grid>
-        </ScrollViewer>
-        -->
-
-
-
-
-
 
     </Grid>
 </UserControl>

@@ -1,21 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Producao.DataBase.Model;
+using Syncfusion.Pdf;
+using Syncfusion.Pdf.Graphics;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows;
-using Producao.DataBase.Model;
-using Syncfusion.Pdf.Graphics;
-using System.Collections.Generic;
-using Syncfusion.Pdf;
-using System.Drawing;
-using Syncfusion.DocIO.ReaderWriter.DataStreamParser.Escher;
-using System.Globalization;
-using Telerik.Windows.Documents.Spreadsheet.Expressions.Functions;
-using System.Diagnostics;
 
 namespace Producao.Views.RelatoriosTecnicos
 {
@@ -166,10 +162,10 @@ namespace Producao.Views.RelatoriosTecnicos
 
 
                 graphics.DrawString("Atenciosamente,", font, brush, new PointF(0, 500));
-                graphics.DrawString($"{vm.Responsavel.nome}", font, brush, new PointF(0, 560));
-                graphics.DrawString($"RG. {vm.Responsavel.rg}", font, brush, new PointF(0, 570));
-                graphics.DrawString($"CAU/SP. {vm.Responsavel.cau_sp}", font, brush, new PointF(0, 580));
-                graphics.DrawString($"RRT. {vm.Inflamabilidade.rrt}", font, brush, new PointF(0, 590));
+                graphics.DrawString($"{vm.Responsavel?.nome}", font, brush, new PointF(0, 560));
+                graphics.DrawString($"RG. {vm.Responsavel?.rg}", font, brush, new PointF(0, 570));
+                graphics.DrawString($"CAU/SP. {vm.Responsavel?.cau_sp}", font, brush, new PointF(0, 580));
+                graphics.DrawString($"RRT. {vm.Inflamabilidade?.rrt}", font, brush, new PointF(0, 590));
 
 
                 PdfPage page2 = document.Pages.Add();
@@ -234,10 +230,10 @@ namespace Producao.Views.RelatoriosTecnicos
                 
                 
                 page3.Graphics.DrawString("Atenciosamente,", font, brush, new PointF(0, 500));
-                page3.Graphics.DrawString($"{vm.Responsavel.nome}", font, brush, new PointF(0, 560));
-                page3.Graphics.DrawString($"RG. {vm.Responsavel.rg}", font, brush, new PointF(0, 570));
-                page3.Graphics.DrawString($"CAU/SP. {vm.Responsavel.cau_sp}", font, brush, new PointF(0, 580));
-                page3.Graphics.DrawString($"RRT. {vm.Inflamabilidade.rrt}", font, brush, new PointF(0, 590));
+                page3.Graphics.DrawString($"{vm.Responsavel?.nome}", font, brush, new PointF(0, 560));
+                page3.Graphics.DrawString($"RG. {vm.Responsavel?.rg}", font, brush, new PointF(0, 570));
+                page3.Graphics.DrawString($"CAU/SP. {vm.Responsavel?.cau_sp}", font, brush, new PointF(0, 580));
+                page3.Graphics.DrawString($"RRT. {vm.Inflamabilidade?.rrt}", font, brush, new PointF(0, 590));
 
                 string[] footerLines =
                 [
@@ -293,12 +289,28 @@ namespace Producao.Views.RelatoriosTecnicos
             
         }
 
-        private void OnConcluirClick(object sender, RoutedEventArgs e)
+        private async void OnConcluirClick(object sender, RoutedEventArgs e)
         {
-           
-            CreateDynamicPdfReport();
 
-            //MessageBox.Show("Relatório PDF dinâmico criado com sucesso!");
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
+                vm.Inflamabilidade.concluido_por = Environment.UserName;
+                vm.Inflamabilidade.data_conclusao = DateTime.Now;
+                await Task.Run(() => vm.SaveInflamabilidadeAsync(vm.Inflamabilidade));
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void OnImprimirClick(object sender, RoutedEventArgs e)
+        {
+            CreateDynamicPdfReport();
         }
     }
 
@@ -365,6 +377,7 @@ namespace Producao.Views.RelatoriosTecnicos
                 var query = from p in db.Siglas
                                    group p by p.sigla
                                    into g
+                                   orderby g.Key
                                    select g.Key ;
 
                 return new ObservableCollection<string>(await query.ToListAsync());

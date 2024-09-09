@@ -12,6 +12,6 @@ namespace Producao.DataBase.Model
         public string? rrt { get; set; }
         public string? responsavel { get; set; }
         public DateTime? data_conclusao { get; set; }
-        public string? concluido_por { get; private set; }
+        public string? concluido_por { get; set; }
     }
 }
