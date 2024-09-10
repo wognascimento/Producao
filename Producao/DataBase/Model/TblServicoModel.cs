@@ -27,5 +27,6 @@ namespace Producao
         public DateTime? data_conclusao_efetiva { get; set; }
         public string? cancelado_por { get; set; }
         public string? sigla { get; set; }
+        public bool? pt { get; set; }
     }
 }

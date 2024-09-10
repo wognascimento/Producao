@@ -68,11 +68,19 @@ namespace Producao.Views.OrdemServico.Servicos
 
                 var OS = await Task.Run(() => vm.GravarAsync(vm.OrdemServico));
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
+
                 IWorkbook workbook = application.Workbooks.Open("Modelos/ORDEM_SERVICO_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
+
+
+                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open("Modelos/PERMISSAO_TRABALHO.xlsx");
+                IWorksheet wsPt = wbPt.Worksheets[0];
+
+
+
                 worksheet.Range["A1"].Text = $"ORDEM DE SERVIÇO {OS.data_emissao.Value.Year} ";
                 worksheet.Range["F5"].Text = OS.num_os.ToString();
                 worksheet.Range["C7"].Text = OS.data_emissao.Value.ToString();
@@ -93,6 +101,22 @@ namespace Producao.Views.OrdemServico.Servicos
                 {
                     UseShellExecute = true
                 });
+
+
+                if (OS.pt == true)
+                {
+                    wsPt.Range["G2"].Number = (double)OS.num_os;
+                    wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+
+                    Process.Start(
+                        new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                        {
+                            Verb = "Print",
+                            UseShellExecute = true,
+                        }
+                    );
+
+                }
 
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });

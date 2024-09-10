@@ -56,24 +56,42 @@
                 Text="{Binding OrdemServico.descricao_servico}"/>
         </syncfusion:SfTextInputLayout>
 
-        <syncfusion:SfTextInputLayout
-            Grid.Row="2"
-            InputViewPadding="4" 
-            HintFloatMode="Float" 
-            Hint="SETOR" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed">
-            <syncfusion:SfTextBoxExt 
-                x:Name="txtSetor"
-                ShowSuggestionsOnFocus="True"
-                ShowClearButton="True"
-                SearchItemPath="setor"
-                ValueMemberPath="setor"
-                AutoCompleteMode="SuggestAppend"
-                AutoCompleteSource="{Binding Setores}" 
-                SelectedItem="{Binding Setor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                Text="{Binding OrdemServico.descricao_setor}"/>
-        </syncfusion:SfTextInputLayout>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <syncfusion:SfTextInputLayout
+                Grid.Row="0"
+                Grid.Column="0"
+                InputViewPadding="4" 
+                HintFloatMode="Float" 
+                Hint="SETOR" 
+                CharCountVisibility="Collapsed" 
+                HelperTextVisibility="Collapsed">
+                <syncfusion:SfTextBoxExt 
+                    x:Name="txtSetor"
+                    ShowSuggestionsOnFocus="True"
+                    ShowClearButton="True"
+                    SearchItemPath="setor"
+                    ValueMemberPath="setor"
+                    AutoCompleteMode="SuggestAppend"
+                    AutoCompleteSource="{Binding Setores}" 
+                    SelectedItem="{Binding Setor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Text="{Binding OrdemServico.descricao_setor}"/>
+                </syncfusion:SfTextInputLayout>
+
+            <CheckBox 
+                Grid.Row="0" 
+                Grid.Column="1" 
+                VerticalAlignment="Center" 
+                Content="PERMISSÃO DE TRABALHO"
+                IsChecked="{Binding Path=OrdemServico.pt, Mode=TwoWay}"/>
+
+        </Grid>
+
+        
 
         <syncfusion:SfTextInputLayout
             Grid.Row="3"
