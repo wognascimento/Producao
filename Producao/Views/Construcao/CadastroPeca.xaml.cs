@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Producao.Views.Controlado;
 using Syncfusion.UI.Xaml.Grid;
 using System;
-using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;

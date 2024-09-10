@@ -514,7 +514,7 @@ namespace Producao.Views.Construcao
                 worksheet.Range["A6"].Text = "CÓD. DET. COMPL.:";
                 worksheet.Range["A7"].Number = Convert.ToDouble(vm?.ChecklistPrduto?.coddetalhescompl);
                 worksheet.Range["A8"].Text = vm?.ChecklistPrduto?.local_shoppings;
-                worksheet.Range["A9"].Text = $"( {vm.Pecas.Count()} VOLUMES )"; //itens.View.Records.Count()
+                worksheet.Range["A9"].Text = $"( {vm.Pecas.OrderBy(x => x.volume_etiqueta).LastOrDefault().volume_etiqueta} VOLUMES )"; //itens.View.Records.Count()
                 worksheet.Range["A10"].Text = $"PEÇAS";
                 //worksheet.Range["C3"].Text = Modelo.planilha;
                 //worksheet.Range["C4"].Text = Modelo.descricao_completa;
