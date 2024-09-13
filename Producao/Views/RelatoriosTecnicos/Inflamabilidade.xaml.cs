@@ -261,7 +261,7 @@ namespace Producao.Views.RelatoriosTecnicos
                     page3.Graphics.DrawString(line, font, brush, new PointF(xPosition, yPosition));
                     if (det > 5)
                     {
-                        pageExtra.Graphics.DrawString(line, font, brush, new PointF(xPosition, yPosition));
+                        //pageExtra.Graphics.DrawString(line, font, brush, new PointF(xPosition, yPosition));
                     }
 
 
