@@ -33,7 +33,8 @@
                 AutoCompleteSource="{Binding Siglas}" 
                 SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 SelectedItemChanged="OnSiglaSelectionChanged" 
-                ShowSuggestionsOnFocus="True" ShowClearButton="True"/>
+                ShowSuggestionsOnFocus="True" 
+                ShowClearButton="True"/>
         </syncfusion:SfTextInputLayout>
 
         <syncfusion:SfTextInputLayout 

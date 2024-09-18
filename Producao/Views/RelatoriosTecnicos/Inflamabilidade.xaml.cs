@@ -48,9 +48,16 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
+                InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
+
+                if (e.NewValue == null)
+                {
+                    vm.Responsavel = null;
+                    vm.Detalhes = [];
+                    return;
+                }
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
                 vm.Inflamabilidade = await Task.Run(() => vm.GetvInflamabilidadeAsync(vm.Sigla));
                 if (vm.Inflamabilidade == null)
                     await Task.Run(() => vm.SaveInflamabilidadeAsync(vm.Sigla));
@@ -71,8 +78,16 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
+                if (e.NewValue == null)
+                {
+                    vm.Inflamabilidade = null;
+
+                    return;
+                }
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.Inflamabilidade.responsavel = vm.Responsavel.nome;
                 await Task.Run(() => vm.SaveInflamabilidadeAsync(vm.Inflamabilidade));
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -330,10 +345,10 @@ namespace Producao.Views.RelatoriosTecnicos
         public ObservableCollection<InflamabilidadeResponsavelModel> Responsaveis { get { return _responsaveis; } set { _responsaveis = value; RaisePropertyChanged("Responsaveis"); } }
 
         private InflamabilidadeResponsavelModel _responsavel;
-        public InflamabilidadeResponsavelModel Responsavel { get { return _responsavel; } set { _responsavel = value; RaisePropertyChanged("Responsavel"); } }
+        public InflamabilidadeResponsavelModel? Responsavel { get { return _responsavel; } set { _responsavel = value; RaisePropertyChanged("Responsavel"); } }
 
         private InflamabilidadeModel _inflamabilidade;
-        public InflamabilidadeModel Inflamabilidade { get { return _inflamabilidade; } set { _inflamabilidade = value; RaisePropertyChanged("Inflamabilidade"); } }
+        public InflamabilidadeModel? Inflamabilidade { get { return _inflamabilidade; } set { _inflamabilidade = value; RaisePropertyChanged("Inflamabilidade"); } }
 
         private ObservableCollection<InflamabilidadeDetalhe> _detalhes;
         public ObservableCollection<InflamabilidadeDetalhe> Detalhes { get { return _detalhes; } set { _detalhes = value; RaisePropertyChanged("Detalhes"); } }
