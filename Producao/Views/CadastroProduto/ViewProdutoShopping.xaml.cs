@@ -36,6 +36,11 @@ namespace Producao.Views.CadastroProduto
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+            catch (NpgsqlException ex)
+            {
+                MessageBox.Show(ex.Message);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
@@ -53,6 +58,11 @@ namespace Producao.Views.CadastroProduto
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ProdutoShoppingModel data = (ProdutoShoppingModel)e.RowData;
                 vm.Produto = await Task.Run(() => vm.AddProdutoAsync(data));
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (NpgsqlException ex)
+            {
+                MessageBox.Show(ex.Message);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
