@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using iText.Commons.Actions.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.Views.OrdemServico.Requisicao;
 using Syncfusion.UI.Xaml.Grid;
@@ -1085,6 +1086,38 @@ namespace Producao
             {
                 throw;
             }
+        }
+
+        public async Task DeleteCheckListAsync(long codcompl)
+        {
+            using DatabaseContext db = new();
+            var strategy = db.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                using (var transaction = await db.Database.BeginTransactionAsync())
+                {
+                    try
+                    {
+                        //var comple = await db.ComplementoCheckLists.FirstOrDefaultAsync(p => p.codcompl == codcompl);
+                        //var det = db.DetalhesComplementos.Where(p => p.codcompl == codcompl).ToListAsync();
+                        //if (comple != null)
+                        //{
+                        
+                        await db.DetalhesComplementos.Where(c => c.codcompl == codcompl).ExecuteDeleteAsync();
+                        await db.SaveChangesAsync();
+
+                        await db.ComplementoCheckLists.Where(c => c.codcompl == codcompl).ExecuteDeleteAsync();
+                        await db.SaveChangesAsync();
+                        //}
+                        await transaction.CommitAsync();
+                    }
+                    catch (NpgsqlException)
+                    {
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
+                }
+            });
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

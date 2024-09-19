@@ -1,4 +1,5 @@
-﻿using Producao.Views.popup;
+﻿using Microsoft.EntityFrameworkCore;
+using Producao.Views.popup;
 using Syncfusion.Data;
 using Syncfusion.Data.Extensions;
 using Syncfusion.UI.Xaml.Grid;
@@ -875,6 +876,29 @@ namespace Producao.Views.CheckList
 
             }
             sfdatagrid.View.Refresh();
+        }
+
+        private async void dgCheckListGeral_RecordDeleting(object sender, RecordDeletingEventArgs e)
+        {
+            var mensagen = MessageBox.Show("Deseja deletar a linha e seu(s) complemento(s)?","Deletar Check-List",MessageBoxButton.YesNo,MessageBoxImage.Question);
+            if (mensagen == MessageBoxResult.Yes)
+            {
+                var item = e.Items[0] as QryCheckListGeralModel;
+                CheckListViewModel vm = (CheckListViewModel)DataContext;
+                try
+                {
+                    await vm.DeleteCheckListAsync((long)item.codcompl);
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(ex?.InnerException?.Message, "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                    e.Cancel = true;
+                }
+            }
+            else 
+            { 
+                e.Cancel = true;
+            }
         }
     }
 

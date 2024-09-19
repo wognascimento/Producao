@@ -445,17 +445,18 @@
             AutoGenerateColumns="False" 
             AllowResizingColumns="True"
             AllowDraggingColumns="True"
-            ColumnSizer="AutoWithLastColumnFill" 
+            AllowDeleting="True"
+            ColumnSizer="SizeToCells" 
             AllowFiltering="True"
-            ShowRowHeader="True" 
+            ShowRowHeader="True"  
+            SelectionMode="Single" 
             ItemsSource="{Binding CheckListGerais}"
             SelectedItem="{Binding CheckListGeral, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             SelectionChanged="OnSelectionChanged" 
             RowValidating="dgCheckListGeral_RowValidating" 
             CurrentCellValueChanged="dgCheckListGeral_CurrentCellValueChanged" 
             PasteGridCellContent="dgCheckListGeral_PasteGridCellContent" 
-            SelectionUnit="Any" 
-            SelectionMode="Single">
+            RecordDeleting="dgCheckListGeral_RecordDeleting">
             <syncfusion:SfDataGrid.Columns>
 
                 <syncfusion:GridNumericColumn 
@@ -489,25 +490,25 @@
                     HeaderText="QTDE" 
                     MappingName="qtd" 
                     DisplayBinding="{Binding qtd, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
+                    ColumnSizer="SizeToCells" />
                 <syncfusion:GridNumericColumn 
                     HeaderText="CODCOMPL" 
                     MappingName="codcompl" 
                     DisplayBinding="{Binding codcompl, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
+                    ColumnSizer="SizeToCells" />
                 <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE PRODUÇÃO" MappingName="obs" ColumnSizer="SizeToHeader" AllowEditing="True"/>
                 <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE MONTAGEM" MappingName="orient_montagem" ColumnSizer="SizeToHeader" AllowEditing="True"/>
-                <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE DESMONTAGEM" MappingName="orient_desmont" ColumnSizer="SizeToHeader" AllowEditing="True"/>
-                <syncfusion:GridTextColumn HeaderText="CAMINÃO" MappingName="carga" ColumnSizer="SizeToHeader" AllowEditing="True"/>
-                
-                <syncfusion:GridTextColumn MappingName="alteradopordescadic" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridDateTimeColumn MappingName="dataalteradescadic" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE DESMONTAGEM" MappingName="orient_desmont" ColumnSizer="SizeToCells" AllowEditing="True"/>
+                <syncfusion:GridTextColumn HeaderText="CAMINÃO" MappingName="carga" ColumnSizer="SizeToCells" AllowEditing="True"/>
 
-                <syncfusion:GridTextColumn MappingName="inserido_por" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridDateTimeColumn MappingName="inserido_em" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridTextColumn MappingName="alteradopordescadic" ColumnSizer="SizeToCells"/>
+                <syncfusion:GridDateTimeColumn MappingName="dataalteradescadic" ColumnSizer="SizeToCells"/>
 
-                <syncfusion:GridTextColumn MappingName="alterado_por" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridDateTimeColumn MappingName="alterado_em" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridTextColumn MappingName="inserido_por" ColumnSizer="SizeToCells"/>
+                <syncfusion:GridDateTimeColumn MappingName="inserido_em" ColumnSizer="SizeToCells"/>
+
+                <syncfusion:GridTextColumn MappingName="alterado_por" ColumnSizer="SizeToCells"/>
+                <syncfusion:GridDateTimeColumn MappingName="alterado_em" ColumnSizer="SizeToCells"/>
                 
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
