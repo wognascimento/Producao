@@ -476,7 +476,7 @@
                         ValueBinding="{Binding ok_revisao_alterada, Converter={StaticResource ConverterBoolen}}" />
                 <syncfusion:GridTextColumn HeaderText="ID" MappingName="id" ColumnSizer="SizeToCells" AllowEditing="True"/>
                 <syncfusion:GridTextColumn HeaderText="ITEM" MappingName="item_memorial" AllowEditing="True"/>
-                <syncfusion:GridTextColumn HeaderText="LOCAL DO SHOPPING" MappingName="local_shoppings" AllowEditing="True"/>
+                <syncfusion:GridTextColumn HeaderText="LOCAL DO SHOPPING" MappingName="local_shoppings" ColumnSizer="SizeToHeader" AllowEditing="True"/>
                 <syncfusion:GridTextColumn HeaderText="PLANILHA" MappingName="planilha">
                     <syncfusion:GridTextColumn.CellStyle>
                         <Style TargetType="syncfusionSfDataGrid:GridCell">
@@ -484,8 +484,8 @@
                         </Style>
                     </syncfusion:GridTextColumn.CellStyle>
                 </syncfusion:GridTextColumn>
-                <syncfusion:GridTextColumn HeaderText="DESCRIÇÃO" MappingName="descricao"/>
-                <syncfusion:GridTextColumn HeaderText="DESCRIÇÃO ADICIONAL" MappingName="descricao_adicional"/>
+                <syncfusion:GridTextColumn HeaderText="DESCRIÇÃO" MappingName="descricao" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridTextColumn HeaderText="DESCRIÇÃO ADICIONAL" MappingName="descricao_adicional" ColumnSizer="SizeToHeader"/>
                 <syncfusion:GridNumericColumn 
                     HeaderText="QTDE" 
                     MappingName="qtd" 
@@ -498,7 +498,7 @@
                     ColumnSizer="SizeToCells" />
                 <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE PRODUÇÃO" MappingName="obs" ColumnSizer="SizeToHeader" AllowEditing="True"/>
                 <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE MONTAGEM" MappingName="orient_montagem" ColumnSizer="SizeToHeader" AllowEditing="True"/>
-                <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE DESMONTAGEM" MappingName="orient_desmont" ColumnSizer="SizeToCells" AllowEditing="True"/>
+                <syncfusion:GridTextColumn HeaderText="ORIENTAÇÃO DE DESMONTAGEM" MappingName="orient_desmont" ColumnSizer="SizeToHeader" AllowEditing="True"/>
                 <syncfusion:GridTextColumn HeaderText="CAMINÃO" MappingName="carga" ColumnSizer="SizeToCells" AllowEditing="True"/>
 
                 <syncfusion:GridTextColumn MappingName="alteradopordescadic" ColumnSizer="SizeToCells"/>
