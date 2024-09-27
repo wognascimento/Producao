@@ -116,7 +116,7 @@
 
 
             <syncfusion:MenuItemAdv Header="Produto">
-                <syncfusion:MenuItemAdv Header="Relplan"/>
+                <syncfusion:MenuItemAdv Header="Relplan" Click="OnOpenRelPlanClick"/>
                 <syncfusion:MenuItemAdv Header="Cadastro de Produto" Click="OnCadastroProduto"/>
                 <!--
                 <syncfusion:MenuItemAdv Header="Descrição"/>

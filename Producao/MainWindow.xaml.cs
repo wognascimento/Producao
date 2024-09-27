@@ -1739,5 +1739,10 @@ namespace Producao
         {
             adicionarFilho(new Inflamabilidade(), "RELATÓRIO DE INFLAMABILIDADE", "INFLAMABILIDADE");
         }
+
+        private void OnOpenRelPlanClick(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new Relplan(), "RELPLAN", "RELPLAN");
+        }
     }
 }
