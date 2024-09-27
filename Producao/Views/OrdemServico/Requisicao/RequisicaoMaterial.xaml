@@ -209,15 +209,17 @@
 
 
 
-        <Grid Grid.Row="8" Grid.Column="0">
+        <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition />
+                <ColumnDefinition Width="75"/>
                 <ColumnDefinition Width="1"/>
-                <ColumnDefinition />
+                <ColumnDefinition Width="75"/>
                 <ColumnDefinition Width="1"/>
-                <ColumnDefinition />
+                <ColumnDefinition Width="75"/>
                 <ColumnDefinition Width="1"/>
-                <ColumnDefinition />
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="1"/>
+                <ColumnDefinition Width="75"/>
             </Grid.ColumnDefinitions>
 
             <syncfusion:ButtonAdv
@@ -245,6 +247,14 @@
 
             <syncfusion:ButtonAdv 
 				Grid.Column="6"
+                SmallIcon="{x:Null}" 
+                LargeIcon="{x:Null}" 
+                SizeMode="Large" 
+                Label="BUSCAR RECEITA" 
+                Click="OnReceitaClick"/>
+
+            <syncfusion:ButtonAdv 
+	            Grid.Column="8"
                 SmallIcon="/icones/icons8-impressão-40.png" 
                 LargeIcon="/icones/icons8-impressão-80.png" 
                 SizeMode="Large" 

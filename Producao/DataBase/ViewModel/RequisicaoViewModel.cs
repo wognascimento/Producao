@@ -332,6 +332,60 @@ namespace Producao
             }
         }
 
+        public async Task GravarItensReceitaAsync(long? num_requisicao)
+        {
+            using DatabaseContext db = new();
+            var strategy = db.Database.CreateExecutionStrategy();
+
+            RequisicaoModel requisicao = await db.Requisicoes.FindAsync(num_requisicao);
+            ProdutoServicoModel produtoServico = await db.ProdutoServicos.FindAsync(requisicao.num_os_servico);
+            ProdutoOsModel produtoOs = await db.ProdutoOs.FirstOrDefaultAsync(x => x.num_os_produto == produtoServico.num_os_produto);
+            double? quantidade = 0;
+            if (produtoServico.cod_detalhe_compl != null)
+            {
+                ComplementoCheckListModel? complementoCheckList = await db.ComplementoCheckLists.FindAsync(produtoServico.cod_detalhe_compl);
+                quantidade = complementoCheckList.qtd;
+            }
+            else 
+            {
+                quantidade = produtoServico.quantidade;
+            }
+
+            
+
+            if (produtoOs.cod_desc_adicional != null) 
+
+            await strategy.ExecuteAsync(async () =>
+            {
+                using var transaction = db.Database.BeginTransaction();
+                try
+                {
+
+                    var receita = await db.RequisicaoReceitas.Where(r => r.codcompladicional_produto == produtoOs.cod_compl_adicional).ToListAsync();
+                    foreach (var item in receita)
+                    {
+                        var ReqDetalhe = new DetalheRequisicaoModel
+                        {
+                            cod_det_req = null,
+                            num_requisicao = requisicao.num_requisicao,
+                            codcompladicional = item.codcompladicional_receita,
+                            quantidade = item.quantidade * quantidade,
+                            data = DateTime.Now,
+                            alterado_por = Environment.UserName
+                        };
+                        await db.RequisicaoDetalhes.AddAsync(ReqDetalhe);
+                        await db.SaveChangesAsync();
+                    }
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            });
+        }
+
         public async Task<ChecklistPrdutoRequisicaoModel> GetPrdutoRequisicaoAsync(long? num_requisicao)
         {
             try

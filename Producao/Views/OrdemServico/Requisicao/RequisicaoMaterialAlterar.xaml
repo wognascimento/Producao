@@ -215,6 +215,8 @@
                 <ColumnDefinition Width="1"/>
                 <ColumnDefinition Width="60"/>
                 <ColumnDefinition Width="1"/>
+                <ColumnDefinition Width="70"/>
+                <ColumnDefinition Width="1"/>
                 <ColumnDefinition Width="80"/>
                 <ColumnDefinition Width="1"/>
                 <ColumnDefinition Width="65"/>
@@ -245,14 +247,24 @@
 
             <syncfusion:ButtonAdv 
 				Grid.Column="6"
+                SmallIcon="{x:Null}" 
+                LargeIcon="{x:Null}" 
+                SizeMode="Large" 
+                Label="BUSCAR RECEITA" 
+                Click="OnReceitaClick"/>
+
+
+            <syncfusion:ButtonAdv 
+				Grid.Column="8"
                 SmallIcon="/icones/icons8-impressão-40.png" 
                 LargeIcon="/icones/icons8-impressão-80.png" 
                 SizeMode="Large" 
                 Label="REQUISICAO" 
                 Click="OnPrintClick"/>
 
+
             <syncfusion:ButtonAdv 
-				Grid.Column="8"
+				Grid.Column="10"
                 SmallIcon="/icones/icons8-impressão-40.png" 
                 LargeIcon="/icones/icons8-impressão-80.png" 
                 SizeMode="Large" 

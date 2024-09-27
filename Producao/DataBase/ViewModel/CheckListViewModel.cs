@@ -1,6 +1,7 @@
 ﻿using iText.Commons.Actions.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Producao.Views.CentralModelos;
 using Producao.Views.OrdemServico.Requisicao;
 using Syncfusion.UI.Xaml.Grid;
 using System;
@@ -488,6 +489,7 @@ namespace Producao
                 {
                     var tGlobal = await Task.Run(() => GetTGlobalAsync(produtoServico.num_os_servico));
                     Requisicao = await Task.Run(() => GetRequisicaoAsync(produtoServico.num_os_servico));
+                    Requisicao ??= await CriateRequisicaoChklistAsync(produtoServico.num_os_servico, CheckListGeralComplemento.codcompladicional);
                     QryRequisicaoDetalhes = await Task.Run(() => GetRequisicaoDetalhesAsync(Requisicao.num_requisicao));
                     //RequisicaoMaterial detailsWindow = new RequisicaoMaterial(produtoServico); //ProdutoServico
                     RequisicaoMaterial detailsWindow = new RequisicaoMaterial(tGlobal); //ProdutoServico
@@ -595,6 +597,51 @@ namespace Producao
             });
 
             return produtoServico;
+        }
+
+
+        public async Task<RequisicaoModel> CriateRequisicaoChklistAsync(long? num_os_servico, long? cod_compl_adicional)
+        {
+            using DatabaseContext db = new();
+            var strategy = db.Database.CreateExecutionStrategy();
+            RequisicaoModel requisicao = new();
+            await strategy.ExecuteAsync(async () =>
+            {
+                using var transaction = db.Database.BeginTransaction();
+                try
+                {
+                    requisicao = new RequisicaoModel
+                    {
+                        num_os_servico = num_os_servico,
+                        data = DateTime.Now,
+                        alterado_por = Environment.UserName
+                    };
+                    await db.Requisicoes.AddAsync(requisicao);
+                    await db.SaveChangesAsync();
+                    var receita = await db.RequisicaoReceitas.Where(r => r.codcompladicional_produto == cod_compl_adicional).ToListAsync();
+                    foreach (var item in receita)
+                    {
+                        var ReqDetalhe = new DetalheRequisicaoModel
+                        {
+                            cod_det_req = null,
+                            num_requisicao = requisicao.num_requisicao,
+                            codcompladicional = item.codcompladicional_receita,
+                            quantidade = item.quantidade * CheckListGeralComplemento.qtd,
+                            data = DateTime.Now,
+                            alterado_por = Environment.UserName
+                        };
+                        await db.RequisicaoDetalhes.AddAsync(ReqDetalhe);
+                        await db.SaveChangesAsync();
+                    }
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            });
+            return requisicao;
         }
 
 

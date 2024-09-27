@@ -1,4 +1,6 @@
-﻿using Producao.Views.Construcao;
+﻿using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using Producao.Views.Construcao;
 using Producao.Views.PopUp;
 using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Diagram;
@@ -799,6 +801,28 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
             return new ObservableCollection<QryRequisicaoDetalheModel>(vm.QryRequisicaoDetalhes.Where(p => p.volume == volume && p.quantidade > 0).Take(5));
+        }
+
+        private async void OnReceitaClick(object sender, RoutedEventArgs e)
+        {
+            RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                await vm.GravarItensReceitaAsync(vm.Requisicao.num_requisicao);
+                vm.QryRequisicaoDetalhes = await Task.Run(() => vm.GetRequisicaoDetalhesAsync(vm.Requisicao.num_requisicao));
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (DbUpdateException ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.InnerException.Message, ((PostgresException)ex.InnerException).MessageText);
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }
