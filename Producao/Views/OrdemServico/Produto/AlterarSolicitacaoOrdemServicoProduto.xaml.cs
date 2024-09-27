@@ -291,7 +291,7 @@ namespace Producao.Views.OrdemServico.Produto
 
                             if (servico.pt == true)
                             {
-                                wsPt.Range["G2"].Number = (double)servico.num_os_servico;
+                                wsPt.Range["G1"].Number = (double)servico.num_os_servico;
                                 wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
 
                                 Process.Start(

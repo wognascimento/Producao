@@ -105,7 +105,7 @@ namespace Producao.Views.OrdemServico.Servicos
 
                 if (OS.pt == true)
                 {
-                    wsPt.Range["G2"].Number = (double)OS.num_os;
+                    wsPt.Range["G1"].Number = (double)OS.num_os;
                     wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
 
                     Process.Start(
