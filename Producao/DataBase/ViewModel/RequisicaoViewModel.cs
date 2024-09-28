@@ -351,8 +351,6 @@ namespace Producao
                 quantidade = produtoServico.quantidade;
             }
 
-            
-
             if (produtoOs.cod_desc_adicional != null) 
 
             await strategy.ExecuteAsync(async () =>
@@ -373,8 +371,15 @@ namespace Producao
                             data = DateTime.Now,
                             alterado_por = Environment.UserName
                         };
-                        await db.RequisicaoDetalhes.AddAsync(ReqDetalhe);
-                        await db.SaveChangesAsync();
+
+                        var encontrado = await db.RequisicaoDetalhes.FirstOrDefaultAsync(x => x.num_requisicao == requisicao.num_requisicao && x.codcompladicional == ReqDetalhe.codcompladicional);
+                        if (encontrado == null)
+                        {
+                            await db.RequisicaoDetalhes.AddAsync(ReqDetalhe);
+                            await db.SaveChangesAsync();
+                        }
+                                   
+                        
                     }
                     transaction.Commit();
                 }
