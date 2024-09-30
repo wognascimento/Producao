@@ -97,7 +97,7 @@ namespace Producao.Views.CheckList
                     incluidopordesc = vm?.CheckListGeral?.incluidopordesc,
                     kp = vm?.CheckListGeral?.kp,
                     orient_desmont = vm?.CheckListGeral?.orient_desmont,
-                    qtd = (double)vm.CheckListGeral.qtd,
+                    qtd = vm.CheckListGeral.qtd,
                     coduniadicional = vm?.CheckListGeral?.coduniadicional,
                     codcompl = vm?.CheckListGeral?.codcompl,
                     nivel = vm?.CheckListGeral?.nivel,

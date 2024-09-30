@@ -23,7 +23,7 @@ namespace Producao
         public double? kp { get; set; }
         public int? kp2 { get; set; }
         public string? orient_desmont { get; set; }
-        public double qtd { get; set; }
+        public double? qtd { get; set; }
         public long? coduniadicional { get; set; }
         public DateTime? dataalteradescadic { get; set; }
         public string? alteradopordescadic { get; set; }
