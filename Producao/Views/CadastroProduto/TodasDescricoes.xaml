@@ -44,9 +44,10 @@
                 <Syncfusion:GridCheckBoxColumn MappingName="inativo"
                                            DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
                                            ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"/>
-                <Syncfusion:GridTextColumn MappingName="vida_util"/>
-                <Syncfusion:GridCurrencyColumn MappingName="custo"/>
-                <Syncfusion:GridTextColumn MappingName="saldo_estoque"/>
+                <Syncfusion:GridNumericColumn MappingName="vida_util"/>
+                <Syncfusion:GridNumericColumn MappingName="custo"/>
+                <Syncfusion:GridNumericColumn MappingName="saldo_estoque"/>
+                <Syncfusion:GridNumericColumn MappingName="peso"/>
             </Syncfusion:SfDataGrid.Columns>
         </Syncfusion:SfDataGrid>
     </Grid>
