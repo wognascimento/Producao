@@ -220,6 +220,9 @@ namespace Producao.Views.CheckList
                 SiglaChkListModel valor = (SiglaChkListModel)this.cbSiglaShopping.SelectedItem;
                 vm.Locaisshopping = await Task.Run(async () => await vm.GetLocaisShoppAsync(vm?.Sigla?.id_aprovado));
                 vm.CheckListGerais = await Task.Run(async () => await vm.GetCheckListGeralAsync(vm?.Sigla?.id_aprovado));
+                vm.CheckListGeralComplementos = [];
+                vm.CheckListGeralComplemento = null;
+                vm.CompleAdicionais = [];
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
 
