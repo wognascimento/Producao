@@ -31,7 +31,7 @@
                     <syncfusion:MenuItemAdv x:Name="historico" Header="Histórico" Click="OnHistoricoChecklistClick"/>
                 </syncfusion:MenuItemAdv>
                 <syncfusion:MenuItemAdv Header="Memorial" Click="OnOpenMemorial"/>
-                <syncfusion:MenuItemAdv Header="Funxma"/>
+                <syncfusion:MenuItemAdv Header="FunXmas"/>
                 <syncfusion:MenuItemAdv Header="Prefeitura"/>
             </syncfusion:MenuItemAdv>
             <syncfusion:MenuItemAdv Header="Planilha">

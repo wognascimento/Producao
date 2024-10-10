@@ -14,6 +14,7 @@ namespace Producao
         public DateTime? data { get; set; }
         public string? alterado_por { get; set; }
         public long? id_modelo { get; set; }
+        public string? planilha_os { get; set; }
         public string? planilha { get; set; }
         //public string? descricao { get; set; }
         //public string? descricao_adicional { get; set; }
