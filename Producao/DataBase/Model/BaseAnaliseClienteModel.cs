@@ -25,6 +25,7 @@ namespace Producao.DataBase.Model
         public long? coddetalhescompl { get; set; }
         public long? codcompl { get; set; }
         public double? somadeqtd_expedida { get; set; }
+        public double? saldo_estoque { get; set; }
         public string? resp_prod { get; set; }
         public string? unidade { get; set; }
         public long? codcompladicional { get; set; }
