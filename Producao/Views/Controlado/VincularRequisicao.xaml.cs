@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Persistence.Core;
 
 namespace Producao.Views.Controlado
 {
@@ -110,7 +111,21 @@ namespace Producao.Views.Controlado
                 VincularRequisicaoViewModel vm = (VincularRequisicaoViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                foreach (var item in vm.Produtos)
+                var query = vm.Produtos
+                  .GroupBy(x => new { x.codcompladicional, x.num_requisicao, x.planilha, x.descricao, x.descricao_adicional, x.complementoadicional, x.descricao_completa })
+                  .Select(g => new TransformaRequisicaoModel
+                  {
+                      codcompladicional = g.Key.codcompladicional,
+                      quantidade = g.Sum(x => x.quantidade),
+                      num_requisicao = g.Key.num_requisicao,
+                      planilha = g.Key.planilha,
+                      descricao = g.Key.descricao,
+                      descricao_adicional = g.Key.descricao_adicional,
+                      complementoadicional = g.Key.complementoadicional,
+                      descricao_completa = g.Key.descricao_completa,
+                  }).ToList();
+
+                foreach (var item in query)
                 {
                     await Task.Run(() => vm.BaixaReceitaAsync(item));
                 }

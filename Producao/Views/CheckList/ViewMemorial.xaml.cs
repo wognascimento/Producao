@@ -252,11 +252,11 @@ namespace Producao.Views.CheckList
                 worksheet.Range["G2"].WrapText = true;
 
                 worksheet.Range["H2"].Text = $"OBS INTERNA";
-                worksheet.Range["H2"].ColumnWidth = 20;
+                worksheet.Range["H2"].ColumnWidth = 15;
                 worksheet.Range["H2"].WrapText = true;
 
                 worksheet.Range["I2"].Text = $"OBS ALTERAÇÃO";
-                worksheet.Range["I2"].ColumnWidth = 20;
+                worksheet.Range["I2"].ColumnWidth = 15;
                 worksheet.Range["I2"].WrapText = true;
 
                 worksheet.Rows[1].CellStyle = bodyStyle;
