@@ -5,7 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Producao
 {
     [Keyless]
-    [Table("qry_geral_requisicao_producao", Schema = "producao")]
+    //[Table("qry_geral_requisicao_producao", Schema = "producao")]
+    [Table("qry_requisicao_producao", Schema = "producao")]
     public class GeralRequisicaoProducaoModel
     {
         public long? num_os_servico { get; set; }
@@ -15,6 +16,7 @@ namespace Producao
         public string? alterado_por { get; set; }
         public long? id_modelo { get; set; }
         public string? planilha_os { get; set; }
+        public string? descricao_completa_os { get; set; }
         public string? planilha { get; set; }
         //public string? descricao { get; set; }
         //public string? descricao_adicional { get; set; }
