@@ -231,12 +231,12 @@ namespace Producao.Views.kit.solucao
                 var index = 9;
                 foreach (var item in vm.ChkGerais)
                 {
-                    worksheet.Range[$"A{index}"].Number = (double)item.qtd;
+                    worksheet.Range[$"A{index}"].Number = Convert.ToDouble(item.qtd);
                     worksheet.Range[$"A{index}"].CellStyle = borderStyle;
                     //worksheet.Range[$"A{index}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                     //worksheet.Range[$"A{index}"].CellStyle.Font.Size = 7;
 
-                    worksheet.Range[$"B{index}"].Number = (double)item.codcompladicional;
+                    worksheet.Range[$"B{index}"].Number = Convert.ToDouble(item.codcompladicional);
                     worksheet.Range[$"B{index}"].CellStyle = borderStyle;
                     //worksheet.Range[$"B{index}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                     //worksheet.Range[$"B{index}"].CellStyle.Font.Size = 7;
@@ -264,7 +264,7 @@ namespace Producao.Views.kit.solucao
                     worksheet.Range[$"M{index}:N{index}"].WrapText = true;
                     worksheet.Range[$"E{index}:K{index}"].RowHeight = 26;
 
-                    worksheet.Range[$"O{index}"].Number = (double)item.coddetalhescompl;
+                    worksheet.Range[$"O{index}"].Number = Convert.ToDouble(item.coddetalhescompl);
                     worksheet.Range[$"O{index}"].CellStyle = borderStyle;
                     //worksheet.Range[$"O{index}"].CellStyle.Font.Size = 7;
 
@@ -272,10 +272,10 @@ namespace Producao.Views.kit.solucao
                     worksheet.Range[$"P{index}"].CellStyle = borderStyle;
                     //worksheet.Range[$"O{index}"].CellStyle.Font.Size = 7;
 
-                    worksheet.Range[$"Q{index}"].Number = (double)item.custo;
+                    worksheet.Range[$"Q{index}"].Number = Convert.ToDouble(item.custo);
                     worksheet.Range[$"Q{index}"].CellStyle = borderStyle;
 
-                    worksheet.Range[$"R{index}"].Number = (double)item.peso;
+                    worksheet.Range[$"R{index}"].Number = Convert.ToDouble(item.peso);
                     worksheet.Range[$"R{index}"].CellStyle = borderStyle;
 
                     index++;
