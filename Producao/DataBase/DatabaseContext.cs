@@ -23,6 +23,7 @@ namespace Producao
         public DbSet<PendenciaProducaoModel> PendenciaProducaos { get; set; }
         public DbSet<DetalhesPendenciaProducaoModel> DetalhesPendenciaProducao { get; set; }
         public DbSet<ControlePlanilhaGrupoModel> ControlePlanilhaGrupos { get; set; }
+        public DbSet<TblAreaTemaModel> AreaTemas { get; set; }
         public DbSet<SetorProducaoModel> SetorProducaos { get; set; }
         public DbSet<ObsOsModel> ObsOs { get; set; }
         public DbSet<TblServicoModel> tblServicos { get; set; }

@@ -1744,5 +1744,10 @@ namespace Producao
         {
             adicionarFilho(new Relplan(), "RELPLAN", "RELPLAN");
         }
+
+        private void OnAreasTemas(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new AreaTema(), "ÁREAS TEMAS", "AREAS_TEMAS");
+        }
     }
 }
