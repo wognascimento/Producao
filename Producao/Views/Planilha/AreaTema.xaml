@@ -36,7 +36,8 @@
             SelectionMode="Extended"
             GridCopyOption="CopyData,IncludeHeaders,IncludeFormat" 
             ItemsSource="{Binding AreaTemas}"
-            SelectedItem="{Binding AreaTema, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CurrentCellEndEdit="gridAreaTema_CurrentCellEndEdit">
+            SelectedItem="{Binding AreaTema, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+            CurrentCellEndEdit="gridAreaTema_CurrentCellEndEdit">
             <!--
             <interactivity:Interaction.Triggers>
                 <interactivity:EventTrigger EventName="CurrentCellEndEdit">
@@ -57,14 +58,14 @@
                     MappingName="trem"
                     DisplayBinding="{Binding trem, Converter={StaticResource ConverterBoolen}}"
                     ValueBinding="{Binding trem, Converter={StaticResource ConverterBoolen}}" />
-                <syncfusion:GridNumericColumn   MappingName="area_total_memorial"/>
-                <syncfusion:GridNumericColumn   MappingName="area_total_planta"/>
-                <syncfusion:GridNumericColumn   MappingName="perimetro_planta"/>
-                <syncfusion:GridNumericColumn   MappingName="trilha_memorial"/>
-                <syncfusion:GridNumericColumn   MappingName="trilha_planta"/>
-                <syncfusion:GridNumericColumn   MappingName="pa"/>
-                <syncfusion:GridNumericColumn   MappingName="construcao_total"/>
-                <syncfusion:GridNumericColumn   MappingName="cenografia_planta"/>
+                <syncfusion:GridNumericColumn   MappingName="area_total_memorial"   AllowFiltering="False" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridNumericColumn   MappingName="area_total_planta"     AllowFiltering="False" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridNumericColumn   MappingName="perimetro_planta"      AllowFiltering="False" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridNumericColumn   MappingName="trilha_memorial"       AllowFiltering="False" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridNumericColumn   MappingName="trilha_planta"         AllowFiltering="False" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridNumericColumn   MappingName="pa"                    AllowFiltering="False" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridNumericColumn   MappingName="construcao_total"      AllowFiltering="False" ColumnSizer="SizeToHeader"/>
+                <syncfusion:GridNumericColumn   MappingName="cenografia_planta"     AllowFiltering="False" ColumnSizer="SizeToHeader"/>
                 <!--
                 <syncfusion:GridTextColumn      MappingName="incluido_por" AllowEditing="False"/>
                 <syncfusion:GridDateTimeColumn  MappingName="data_inclusao" AllowEditing="False"/>

@@ -4,21 +4,13 @@ using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.UI.Xaml.Grid.Helpers;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Producao.Views.Planilha
 {
@@ -109,11 +101,40 @@ namespace Producao.Views.Planilha
         private void gridAreaTema_CurrentCellEndEdit(object sender, CurrentCellEndEditEventArgs e)
         {
             var sfDataGrid = e.OriginalSender as SfDataGrid;
-            if (sfDataGrid.CurrentColumn.MappingName != "sigla")
-                return;
+            var dataGrid = sender as SfDataGrid;
+            //if (sfDataGrid.CurrentColumn.MappingName != "sigla")
+            //    return;
+
             var datarow = sfDataGrid.RowGenerator.Items.FirstOrDefault(dr => dr.RowIndex == e.RowColumnIndex.RowIndex);
-            datarow.Element.DataContext = null;
-            sfDataGrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
+            var dodos = datarow.RowData as TblAreaTemaModel;
+
+            if (datarow.RowData is TblAreaTemaModel currentItem)
+            {
+                // Atualizar a coluna CenografiaPlanta com base em ConstrucaoTotal
+                if (sfDataGrid.CurrentColumn.MappingName == "construcao_total")
+                {
+                    var calculo = dodos.area_total_planta - dodos.trilha_planta - dodos.pa - dodos.construcao_total;
+                    currentItem.cenografia_planta = calculo;
+                    // Atualizar a visualização da linha no SfDataGrid
+                    //dataGrid.View.Refresh();
+                    datarow.Element.DataContext = null;
+                    sfDataGrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
+
+                    // Notifica a validação da linha explicitamente
+                    sfDataGrid.View.CommitEdit(); // Finaliza a edição da célula
+                }
+                else
+                {
+                    if (sfDataGrid.CurrentColumn.MappingName != "sigla")
+                        return;
+
+                    datarow.Element.DataContext = null;
+                    sfDataGrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
+                    //sfDataGrid.View.CommitEdit();
+                }
+
+
+            }
         }
     }
 
