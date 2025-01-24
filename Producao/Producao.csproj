@@ -7,6 +7,12 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icones\logo-verde.ico</ApplicationIcon>
     <IsPublishable>True</IsPublishable>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+	  
+	<PublishSingleFile>true</PublishSingleFile>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<SelfContained>true</SelfContained>
+	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="App.ico" />
@@ -65,24 +71,24 @@
     <None Include="Project_Readme.html" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EPPlus" Version="7.4.1" />
-    <PackageReference Include="itext7" Version="8.0.5" />
+    <PackageReference Include="EPPlus" Version="7.5.3" />
+    <PackageReference Include="itext7" Version="9.0.0" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.5" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
-    <PackageReference Include="NuGet.CommandLine" Version="6.11.1">
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
+    <PackageReference Include="NuGet.CommandLine" Version="6.12.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SharpCompress" Version="0.38.0" />
+    <PackageReference Include="SharpCompress" Version="0.39.0" />
     <PackageReference Include="squirrel.windows" Version="1.9.0" />
     <PackageReference Include="syncfusion.ui.wpf.net" Version="27.1.56" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="Telerik.UI.for.Wpf.70.Xaml">
       <Version>2023.2.718</Version>
     </PackageReference>
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="8.103.6" />
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.7" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="App.ico" />
@@ -174,6 +180,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>GridViewResources.resx</DependentUpon>
     </Compile>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Update="Views\kit\manutencao\ViewDetalhesKitManutencao.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -188,6 +199,10 @@
     <EmbeddedResource Update="Localization\GridViewResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>GridViewResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
