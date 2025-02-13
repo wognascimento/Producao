@@ -13,6 +13,8 @@ namespace Producao
         public string? descricao_adicional { get; set; }
         public string? complementoadicional { get; set; }
         public long? codcompladicional { get; set; }
+        public long? vida_util { get; set; }
+        public double? custo { get; set; }
         public double? chks { get; set; }
         public double? saldo_patrimonial { get; set; }
         public string? unidade { get; set; }

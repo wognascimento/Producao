@@ -24,7 +24,13 @@
             ColumnSizer="AutoWithLastColumnFill"
             ShowRowHeader="True" 
             ItemsSource="{Binding Produtos}"
-            SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AllowFiltering="True" CanUseViewFilter="True" RowValidated="SfDataGrid_RowValidated"> 
+            SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+            AllowFiltering="True" 
+            CanUseViewFilter="True" 
+            RowValidated="SfDataGrid_RowValidated"
+            SelectionUnit="Row"
+            SelectionMode="Extended"
+            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat"> 
 
             <Syncfusion:SfDataGrid.Columns>
 
