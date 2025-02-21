@@ -31,7 +31,9 @@ namespace Producao.Views.CadastroProduto
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ViewProdutoShoppingViewModel vm = (ViewProdutoShoppingViewModel)DataContext;
-                vm.Produtos = await Task.Run(vm.GetProdutosAsync);
+
+                await vm.InserirCustosAdicionaisAsync();
+                vm.Produtos = await vm.GetProdutosAsync();
 
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -95,13 +97,38 @@ namespace Producao.Views.CadastroProduto
             set { _produto = value; RaisePropertyChanged("Produto"); }
         }
 
+        public async Task InserirCustosAdicionaisAsync()
+        {
+            try
+            {
+                using DatabaseContext db = new();
+
+                await db.Database.ExecuteSqlRawAsync(@"
+                    INSERT INTO comercial.tblcustodescadicional (codcompladicional, tipocusto)
+                    SELECT c.codcompladicional, 'ESTIMADO'
+                    FROM producao.tblcomplementoAdicional c
+                    LEFT JOIN comercial.tblcustodescadicional d 
+                        ON c.codcompladicional = d.codcompladicional
+                    WHERE d.codcompladicional IS NULL;
+                ");
+            }
+            catch (DbUpdateException)
+            {
+                throw;
+            }
+
+
+        }
+
         public async Task<ObservableCollection<ProdutoShoppingModel>> GetProdutosAsync()
         {
             try
             {
                 using DatabaseContext db = new();
                 //var data = await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync();
-                var data = await db.ProdutoShopping.ToListAsync();
+                var data = await db.ProdutoShopping
+                    .Where(p => p.ncm == null || p.peso == null || p.peso == 0 || p.custo == null || p.custo == 0)
+                    .ToListAsync();
                 return new ObservableCollection<ProdutoShoppingModel>(data);
             }
             catch (Exception)
