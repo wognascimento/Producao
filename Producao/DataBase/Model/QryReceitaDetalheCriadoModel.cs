@@ -37,6 +37,7 @@ namespace Producao
         public double? custo {get; set; }
         public double? custo_total {get; set; }
         public double? saldoestoque {get; set; }
+        public double? saldo_estoque { get; set; }
         public double? saldoproduzido {get; set; }
         public double? saldo_patrimonial {get; set; }
         public string? observacao {get; set; }

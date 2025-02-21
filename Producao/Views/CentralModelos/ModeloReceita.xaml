@@ -445,6 +445,9 @@
             ColumnSizer="Auto"
             ItemsSource="{Binding Path=ItensReceita}" 
             FontSize="10" 
+            SelectionUnit="Row"
+            SelectionMode="Extended"
+            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat"
             MouseDoubleClick="dgModelos_MouseDoubleClick">
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:GridNumericColumn MappingName="codcompladicional" Width="70" NumberDecimalDigits="0" HeaderText="COD."/>
@@ -453,7 +456,7 @@
                 <syncfusion:GridTextColumn MappingName="unidade" Width="55" HeaderText="UNID."/>
                 <syncfusion:GridNumericColumn MappingName="qtd_modelo" HeaderText="MODELO" Width="90"/>
                 <syncfusion:GridNumericColumn MappingName="qtd_producao" HeaderText="PRODUÇÃO" Width="100"/>
-                <syncfusion:GridNumericColumn MappingName="saldoestoque" HeaderText="ESTOQUE" Width="100"/>
+                <syncfusion:GridNumericColumn MappingName="saldo_estoque" HeaderText="ESTOQUE" Width="100"/>
                 <syncfusion:GridCurrencyColumn MappingName="custo" HeaderText="CUSTO" Width="100"/>
                 <syncfusion:GridCurrencyColumn MappingName="custo_total" HeaderText="CUSTO TOTAL" Width="100"/>
                 
