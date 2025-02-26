@@ -51,6 +51,14 @@
                         ItemsSource="{Binding Unidades}"
                         DisplayMemberPath="unidade"
                         SelectedValuePath="unidade"/>
+                <syncfusion:GridNumericColumn
+                        HeaderText="PREÇO" 
+                        MappingName="precolocacao"
+                        DisplayBinding="{Binding precolocacao, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridNumericColumn
+                        HeaderText="VIDA ÚTIL" 
+                        MappingName="vida_util"
+                        DisplayBinding="{Binding vida_util, Converter={StaticResource ConverterNumber}}"/>       
                 <syncfusion:GridCheckBoxColumn
                         AllowEditing="True"
                         HeaderText="INATIVO" 

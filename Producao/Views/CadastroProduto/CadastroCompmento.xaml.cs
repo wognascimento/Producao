@@ -114,7 +114,7 @@ namespace Producao.Views.CadastroProduto
                 //altura
                 //largura
                 //profundidade
-                data.vida_util = comple == null ? 0 : comple.vida_util;
+                //data.vida_util = comple == null ? 0 : comple.vida_util;
                 //diametro
                 data.peso = comple == null ? 0 : comple.peso;
                 //unidade
@@ -123,10 +123,10 @@ namespace Producao.Views.CadastroProduto
                 data.alterado_por = data.codcompladicional == null ? null : Environment.UserName;
                 data.alterado_em = data.codcompladicional == null ? null : DateTime.Now;
                 //custo_real
-                data.prodcontrolado = comple == null ? "0" : comple.prodcontrolado;
+               //data.prodcontrolado = comple == null ? "0" : comple.prodcontrolado;
                 //volume
                 //area
-                //precolocacao
+                //data.precolocacao = comple == null ? null : comple.precolocacao;
                 //descricaofiscal = ultimo ou null
                 //descricaoespanhol
                 //estoque_min
