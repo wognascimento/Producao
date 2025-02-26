@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 using Producao.DataBase.Model;
 using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.UI.Xaml.Grid.Helpers;
+using Syncfusion.Windows.Shared;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Persistence.Core;
 
 namespace Producao.Views.Planilha
 {
@@ -43,13 +46,9 @@ namespace Producao.Views.Planilha
             }
         }
 
-        private void OnCurrentCellValueChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValueChangedEventArgs e)
-        {
-
-        }
-
         private async void OnRowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
         {
+            var registro = e.RowData as TblAreaTemaModel;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
@@ -61,12 +60,23 @@ namespace Producao.Views.Planilha
             catch (DbUpdateException ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.InnerException.Message);
+                MessageBox.Show(ex.InnerException?.Message);
+
+                if (gridAreaTema.IsAddNewIndex(e.RowIndex))
+                    gridAreaTema.View.Remove(registro);
+                else
+                    gridAreaTema.View.Refresh();
             }
             catch (Exception ex)
             {
+                
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 MessageBox.Show(ex.Message);
+
+                if (gridAreaTema.IsAddNewIndex(e.RowIndex))
+                    gridAreaTema.View.Remove(registro);
+                else
+                    gridAreaTema.View.Refresh();
             }
         }
 
@@ -80,8 +90,8 @@ namespace Producao.Views.Planilha
             
             var sfdatagrid = sender as SfDataGrid;
             var viewModel = (AreaTemaViewModel)sfdatagrid.DataContext;
-            int rowIndex = sfdatagrid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-
+            //int rowIndex = sfdatagrid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
+            /*
             TblAreaTemaModel record;
 
             if (rowIndex == -1)
@@ -94,7 +104,49 @@ namespace Producao.Views.Planilha
                 record.tema = ((AprovadoModel)e.SelectedItem).Tema;
 
             sfdatagrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
+            */
 
+            if (gridAreaTema.CurrentColumn.MappingName == "sigla")
+            {
+                var rowIndex = gridAreaTema.SelectionController.CurrentCellManager.CurrentRowColumnIndex.RowIndex;
+
+                // Obtém a ViewModel (ajuste conforme seu DataContext)
+                var listaFuncionarios = (ObservableCollection<TblAreaTemaModel>)gridAreaTema.ItemsSource;
+
+                TblAreaTemaModel? registro = null;
+
+                // Verifica se é uma linha nova sendo editada
+                if (gridAreaTema.IsAddNewIndex(rowIndex))
+                {
+                    // Se for uma nova linha, obtemos o objeto que está sendo editado
+                    registro = gridAreaTema.View.CurrentAddItem as TblAreaTemaModel;
+                }
+                else if (rowIndex > 0 && rowIndex <= listaFuncionarios.Count)
+                {
+                    // Se for uma linha existente, acessamos pelo ItemsSource
+                    registro = listaFuncionarios[rowIndex - 1];
+                }
+
+                if (registro != null)
+                {
+                    // Obtém o nome selecionado no ComboBox
+                    string? nomeSelecionado = ((AprovadoModel)e.SelectedItem).SiglaServ;
+
+                    // Busca o setor correspondente ao funcionário selecionado
+                    var funcionario = ((AreaTemaViewModel)this.DataContext).Siglas.FirstOrDefault(f => f.SiglaServ == nomeSelecionado);
+
+                    if (funcionario != null)
+                    {
+                        registro.tema = funcionario.Tema;
+                        //sfdatagrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
+                        gridAreaTema.UpdateDataRow(rowIndex);
+                    }
+                }
+            }
+        }
+
+        private void OnCurrentCellValueChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValueChangedEventArgs e)
+        {
 
         }
 
@@ -102,12 +154,8 @@ namespace Producao.Views.Planilha
         {
             var sfDataGrid = e.OriginalSender as SfDataGrid;
             var dataGrid = sender as SfDataGrid;
-            //if (sfDataGrid.CurrentColumn.MappingName != "sigla")
-            //    return;
-
             var datarow = sfDataGrid.RowGenerator.Items.FirstOrDefault(dr => dr.RowIndex == e.RowColumnIndex.RowIndex);
             var dodos = datarow.RowData as TblAreaTemaModel;
-
             if (datarow.RowData is TblAreaTemaModel currentItem)
             {
                 // Atualizar a coluna CenografiaPlanta com base em ConstrucaoTotal
@@ -115,25 +163,9 @@ namespace Producao.Views.Planilha
                 {
                     var calculo = dodos.area_total_planta - dodos.trilha_planta - dodos.pa - dodos.construcao_total;
                     currentItem.cenografia_planta = calculo;
-                    // Atualizar a visualização da linha no SfDataGrid
-                    //dataGrid.View.Refresh();
-                    datarow.Element.DataContext = null;
                     sfDataGrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
-
-                    // Notifica a validação da linha explicitamente
-                    sfDataGrid.View.CommitEdit(); // Finaliza a edição da célula
+                    sfDataGrid.View.CommitEdit();
                 }
-                else
-                {
-                    if (sfDataGrid.CurrentColumn.MappingName != "sigla")
-                        return;
-
-                    datarow.Element.DataContext = null;
-                    sfDataGrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
-                    //sfDataGrid.View.CommitEdit();
-                }
-
-
             }
         }
     }

@@ -27,7 +27,7 @@
             AddNewRowPosition="Bottom"
             ColumnSizer="Auto"
             CurrentCellDropDownSelectionChanged="gridAreaTema_CurrentCellDropDownSelectionChanged"
-            CurrentCellValueChanged="OnCurrentCellValueChanged" 
+            CurrentCellValueChanged="OnCurrentCellValueChanged"
             RowValidated="OnRowValidated" 
             RowValidating="OnRowValidating" 
             AllowResizingHiddenColumns="True" 
