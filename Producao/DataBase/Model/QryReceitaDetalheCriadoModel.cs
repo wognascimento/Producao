@@ -44,5 +44,6 @@ namespace Producao
         public string? local {get; set; }
         public string? descricao_completa { get; set; }
         public string? inativo { get; set; }
+        public int? vida_util { get; set; }
     }
 }

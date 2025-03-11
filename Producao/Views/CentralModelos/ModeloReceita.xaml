@@ -457,6 +457,7 @@
                 <syncfusion:GridNumericColumn MappingName="qtd_modelo" HeaderText="MODELO" Width="90"/>
                 <syncfusion:GridNumericColumn MappingName="qtd_producao" HeaderText="PRODUÇÃO" Width="100"/>
                 <syncfusion:GridNumericColumn MappingName="saldo_estoque" HeaderText="ESTOQUE" Width="100"/>
+                <syncfusion:GridNumericColumn MappingName="vida_util" HeaderText="VIDA ÚTIL" Width="100"/>
                 <syncfusion:GridCurrencyColumn MappingName="custo" HeaderText="CUSTO" Width="100"/>
                 <syncfusion:GridCurrencyColumn MappingName="custo_total" HeaderText="CUSTO TOTAL" Width="100"/>
                 
