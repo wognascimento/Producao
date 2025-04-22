@@ -35,7 +35,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
-;PrivilegesRequired=lowest
+PrivilegesRequired=lowest
 OutputBaseFilename=Producao
 SetupIconFile=icones\logo-verde.ico
 SolidCompression=yes
