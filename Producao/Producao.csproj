@@ -8,8 +8,8 @@
     <ApplicationIcon>icones\logo-verde.ico</ApplicationIcon>
 	  <!-- Configurações de versão -->
 	  <Version>1.0.0</Version>
-	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
-	  <FileVersion>1.0.0.0</FileVersion>
+	  <AssemblyVersion>1.0.0.1</AssemblyVersion>
+	  <FileVersion>1.0.0.1</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="App.ico" />
@@ -211,5 +211,9 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+	
+	<Target Name="IncludeEmptyFolders" AfterTargets="Publish">
+		<MakeDir Directories="$(PublishDir)Impressos" />
+	</Target>
 
 </Project>

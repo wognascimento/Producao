@@ -102,6 +102,7 @@ namespace Producao
         public DbSet<ConstrucaoPecaModel> ConstrucaoPecas { get; set; }
         public DbSet<ChecklistPrdutoConstrucaoModel> ChecklistPrdutoConstrucaos { get; set; }
         public DbSet<ChecklistPrdutoRequisicaoModel> ChecklistPrdutooRequisicoes { get; set; }
+        public DbSet<QryImpressaoModel> Impressoes { get; set; }
 
         public DbSet<InflamabilidadeModel> Inflamabilidades { get; set; }
         public DbSet<InflamabilidadeDetalheModel> InflamabilidadeDetalhes { get; set; }

@@ -22,7 +22,7 @@
                     <telerik:RadMenuItem 
                         Header="Imprimir" 
                         Command="{Binding Source={x:Static Member=local:ContextMenuCommandEtiquetaImpressa.Imprimir}}"
-                        CommandParameter="{Binding Impressa}"/>
+                        CommandParameter="{Binding }"/>
                 </telerik:RadContextMenu>
             </telerik:RadContextMenu.ContextMenu>
         </telerik:RadListBox>

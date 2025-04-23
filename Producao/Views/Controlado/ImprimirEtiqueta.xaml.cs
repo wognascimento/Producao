@@ -6,7 +6,9 @@ using Syncfusion.UI.Xaml.Utility;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -72,13 +74,20 @@ namespace Producao.Views.Controlado
             set { _livres = value; RaisePropertyChanged("Livres"); }
         }
 
+        private ObservableCollection<QryImpressaoModel> _impressos;
+        public ObservableCollection<QryImpressaoModel> Impressos
+        {
+            get { return _impressos; }
+            set { _impressos = value; RaisePropertyChanged("Impressos"); }
+        }
+
         public async Task<ObservableCollection<ControladoEtiquetaModel>> GetProdutosAsync()
         {
             try
             {
                 using DatabaseContext db = new();
                 var data = await db.ControladoEtiquetas.ToListAsync();
-                return new ObservableCollection<ControladoEtiquetaModel>(data);
+                return [.. data];
             }
             catch (Exception)
             {
@@ -92,7 +101,7 @@ namespace Producao.Views.Controlado
             {
                 using DatabaseContext db = new();
                 var data = await db.ControladoEtiquetaLivres.Take(limit).ToListAsync();
-                return new ObservableCollection<ControladoEtiquetaLivreModel>(data);
+                return [.. data];
             }
             catch (Exception)
             {
@@ -107,6 +116,20 @@ namespace Producao.Views.Controlado
                 using DatabaseContext db = new();
                 await db.ControladosZebra.AddAsync(controlado);
                 await db.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<QryImpressaoModel> GetImprimirAsync(long? codcompladicional)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                var data = await db.Impressoes.FirstOrDefaultAsync(i => i.codcompladicional == codcompladicional && i.impresso == "0");
+                return data;
             }
             catch (Exception)
             {
@@ -143,6 +166,53 @@ namespace Producao.Views.Controlado
                 manager.ShowAlert(alert);
 
                 return;
+            }
+
+            string IPAdress = "192.168.0.113";
+            int Port = 9100;
+            StreamWriter? SWriter;
+            TcpClient? Client = new();
+            try
+            {
+                await Client.ConnectAsync(IPAdress, Port);
+                SWriter = new(Client.GetStream());
+                //SWriter = new(@"C:\TEMP\ETIQUETA.TXT");
+                var etiqueta = await vm.GetImprimirAsync(record.codcompladicional);
+                SWriter.WriteLine($@"^XA");
+                SWriter.WriteLine($@"^CI28");
+                SWriter.WriteLine($@"^PW320");
+                SWriter.WriteLine($@"^FO0,160^GFA,01280,01280,00040,:Z64:eJxjYCAOiAS6EoMEiDRuFIyCUTAKBhwAAHykCLM=:ECE9");
+                SWriter.WriteLine($@"^FT20,168^BQN,2,6");
+                SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
+                SWriter.WriteLine($@"^FT156,126^A0N,11,12^FH\^FDPRODUTO^FS");
+                SWriter.WriteLine($@"^FO156,129^GB63,13,13^FS");
+                SWriter.WriteLine($@"^FT156,139^A0N,11,19^FR^FH\^FD{etiqueta.codcompladicional}^FS");
+                SWriter.WriteLine($@"^FT241,126^A0N,11,12^FH\^FDETIQUETA^FS");
+                SWriter.WriteLine($@"^FO241,129^GB63,13,13^FS");
+                SWriter.WriteLine($@"^FT241,139^A0N,11,19^FR^FH\^FD{etiqueta.codigo}^FS");
+                /*
+                SWriter.WriteLine($@"^FT157,33^AAN,9,5^FB151,1,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
+                SWriter.WriteLine($@"^FT157,42^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                SWriter.WriteLine($@"^FT157,51^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                SWriter.WriteLine($@"^FT157,60^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                SWriter.WriteLine($@"^FT157,69^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                SWriter.WriteLine($@"^FT157,78^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                SWriter.WriteLine($@"^FT157,87^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                SWriter.WriteLine($@"^FT157,96^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                */
+                SWriter.WriteLine($@"^FT157,105^AAN,9,5^FB151,5,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
+                SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
+
+                await SWriter.FlushAsync();
+                await SWriter.DisposeAsync();
+                SWriter.Close();
+
+                using DatabaseContext db = new();
+                await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
