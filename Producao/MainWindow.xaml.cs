@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dapper;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using Producao.DataBase.Model.Dto;
 using Producao.Views;
 using Producao.Views.CadastroProduto;
 using Producao.Views.CentralModelos;
@@ -1664,9 +1667,9 @@ namespace Producao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
+                //using DatabaseContext db = new();
                 //var data = await db.qryGeralRequisicaos.ToListAsync();
-
+                /*
                 var resultado = await db.RequisicaoReceitas
                     .Join(
                         db.Descricoes,
@@ -1697,9 +1700,32 @@ namespace Producao
                     })
                     //.Where(t => t.planilha == planilha)
                     .ToListAsync();
+                */
 
+                string sql = @"
+                    SELECT 
+                        codcompladicional_produto AS CodComplAdicionalProduto,
+                        p.planilha AS PlanilhaProduto,
+                        p.descricao_completa AS DescricaoProduto,
+                        p.unidade AS UnidadeProduto,
+                        codcompladicional_receita AS CodComplAdicionalReceita,
+                        r.planilha AS PlanilhaReceita,
+                        r.descricao_completa AS DescricaoReceita,
+                        r.unidade AS UnidadeReceita,
+                        quantidade AS Quantidade,
+                        inserido_por AS InseridoPor,
+                        inserido_em AS InseridoEm
+                    FROM producao.tbl_requisicao_receita
+                    JOIN producao.qry3descricoes AS p ON tbl_requisicao_receita.codcompladicional_produto = p.codcompladicional
+                    JOIN producao.qry3descricoes AS r ON tbl_requisicao_receita.codcompladicional_receita = r.codcompladicional
+                ";
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using var connection = new NpgsqlConnection(BaseSettings.connectionString);
+                connection.Open();
+
+                var resultado = connection.Query<RequisicaoReceitaDTO>(sql).ToList();
+
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;

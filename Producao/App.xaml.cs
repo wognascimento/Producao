@@ -28,6 +28,7 @@ namespace Producao
             BaseSettings.Host = "192.168.0.23";
             BaseSettings.Username = Environment.UserName;
             BaseSettings.Password = "123mudar";
+            BaseSettings.connectionString = $"Host={BaseSettings.Host};Database={BaseSettings.Database};Username={BaseSettings.Username};Password={BaseSettings.Password}";
 
             LocalizationManager.Manager = new LocalizationManager()
             {

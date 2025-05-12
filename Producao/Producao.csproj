@@ -68,13 +68,14 @@
     <None Include="Project_Readme.html" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EPPlus" Version="7.5.3" />
-    <PackageReference Include="itext7" Version="9.0.0" />
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="EPPlus" Version="8.0.3" />
+    <PackageReference Include="itext7" Version="9.1.0" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.5" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
-    <PackageReference Include="NuGet.CommandLine" Version="6.12.2">
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="NuGet.CommandLine" Version="6.13.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -85,7 +86,7 @@
     <PackageReference Include="Telerik.UI.for.Wpf.70.Xaml">
       <Version>2023.2.718</Version>
     </PackageReference>
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.7" />
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.8.1" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="App.ico" />
