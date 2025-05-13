@@ -129,6 +129,7 @@
                 <syncfusion:MenuItemAdv Header="Cadastrar Descrição Espanhol" Click="OnCadastroEspanhol"/>
                 <syncfusion:MenuItemAdv Header="Todas as Descrições" Click="OnTodasDescricoes"/>
                 <syncfusion:MenuItemAdv Header="Produtos Shopping" Click="OnProdutosShopping"/>
+                <syncfusion:MenuItemAdv Header="Catálogo"/>
             </syncfusion:MenuItemAdv>
             
             
