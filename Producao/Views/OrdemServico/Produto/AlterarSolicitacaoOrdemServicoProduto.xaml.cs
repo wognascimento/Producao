@@ -20,6 +20,8 @@ namespace Producao.Views.OrdemServico.Produto
     /// </summary>
     public partial class AlterarSolicitacaoOrdemServicoProduto : UserControl
     {
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public AlterarSolicitacaoOrdemServicoProduto()
         {
             InitializeComponent();
@@ -189,17 +191,17 @@ namespace Producao.Views.OrdemServico.Produto
                     list.Add(item.num_caminho);*/
 
 
-                List<long?> list = caminhos.SelectedItems.Cast<ObsOsModel>().Select(c => c.num_caminho).Distinct().ToList();
+                List<long?> list = [.. caminhos.SelectedItems.Cast<ObsOsModel>().Select(c => c.num_caminho).Distinct()];
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = excelEngine.Excel.Workbooks.Open("Modelos/ORDEM_SERVICO_MODELO.xlsx");
+                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
-                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open("Modelos/PERMISSAO_TRABALHO.xlsx");
+                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\PERMISSAO_TRABALHO.xlsx");
                 IWorksheet wsPt = wbPt.Worksheets[0];
 
 
@@ -275,14 +277,14 @@ namespace Producao.Views.OrdemServico.Produto
 
                         pagina = 2;
                         worksheet.ShowRange(range, false);
-                        workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
+                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
                         tot++;
 
                         if (tot == servicos.Count)
                         {
 
                             Process.Start(
-                                new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                                new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
                                 {
                                     Verb = "Print",
                                     UseShellExecute = true,
@@ -292,10 +294,10 @@ namespace Producao.Views.OrdemServico.Produto
                             if (servico.pt == true)
                             {
                                 wsPt.Range["G1"].Number = (double)servico.num_os_servico;
-                                wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+                                wbPt.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx");
 
                                 Process.Start(
-                                    new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                                    new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx")
                                     {
                                         Verb = "Print",
                                         UseShellExecute = true,
@@ -368,9 +370,9 @@ namespace Producao.Views.OrdemServico.Produto
                         pagina = 1;
                         tot++;
                         worksheet.ShowRange(range, true);
-                        workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
+                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
                         Process.Start(
-                            new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
                             {
                                 Verb = "Print",
                                 UseShellExecute = true,
@@ -380,10 +382,10 @@ namespace Producao.Views.OrdemServico.Produto
                         if (servico.pt == true)
                         {
                             wsPt.Range["G2"].Number = (double)servico.num_os_servico;
-                            wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+                            wbPt.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx");
 
                             Process.Start(
-                                new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                                new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx")
                                 {
                                     Verb = "Print",
                                     UseShellExecute = true,

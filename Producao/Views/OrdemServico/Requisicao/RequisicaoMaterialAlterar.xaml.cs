@@ -29,6 +29,7 @@ namespace Producao.Views.OrdemServico.Requisicao
         List<string> lVoltagem = new List<string>{"", "220V", "110V" };
         List<string> lLocalShopping = new List<string>{ "", "INTERNO", "EXTERNO" };
         bool dbClick;
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
         enum Etiqueta
         {
@@ -204,10 +205,10 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                 ReqDetalhesModel requi = (from r in vm.ReqDetalhes select r).FirstOrDefault();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/REQUISICAO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos/REQUISICAO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["C2"].Text = requi?.num_requisicao.ToString();
                 worksheet.Range["C3"].Text = requi?.alterado_por;
@@ -272,9 +273,9 @@ namespace Producao.Views.OrdemServico.Requisicao
                     index++;
                 }
                 //workbook.SaveAs($"Impressos/REQUISICAO_{requi.num_requisicao}.xlsx");
-                workbook.SaveAs(@$"Impressos\REQUISICAO_MODELO_{tbNumRequisicao.Text}.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{tbNumRequisicao.Text}.xlsx");
                 Process.Start(
-                new ProcessStartInfo(@$"Impressos\REQUISICAO_MODELO_{tbNumRequisicao.Text}.xlsx")
+                new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{tbNumRequisicao.Text}.xlsx")
                 {
                     Verb = "Print",
                     UseShellExecute = true,
@@ -583,10 +584,10 @@ namespace Producao.Views.OrdemServico.Requisicao
             var volumes = vm.QryRequisicaoDetalhes.Where(v => v.quantidade > 0).OrderBy(v => v.volume).GroupBy(v => v.volume).ToList();
             var count = volumes.Count;
 
-            using ExcelEngine excelEngine = new ExcelEngine();
+            using ExcelEngine excelEngine = new();
             IApplication application = excelEngine.Excel;
             application.DefaultVersion = ExcelVersion.Xlsx;
-            IWorkbook workbook = application.Workbooks.Open("Modelos/ETIQUETA_REQUISICAO_MODELO.xlsx");
+            IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ETIQUETA_REQUISICAO_MODELO.xlsx");
             IWorksheet worksheet = workbook.Worksheets[0];
 
             var etiqueta = Enum.Parse(typeof(Etiqueta), "Primeira");
@@ -635,7 +636,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Segunda");
                                 _etiqueta++;
-                                workbook.SaveAs($"Impressos/ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
                                 break;
                             }
                         case Etiqueta.Segunda:
@@ -667,7 +668,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Terceira");
                                 _etiqueta++;
-                                workbook.SaveAs($"Impressos/ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
                                 break;
                             }
                         case Etiqueta.Terceira:
@@ -699,7 +700,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Quarta");
                                 _etiqueta++;
-                                workbook.SaveAs($"Impressos/ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
                                 break;
                             }
                         case Etiqueta.Quarta:
@@ -731,7 +732,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Primeira");
                                 _etiqueta = 1;
-                                workbook.SaveAs($"Impressos/ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
 
                                 worksheet.Range["PRIMEIRA"].Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.None;
                                 worksheet.Range["PRIMEIRA"].Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.None;
@@ -778,7 +779,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                int idx = 1;
                 for (int i = 0; i < paginas; i++)
                 {
-                    Process.Start(new ProcessStartInfo($"Impressos\\ETIQUETA_REQUISICAO_MODELO_{idx}.xlsx")
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{idx}.xlsx")
                     {
                         Verb = "Print",
                         UseShellExecute = true

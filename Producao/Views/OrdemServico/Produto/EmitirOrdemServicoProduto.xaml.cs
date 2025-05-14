@@ -19,6 +19,7 @@ namespace Producao.Views.OrdemServico.Produto
     /// </summary>
     public partial class EmitirOrdemServicoProduto : UserControl
     {
+
         public EmitirOrdemServicoProduto()
         {
             InitializeComponent();
@@ -116,6 +117,9 @@ namespace Producao.Views.OrdemServico.Produto
 
     public static class ContextMenuCommands
     {
+
+        static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         static BaseCommand? emitirTodas;
         public static BaseCommand EmitirTodas
         {
@@ -354,13 +358,13 @@ namespace Producao.Views.OrdemServico.Produto
                         }
                         pagina = 2;
                         worksheet.ShowRange(range, false);
-                        workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
+                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
                         tot++;
 
                         if (tot == servicos.Count)
                         {
                             Process.Start(
-                            new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
                             {
                                 Verb = "Print",
                                 UseShellExecute = true,
@@ -369,10 +373,10 @@ namespace Producao.Views.OrdemServico.Produto
                             if (servico.pt == true)
                             {
                                 wsPt.Range["G2"].Number = (double)servico.num_os_servico;
-                                wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+                                wbPt.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx");
 
                                 Process.Start(
-                                    new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                                    new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx")
                                     {
                                         Verb = "Print",
                                         UseShellExecute = true,
@@ -449,9 +453,9 @@ namespace Producao.Views.OrdemServico.Produto
                         pagina = 1;
                         tot++;
                         worksheet.ShowRange(range, true);
-                        workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
+                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
                         Process.Start(
-                            new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
                             {
                                 Verb = "Print",
                                 UseShellExecute = true,
@@ -460,10 +464,10 @@ namespace Producao.Views.OrdemServico.Produto
                         if (servico.pt == true)
                         {
                             wsPt.Range["G1"].Number = (double)servico.num_os_servico;
-                            wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+                            wbPt.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx");
 
                             Process.Start(
-                                new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                                new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx")
                                 {
                                     Verb = "Print",
                                     UseShellExecute = true,

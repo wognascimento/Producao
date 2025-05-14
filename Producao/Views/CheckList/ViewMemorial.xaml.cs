@@ -177,7 +177,7 @@ namespace Producao.Views.CheckList
 
                 ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
                 DataBaseSettings BaseSettings = DataBaseSettings.Instance;
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -302,8 +302,8 @@ namespace Producao.Views.CheckList
                 //worksheet.PageSetup.CenterVertically = true;
                 worksheet.PageSetup.CenterHorizontally = true;
 
-                workbook.SaveAs("Impressos/MEMORIAL.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\MEMORIAL.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\MEMORIAL.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\\MEMORIAL.xlsx")
                 {
                     UseShellExecute = true
                 });

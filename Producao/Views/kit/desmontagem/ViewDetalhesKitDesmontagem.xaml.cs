@@ -24,6 +24,7 @@ namespace Producao.Views.kit.desmontagem
     public partial class ViewDetalhesKitDesmontagem : UserControl
     {
         private OsKitSolucaoModel OsKit;
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
         public ViewDetalhesKitDesmontagem(OsKitSolucaoModel osKit)
         {
@@ -66,12 +67,12 @@ namespace Producao.Views.kit.desmontagem
                 ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
 
                 vm.ComplementoCheckList.codproduto = null;
-                vm.Produtos = new ObservableCollection<ProdutoModel>();
+                vm.Produtos = [];
                 cbDescricao.SelectedItem = null;
                 cbDescricao.Text = string.Empty;
 
                 vm.ComplementoCheckList.coduniadicional = null;
-                vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
+                vm.DescAdicionais = [];
                 cbDescricaoAdicional.SelectedItem = null;
                 cbDescricaoAdicional.Text = string.Empty;
 
@@ -197,7 +198,7 @@ namespace Producao.Views.kit.desmontagem
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/REQUISICAO_KIT_MODELO.xlsx", ExcelParseOptions.Default, false, "1@3mudar");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos/REQUISICAO_KIT_MODELO.xlsx", ExcelParseOptions.Default, false, "1@3mudar");
 
                 IStyle borderStyle = workbook.Styles.Add("BorderStyle");
                 borderStyle.BeginUpdate();
@@ -446,8 +447,8 @@ namespace Producao.Views.kit.desmontagem
                 wsheet.PageSetup.BottomMargin = 0.8;
 
                 //Save the Excel document
-                workbook.SaveAs($"Impressos/REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx");
-                Process.Start(new ProcessStartInfo($"Impressos\\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx")
                 {
                     UseShellExecute = true
                 });

@@ -456,7 +456,7 @@ namespace Producao
                 //var data = await db.PendenciaProducaos.ToListAsync();
                 var data = await db.RequisicoesProducao.ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -467,8 +467,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/REQUISICOES_MATERIAIS_EMITIDAS.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\REQUISICOES_MATERIAIS_EMITIDAS.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICOES_MATERIAIS_EMITIDAS.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICOES_MATERIAIS_EMITIDAS.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -549,7 +549,7 @@ namespace Producao
                 //var data = await db.PendenciaProducaos.ToListAsync();
                 var data = await db.DetalhesPendenciaProducao.ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -560,8 +560,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/PENDENCIA_PRODUCAO.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\PENDENCIA_PRODUCAO.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PENDENCIA_PRODUCAO.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PENDENCIA_PRODUCAO.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -585,7 +585,7 @@ namespace Producao
                 //var data = await db.PendenciaProducaos.ToListAsync();
                 var data = await db.PendenciaProducaos.ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -596,8 +596,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/PENDENCIA_PRODUCAO_TREINAMENTO.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\PENDENCIA_PRODUCAO_TREINAMENTO.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PENDENCIA_PRODUCAO_TREINAMENTO.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PENDENCIA_PRODUCAO_TREINAMENTO.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -726,7 +726,7 @@ namespace Producao
                 using DatabaseContext db = new();
                 var data = await db.DetalhesProcessamentoSemanas.ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -737,8 +737,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/CCE.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\CCE.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CCE.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CCE.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -791,7 +791,7 @@ namespace Producao
                     using DatabaseContext db = new();
                     var data = await db.OrdemServicoEmitidas.ToListAsync();
 
-                    using ExcelEngine excelEngine = new ExcelEngine();
+                    using ExcelEngine excelEngine = new();
                     IApplication application = excelEngine.Excel;
 
                     application.DefaultVersion = ExcelVersion.Xlsx;
@@ -802,8 +802,8 @@ namespace Producao
                     //worksheet.IsGridLinesVisible = false;
                     worksheet.ImportData(data, 1, 1, true);
 
-                    workbook.SaveAs("Impressos/EMITIDAS.xlsx");
-                    Process.Start(new ProcessStartInfo("Impressos\\EMITIDAS.xlsx")
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\EMITIDAS.xlsx");
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\EMITIDAS.xlsx")
                     {
                         UseShellExecute = true
                     });
@@ -833,7 +833,7 @@ namespace Producao
                     using DatabaseContext db = new();
                     var data= await db.OrdemServicoEmitidas.Where(os => os.concluida_os_data != null).ToListAsync();
 
-                    using ExcelEngine excelEngine = new ExcelEngine();
+                    using ExcelEngine excelEngine = new();
                     IApplication application = excelEngine.Excel;
 
                     application.DefaultVersion = ExcelVersion.Xlsx;
@@ -844,8 +844,8 @@ namespace Producao
                     //worksheet.IsGridLinesVisible = false;
                     worksheet.ImportData(data, 1, 1, true);
 
-                    workbook.SaveAs("Impressos/CONCLUIDAS.xlsx");
-                    Process.Start(new ProcessStartInfo("Impressos\\CONCLUIDAS.xlsx")
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONCLUIDAS.xlsx");
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONCLUIDAS.xlsx")
                     {
                         UseShellExecute = true
                     });
@@ -875,7 +875,7 @@ namespace Producao
                     using DatabaseContext db = new();
                     var data = await db.OrdemServicoEmitidas.Where(os => os.concluida_os_data == null).ToListAsync();
 
-                    using ExcelEngine excelEngine = new ExcelEngine();
+                    using ExcelEngine excelEngine = new();
                     IApplication application = excelEngine.Excel;
 
                     application.DefaultVersion = ExcelVersion.Xlsx;
@@ -886,8 +886,8 @@ namespace Producao
                     //worksheet.IsGridLinesVisible = false;
                     worksheet.ImportData(data, 1, 1, true);
 
-                    workbook.SaveAs("Impressos/NAO-CONCLUIDAS.xlsx");
-                    Process.Start(new ProcessStartInfo("Impressos\\NAO-CONCLUIDAS.xlsx")
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\NAO-CONCLUIDAS.xlsx");
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\NAO-CONCLUIDAS.xlsx")
                     {
                         UseShellExecute = true
                     });
@@ -917,7 +917,7 @@ namespace Producao
                     using DatabaseContext db = new();
                     var data = await db.OrdemServicoEmitidas.Where(os => os.cancelada_os == "-1").ToListAsync();
 
-                    using ExcelEngine excelEngine = new ExcelEngine();
+                    using ExcelEngine excelEngine = new();
                     IApplication application = excelEngine.Excel;
 
                     application.DefaultVersion = ExcelVersion.Xlsx;
@@ -928,8 +928,8 @@ namespace Producao
                     //worksheet.IsGridLinesVisible = false;
                     worksheet.ImportData(data, 1, 1, true);
 
-                    workbook.SaveAs("Impressos/CANCELADAS.xlsx");
-                    Process.Start(new ProcessStartInfo("Impressos\\CANCELADAS.xlsx")
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CANCELADAS.xlsx");
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CANCELADAS.xlsx")
                     {
                         UseShellExecute = true
                     });
@@ -1014,7 +1014,7 @@ namespace Producao
                     using DatabaseContext db = new();
                     var data = await db.PlanejamentoEstoques.ToListAsync();
 
-                    using ExcelEngine excelEngine = new ExcelEngine();
+                    using ExcelEngine excelEngine = new();
                     IApplication application = excelEngine.Excel;
 
                     application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1025,8 +1025,8 @@ namespace Producao
                     //worksheet.IsGridLinesVisible = false;
                     worksheet.ImportData(data, 1, 1, true);
 
-                    workbook.SaveAs("Impressos/PLANEJAMENTO_ESTOQUE.xlsx");
-                    Process.Start(new ProcessStartInfo("Impressos\\PLANEJAMENTO_ESTOQUE.xlsx")
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PLANEJAMENTO_ESTOQUE.xlsx");
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PLANEJAMENTO_ESTOQUE.xlsx")
                     {
                         UseShellExecute = true
                     });
@@ -1055,7 +1055,7 @@ namespace Producao
                 //var data = await db.PendenciaProducaos.ToListAsync();
                 var data = await db.BaseAnaliseClientes.ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1066,8 +1066,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/ANALISE_CLIENTE.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\ANALISE_CLIENTE.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ANALISE_CLIENTE.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ANALISE_CLIENTE.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -1091,7 +1091,7 @@ namespace Producao
                 //var data = await db.PendenciaProducaos.ToListAsync();
                 var data = await db.BaseAnalisePlans.ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1102,8 +1102,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/ANALISE_PLANILHA.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\ANALISE_PLANILHA.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ANALISE_PLANILHA.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ANALISE_PLANILHA.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -1132,7 +1132,7 @@ namespace Producao
                 //var data = await db.PendenciaProducaos.ToListAsync();
                 var data = await db.KitSolicaoGeral.Where(c => c.local_shoppings == "KIT SOLUÇÃO").ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1143,8 +1143,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/KITSOLUCAO_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\KITSOLUCAO_GERAL.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\KITSOLUCAO_GERAL.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\KITSOLUCAO_GERAL.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -1183,7 +1183,7 @@ namespace Producao
                 //var data = await db.PendenciaProducaos.ToListAsync();
                 var data = await db.KitSolicaoGeral.Where(c => c.local_shoppings == "KIT MANUTENÇÃO").ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1194,8 +1194,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/KITSOLUCAO_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\KITSOLUCAO_GERAL.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\KITSOLUCAO_GERAL.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\KITSOLUCAO_GERAL.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -1289,7 +1289,7 @@ namespace Producao
                     using DatabaseContext db = new();
                     var data = await db.ProdutoControladoRecebimento.Where(c => c.sigla == result).ToListAsync();
 
-                    using ExcelEngine excelEngine = new ExcelEngine();
+                    using ExcelEngine excelEngine = new();
                     IApplication application = excelEngine.Excel;
 
                     application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1370,8 +1370,8 @@ namespace Producao
 
                     worksheet.UsedRange.AutofitColumns();
 
-                    workbook.SaveAs($"Impressos\\RELATORIO_CONTROLADO_{result}.xlsx");
-                    Process.Start(new ProcessStartInfo($"Impressos\\RELATORIO_CONTROLADO_{result}.xlsx")
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CONTROLADO_{result}.xlsx");
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CONTROLADO_{result}.xlsx")
                     {
                         UseShellExecute = true
                     });
@@ -1409,7 +1409,7 @@ namespace Producao
                     using DatabaseContext db = new();
                     var data = await db.ProdutoControladoRecebimento.Where(c => c.planilha.Contains(result) && !c.sigla.Contains("SROOM")).ToListAsync();
 
-                    using ExcelEngine excelEngine = new ExcelEngine();
+                    using ExcelEngine excelEngine = new();
                     IApplication application = excelEngine.Excel;
 
                     application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1490,8 +1490,8 @@ namespace Producao
 
                     worksheet.UsedRange.AutofitColumns();
 
-                    workbook.SaveAs($"Impressos\\RELATORIO_CONTROLADO_{result}.xlsx");
-                    Process.Start(new ProcessStartInfo($"Impressos\\RELATORIO_CONTROLADO_{result}.xlsx")
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CONTROLADO_{result}.xlsx");
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CONTROLADO_{result}.xlsx")
                     {
                         UseShellExecute = true
                     });
@@ -1516,7 +1516,7 @@ namespace Producao
                 //var data = await db.PendenciaProducaos.ToListAsync();
                 var data = await db.HistoricoCheckList.Where(h => h.ano != Convert.ToInt16(BaseSettings.Database)).ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1527,8 +1527,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/HISTORICO-CHECK-LIST.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\HISTORICO-CHECK-LIST.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\HISTORICO-CHECK-LIST.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\HISTORICO-CHECK-LIST.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -1590,7 +1590,7 @@ namespace Producao
                 //var data = await db.PendenciaProducaos.ToListAsync();
                 var data = await db.KitSolicaoGeral.Where(c => c.local_shoppings == "KIT DESMONTAGEM").ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1601,8 +1601,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/KITDESMONTAGEM_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\KITDESMONTAGEM_GERAL.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\KITDESMONTAGEM_GERAL.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\KITDESMONTAGEM_GERAL.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -1635,7 +1635,7 @@ namespace Producao
                 using DatabaseContext db = new();
                 var data = await db.qryGeralRequisicaos.ToListAsync();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -1646,8 +1646,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(data, 1, 1, true);
 
-                workbook.SaveAs("Impressos/CONTROLADO_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\CONTROLADO_GERAL.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONTROLADO_GERAL.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONTROLADO_GERAL.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -1736,8 +1736,8 @@ namespace Producao
                 //worksheet.IsGridLinesVisible = false;
                 worksheet.ImportData(resultado, 1, 1, true);
 
-                workbook.SaveAs("Impressos/CONSULTA_RECEITA_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\CONSULTA_RECEITA_GERAL.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_RECEITA_GERAL.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_RECEITA_GERAL.xlsx")
                 {
                     UseShellExecute = true
                 });

@@ -23,6 +23,8 @@ namespace Producao.Views.CentralModelos
     {
         private QryModeloModel Modelo { get; set; }
         private QryReceitaDetalheCriadoModel Receita { get; set; }
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
 
         public ModeloReceita(QryModeloModel Modelo)
         {
@@ -378,10 +380,10 @@ namespace Producao.Views.CentralModelos
             {
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/RECEITA_CENTRAL_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\RECEITA_CENTRAL_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["C2"].Text = Modelo.id_modelo.ToString();
                 worksheet.Range["C3"].Text = Modelo.planilha;
@@ -469,10 +471,10 @@ namespace Producao.Views.CentralModelos
                     index++;
                 }
 
-                workbook.SaveAs($"Impressos/RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx");
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo($"Impressos\\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -588,7 +590,7 @@ namespace Producao.Views.CentralModelos
 
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
                 //Create a workbook
@@ -832,8 +834,8 @@ namespace Producao.Views.CentralModelos
                 //worksheet.PageSetup.CenterVertically = true;
                 worksheet.PageSetup.CenterHorizontally = true;
 
-                workbook.SaveAs("Impressos/DISTRIBUICAO_FIADA.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\DISTRIBUICAO_FIADA.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\DISTRIBUICAO_FIADA.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\DISTRIBUICAO_FIADA.xlsx")
                 {
                     UseShellExecute = true
                 });

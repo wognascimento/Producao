@@ -21,6 +21,9 @@ namespace Producao.Views.RelatoriosTecnicos
     /// </summary>
     public partial class CargaEletrica : UserControl
     {
+
+        
+
         public CargaEletrica()
         {
             InitializeComponent();
@@ -97,7 +100,7 @@ namespace Producao.Views.RelatoriosTecnicos
 
                 CargaEletricaViewModel vm = (CargaEletricaViewModel)DataContext;
                 DataBaseSettings BaseSettings = DataBaseSettings.Instance;
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -214,8 +217,8 @@ namespace Producao.Views.RelatoriosTecnicos
                 //worksheet.PageSetup.CenterVertically = true;
                 worksheet.PageSetup.CenterHorizontally = true;
 
-                workbook.SaveAs("Impressos/CARGA-ELETRICA.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\CARGA-ELETRICA.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CARGA-ELETRICA.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CARGA-ELETRICA.xlsx")
                 {
                     UseShellExecute = true
                 });

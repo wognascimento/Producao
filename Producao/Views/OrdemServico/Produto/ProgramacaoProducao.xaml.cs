@@ -23,6 +23,8 @@ namespace Producao.Views.OrdemServico.Produto
     /// </summary>
     public partial class ProgramacaoProducao : UserControl
     {
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public ProgramacaoProducao()
         {
             InitializeComponent();
@@ -140,10 +142,10 @@ namespace Producao.Views.OrdemServico.Produto
                 var filteredResult = programacao.View.Records.Select(recordentry => recordentry.Data);
                 var itens = programacao.View.Records.Count;
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos/PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
                 IStyle headerStyle;
@@ -232,9 +234,9 @@ namespace Producao.Views.OrdemServico.Produto
                     _l++;
                 }
 
-                workbook.SaveAs("Impressos/PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
                 
-                Process.Start(new ProcessStartInfo("Impressos\\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx")
                 {
                     UseShellExecute = true
                 });

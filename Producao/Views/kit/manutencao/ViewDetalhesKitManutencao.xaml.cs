@@ -23,6 +23,8 @@ namespace Producao.Views.kit.solucao
     public partial class ViewDetalhesKitManutencao : UserControl
     {
         private OsKitSolucaoModel OsKit;
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public ViewDetalhesKitManutencao(OsKitSolucaoModel osKit)
         {
             InitializeComponent();
@@ -444,8 +446,8 @@ namespace Producao.Views.kit.solucao
                 wsheet.PageSetup.BottomMargin = 0.8;
 
                 //Save the Excel document
-                workbook.SaveAs($"Impressos/REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx");
-                Process.Start(new ProcessStartInfo($"Impressos\\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx")
                 {
                     UseShellExecute = true
                 });

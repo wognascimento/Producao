@@ -25,6 +25,8 @@ namespace Producao.Views.CheckList
     public partial class ViewCheckListNatal : UserControl
     {
         private bool dbClick;
+
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
         public ViewCheckListNatal()
         {
             DataContext = new CheckListViewModel();
@@ -503,7 +505,7 @@ namespace Producao.Views.CheckList
 
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
                 DataBaseSettings BaseSettings = DataBaseSettings.Instance;
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -615,8 +617,8 @@ namespace Producao.Views.CheckList
                 //worksheet.PageSetup.CenterVertically = true;
                 worksheet.PageSetup.CenterHorizontally = true;
 
-                workbook.SaveAs("Impressos/CHECKLIST.xlsx");
-                Process.Start(new ProcessStartInfo("Impressos\\CHECKLIST.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CHECKLIST.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\\CHECKLIST.xlsx")
                 {
                     UseShellExecute = true
                 });

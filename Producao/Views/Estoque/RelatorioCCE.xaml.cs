@@ -27,6 +27,8 @@ namespace Producao.Views.Estoque
     /// </summary>
     public partial class RelatorioCCE : UserControl
     {
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public RelatorioCCE()
         {
             InitializeComponent();
@@ -65,7 +67,7 @@ namespace Producao.Views.Estoque
 
                     //Create a new workbook
                     //IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorkbook workbook = application.Workbooks.OpenReadOnly("Modelos\\RELATORIO_CCE_MODELO.xlsx");
+                    IWorkbook workbook = application.Workbooks.OpenReadOnly(@$"{BaseSettings.CaminhoSistema}\Modelos\RELATORIO_CCE_MODELO.xlsx");
                     IWorksheet worksheet = workbook.Worksheets[0];
 
                     IStyle bodyStyle;
@@ -117,9 +119,9 @@ namespace Producao.Views.Estoque
                     //Autofit the columns
                     //sheet.UsedRange.AutofitColumns();
 
-                    workbook.SaveAs("Impressos\\RELATORIO_CCE.xlsx");
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CCE.xlsx");
 
-                    Process.Start(new ProcessStartInfo("Impressos\\RELATORIO_CCE.xlsx")
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CCE.xlsx")
                     {
                         UseShellExecute = true
                     });

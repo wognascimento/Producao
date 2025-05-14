@@ -24,9 +24,10 @@ namespace Producao.Views.OrdemServico.Requisicao
     /// </summary>
     public partial class RequisicaoMaterial : Window
     {
-        List<string> lVoltagem = new List<string>{"", "220V", "110V" };
-        List<string> lLocalShopping = new List<string>{ "", "INTERNO", "EXTERNO" };
+        List<string> lVoltagem = ["", "220V", "110V"];
+        List<string> lLocalShopping = ["", "INTERNO", "EXTERNO"];
         bool dbClick;
+        static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
         public RequisicaoMaterial(object obj)
         {
@@ -176,10 +177,10 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                 QryRequisicaoDetalheModel requi = (from r in vm.QryRequisicaoDetalhes select r).FirstOrDefault();
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/REQUISICAO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\REQUISICAO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["C2"].Text = requi.num_requisicao.ToString();
                 worksheet.Range["C3"].Text = requi.alterado_por;
@@ -240,8 +241,8 @@ namespace Producao.Views.OrdemServico.Requisicao
                 //worksheet.ImportData(itens, 9, 1, false);
 
                 //Save the Excel document
-                workbook.SaveAs($"Impressos/REQUISICAO_{requi.num_requisicao}.xlsx");
-                Process.Start(new ProcessStartInfo($"Impressos\\REQUISICAO_{requi.num_requisicao}.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_{requi.num_requisicao}.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_{requi.num_requisicao}.xlsx")
                 {
                     UseShellExecute = true
                 });

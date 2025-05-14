@@ -31,6 +31,8 @@ namespace Producao.Views.Construcao
             Quarta
         }
 
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public EtiquetaConstrucao()
         {
             InitializeComponent();
@@ -269,10 +271,10 @@ namespace Producao.Views.Construcao
             var volumes = vm.Pecas.OrderBy(o => o.volume_etiqueta).GroupBy(user => user.volume_etiqueta).ToList();
             var count = volumes.Count;
 
-            using ExcelEngine excelEngine = new ExcelEngine();
+            using ExcelEngine excelEngine = new();
             IApplication application = excelEngine.Excel;
             application.DefaultVersion = ExcelVersion.Xlsx;
-            IWorkbook workbook = application.Workbooks.Open("Modelos/ETIQUETA_REQUISICAO_MODELO.xlsx");
+            IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ETIQUETA_REQUISICAO_MODELO.xlsx");
             IWorksheet worksheet = workbook.Worksheets[0];
 
             var etiqueta = Enum.Parse(typeof(Etiqueta), "Primeira");
@@ -320,7 +322,7 @@ namespace Producao.Views.Construcao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Segunda");
                                 _etiqueta++;
-                                workbook.SaveAs($"Impressos/ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
                                 break;
                             }
                         case Etiqueta.Segunda:
@@ -352,7 +354,7 @@ namespace Producao.Views.Construcao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Terceira");
                                 _etiqueta++;
-                                workbook.SaveAs($"Impressos/ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
                                 break;
                             }
                         case Etiqueta.Terceira:
@@ -384,7 +386,7 @@ namespace Producao.Views.Construcao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Quarta");
                                 _etiqueta++;
-                                workbook.SaveAs($"Impressos/ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
                                 break;
                             }
                         case Etiqueta.Quarta:
@@ -416,7 +418,7 @@ namespace Producao.Views.Construcao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Primeira");
                                 _etiqueta = 1;
-                                workbook.SaveAs($"Impressos/ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
 
                                 worksheet.Range["PRIMEIRA"].Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.None;
                                 worksheet.Range["PRIMEIRA"].Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.None;
@@ -463,7 +465,7 @@ namespace Producao.Views.Construcao
                 int idx = 1;
                 for (int i = 0; i < paginas; i++)
                 {
-                    Process.Start(new ProcessStartInfo($"Impressos\\ETIQUETA_REQUISICAO_MODELO_{idx}.xlsx")
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{idx}.xlsx")
                     {
                         Verb = "Print",
                         UseShellExecute = true
@@ -499,10 +501,10 @@ namespace Producao.Views.Construcao
                 }
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/DESCRICOES_CONSTRUCAO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\DESCRICOES_CONSTRUCAO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
                 vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(vm.Compledicional.codcompladicional));
@@ -564,10 +566,10 @@ namespace Producao.Views.Construcao
                     index++;
                 }
                 
-                workbook.SaveAs($"Impressos/DESCRICOES_CONSTRUCAO_MODELO_{vm?.ChecklistPrduto?.coddetalhescompl}.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\DESCRICOES_CONSTRUCAO_MODELO_{vm?.ChecklistPrduto?.coddetalhescompl}.xlsx");
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo($"Impressos\\DESCRICOES_CONSTRUCAO_MODELO_{vm?.ChecklistPrduto?.coddetalhescompl}.xlsx")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\DESCRICOES_CONSTRUCAO_MODELO_{vm?.ChecklistPrduto?.coddetalhescompl}.xlsx")
                 {
                     UseShellExecute = true
                 });

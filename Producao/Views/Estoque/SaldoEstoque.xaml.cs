@@ -19,6 +19,8 @@ namespace Producao.Views.Estoque
     /// </summary>
     public partial class SaldoEstoque : UserControl
     {
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public SaldoEstoque()
         {
             InitializeComponent();
@@ -62,7 +64,7 @@ namespace Producao.Views.Estoque
                     //Import data from the data table with column header, at first row and first column, 
                     //and by its column type.
 
-                    ExcelImportDataOptions importDataOptions = new ExcelImportDataOptions()
+                    ExcelImportDataOptions importDataOptions = new()
                     {
                         FirstRow = 1,
                         FirstColumn = 1,
@@ -80,10 +82,10 @@ namespace Producao.Views.Estoque
                     sheet.UsedRange.AutofitColumns();
 
                     //Save the file in the given path
-                    Stream excelStream = File.Create(System.IO.Path.GetFullPath(@"Output.xlsx"));
-                    workbook.SaveAs("Impressos\\SALDO_ESTOQUE_DETALHADO.xlsx");
+                    Stream excelStream = File.Create(Path.GetFullPath(@$"{BaseSettings.CaminhoSistema}\Impressos\Output.xlsx"));
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\SALDO_ESTOQUE_DETALHADO.xlsx");
 
-                    Process.Start(new ProcessStartInfo("Impressos\\SALDO_ESTOQUE_DETALHADO.xlsx")
+                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\SALDO_ESTOQUE_DETALHADO.xlsx")
                     {
                         UseShellExecute = true
                     });

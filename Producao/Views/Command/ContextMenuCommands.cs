@@ -14,7 +14,7 @@ namespace Producao
 {
     public static class ContextMenuCommands
     {
-        
+        static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
         enum Etiqueta
         {
             Primeira,
@@ -153,10 +153,10 @@ namespace Producao
                 var filteredResult = grid.View.Records.Select(recordentry => recordentry.Data);
                 var itens = grid.View.Records.Count;
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/ETIQUETA_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ETIQUETA_MODELO.xlsx");
                 //IWorkbook workbook = application.Workbooks.Create(1);
                 IWorksheet worksheet = workbook.Worksheets[0];
 
@@ -192,7 +192,7 @@ namespace Producao
 
                                     etiqueta = Enum.Parse(typeof(Etiqueta), "Segunda");
                                     _etiqueta++;
-                                    workbook.SaveAs($"Impressos/ETIQUETA_{_pagina}.xlsx");
+                                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_{_pagina}.xlsx");
                                     break;
                                 }
                             case Etiqueta.Segunda:
@@ -212,7 +212,7 @@ namespace Producao
 
                                     etiqueta = Enum.Parse(typeof(Etiqueta), "Terceira");
                                     _etiqueta++;
-                                    workbook.SaveAs($"Impressos/ETIQUETA_{_pagina}.xlsx");
+                                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_{_pagina}.xlsx");
                                     break;
                                 }
                             case Etiqueta.Terceira:
@@ -232,7 +232,7 @@ namespace Producao
 
                                     etiqueta = Enum.Parse(typeof(Etiqueta), "Quarta");
                                     _etiqueta++;
-                                    workbook.SaveAs($"Impressos/ETIQUETA_{_pagina}.xlsx");
+                                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_{_pagina}.xlsx");
                                     break;
                                 }
                             case Etiqueta.Quarta:
@@ -252,7 +252,7 @@ namespace Producao
 
                                     etiqueta = Enum.Parse(typeof(Etiqueta), "Quinta");
                                     _etiqueta++;
-                                    workbook.SaveAs($"Impressos/ETIQUETA_{_pagina}.xlsx");
+                                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_{_pagina}.xlsx");
                                     break;
                                 }
                             case Etiqueta.Quinta:
@@ -272,7 +272,7 @@ namespace Producao
 
                                     etiqueta = Enum.Parse(typeof(Etiqueta), "Sexta");
                                     _etiqueta++;
-                                    workbook.SaveAs($"Impressos/ETIQUETA_{_pagina}.xlsx");
+                                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_{_pagina}.xlsx");
                                     break;
                                 }
                             case Etiqueta.Sexta:
@@ -292,7 +292,7 @@ namespace Producao
 
                                     etiqueta = Enum.Parse(typeof(Etiqueta), "Primeira");
                                     _etiqueta = 1;
-                                    workbook.SaveAs($"Impressos/ETIQUETA_{_pagina}.xlsx");
+                                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_{_pagina}.xlsx");
 
                                     worksheet.Range["PRIMEIRA"].Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.None;
                                     worksheet.Range["PRIMEIRA"].Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.None;
@@ -348,7 +348,7 @@ namespace Producao
 
                 try
                 {
-                    string path = Directory.GetCurrentDirectory();
+                    string path = BaseSettings.CaminhoSistema;//Directory.GetCurrentDirectory();
                     for (int i = 1; i <= paginas; i++)
                     {
                         string file = @$"{path}\Impressos\ETIQUETA_{i}.xlsx";

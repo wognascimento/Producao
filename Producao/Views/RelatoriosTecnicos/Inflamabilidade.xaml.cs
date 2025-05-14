@@ -20,6 +20,8 @@ namespace Producao.Views.RelatoriosTecnicos
     /// </summary>
     public partial class Inflamabilidade : UserControl
     {
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public Inflamabilidade()
         {
             InitializeComponent();
@@ -144,7 +146,7 @@ namespace Producao.Views.RelatoriosTecnicos
                 if (vm.Sigla == null)
                     return;
 
-                PdfDocument document = new PdfDocument();
+                PdfDocument document = new();
                 document.PageSettings.Orientation = PdfPageOrientation.Portrait;
                 document.PageSettings.Margins.All = 20;
                 PdfFont font = new PdfStandardFont(PdfFontFamily.TimesRoman, 12);
@@ -285,12 +287,12 @@ namespace Producao.Views.RelatoriosTecnicos
                 }
 
 
-                document.Save("RelatorioInflamabilidade.pdf");
+                document.Save(@$"{BaseSettings.CaminhoSistema}\RelatorioInflamabilidade.pdf");
                 //Close the document.
                 document.Close(true);
 
                 
-                Process.Start(new ProcessStartInfo("RelatorioInflamabilidade.pdf")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\RelatorioInflamabilidade.pdf")
                 {
                     UseShellExecute = true
                 });

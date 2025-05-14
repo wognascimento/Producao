@@ -23,6 +23,8 @@ namespace Producao.Views.kit.solucao
     public partial class ViewDetalhesKitSolucao : UserControl
     {
         private OsKitSolucaoModel OsKit;
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public ViewDetalhesKitSolucao(OsKitSolucaoModel osKit)
         {
             InitializeComponent();
@@ -195,7 +197,7 @@ namespace Producao.Views.kit.solucao
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/REQUISICAO_KIT_MODELO.xlsx", ExcelParseOptions.Default, false, "1@3mudar");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos/REQUISICAO_KIT_MODELO.xlsx", ExcelParseOptions.Default, false, "1@3mudar");
 
                 IStyle borderStyle = workbook.Styles.Add("BorderStyle");
                 borderStyle.BeginUpdate();
@@ -446,8 +448,8 @@ namespace Producao.Views.kit.solucao
                 wsheet.PageSetup.BottomMargin = 0.8;
 
                 //Save the Excel document
-                workbook.SaveAs($"Impressos/REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx");
-                Process.Start(new ProcessStartInfo($"Impressos\\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx")
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx")
                 {
                     UseShellExecute = true
                 });

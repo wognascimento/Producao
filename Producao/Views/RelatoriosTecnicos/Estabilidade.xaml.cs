@@ -18,6 +18,8 @@ namespace Producao.Views.RelatoriosTecnicos
     /// </summary>
     public partial class Estabilidade : UserControl
     {
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public Estabilidade()
         {
             InitializeComponent();
@@ -79,10 +81,10 @@ namespace Producao.Views.RelatoriosTecnicos
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = excelEngine.Excel.Workbooks.Open("Modelos/RELATORIO_ESTABILIDADE_MODELO.xlsx");
+                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\RELATORIO_ESTABILIDADE_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
                 EstabilidadeViewModel vm = (EstabilidadeViewModel)DataContext;
@@ -172,9 +174,9 @@ namespace Producao.Views.RelatoriosTecnicos
                     //break;
                 }
 
-                workbook.SaveAs($"Estabilidade-{vm.Sigla}.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Estabilidade-{vm.Sigla}.xlsx");
 
-                Process.Start(new ProcessStartInfo($"Estabilidade-{vm.Sigla}.xlsx")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Estabilidade-{vm.Sigla}.xlsx")
                 {
                     UseShellExecute = true
                 });

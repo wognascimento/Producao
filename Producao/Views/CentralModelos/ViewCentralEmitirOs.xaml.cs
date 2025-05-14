@@ -19,6 +19,8 @@ namespace Producao.Views.CentralModelos
     /// </summary>
     public partial class ViewCentralEmitirOs : UserControl
     {
+
+
         public ViewCentralEmitirOs()
         {
             InitializeComponent();
@@ -297,6 +299,9 @@ namespace Producao.Views.CentralModelos
 
     public static class ContextMenuCommands
     {
+
+        static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         static BaseCommand? createOS;
         public static BaseCommand CreateOS
         {
@@ -386,10 +391,10 @@ namespace Producao.Views.CentralModelos
             try
             {
                 ViewCentralEmitirOsViewModel vm = (ViewCentralEmitirOsViewModel)grid.DataContext;
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = excelEngine.Excel.Workbooks.Open("Modelos/ORDEM_SERVICO_MODELO.xlsx");
+                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos/ORDEM_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
                 //var servicos = await Task.Run(() => vm.GetOsEmitidas(item.num_os_produto));
@@ -463,13 +468,13 @@ namespace Producao.Views.CentralModelos
                         }
                         pagina = 2;
                         worksheet.ShowRange(range, false);
-                        workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
+                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
                         tot++;
 
                         if (tot == servicos.Count)
                         {
                             Process.Start(
-                            new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
                             {
                                 Verb = "Print",
                                 UseShellExecute = true,
@@ -536,9 +541,9 @@ namespace Producao.Views.CentralModelos
                         pagina = 1;
                         tot++;
                         worksheet.ShowRange(range, true);
-                        workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
+                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
                         Process.Start(
-                            new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
                             {
                                 Verb = "Print",
                                 UseShellExecute = true,
@@ -598,7 +603,7 @@ namespace Producao.Views.CentralModelos
 
                 ViewCentralEmitirOsViewModel vm = (ViewCentralEmitirOsViewModel)grid.DataContext;
                 DataBaseSettings BaseSettings = DataBaseSettings.Instance;
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
@@ -917,9 +922,9 @@ namespace Producao.Views.CentralModelos
                 worksheet.UsedRange.AutofitColumns();
 
 
-                workbook.SaveAs("TABELA_PA.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\TABELA_PA.xlsx");
 
-                Process.Start(new ProcessStartInfo("TABELA_PA.xlsx")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\TABELA_PA.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -958,10 +963,10 @@ namespace Producao.Views.CentralModelos
                 //vm.ReqDetalhes = await Task.Run(() => vm.GetItensControleAsync(Modelo.id_modelo));
                 vm.ControleDetalhes = await Task.Run(() => vm.GetItensControleOldAsync(Modelo.id_modelo));
 
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/RECEITA_CENTRAL_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\RECEITA_CENTRAL_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["A1"].Text = "CENTRAL DE MODELOS - CONTROLE";
                 worksheet.Range["C2"].Number = Convert.ToDouble( Modelo.id_modelo );
@@ -1029,10 +1034,10 @@ namespace Producao.Views.CentralModelos
                     index++;
                 }
 
-                workbook.SaveAs($"Impressos/RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx");
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo($"Impressos\\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx")
                 {
                     Verb = "Print",
                     UseShellExecute = true

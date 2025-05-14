@@ -7,8 +7,8 @@
         public string? Database { get; set; }
         public string? Username { get; set; }
         public string? Password { get; set; }
-
-        public string connectionString { get; set; } //=> $"Host={Host};Database={Database};Username={Username};Password={Password}";
+        public string connectionString { get; set; }
+        public string CaminhoSistema { get; set; } = $@"C:\SIG\Producao S.I.G\";
 
         public static DataBaseSettings Instance => DataBaseSettings.instance;
     }

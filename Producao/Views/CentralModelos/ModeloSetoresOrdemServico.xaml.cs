@@ -25,6 +25,7 @@ namespace Producao.Views.CentralModelos
         private ModeloGerarOsModel modeloControle;
         private ProdutoOsModel produtoOsModel;
         ModeloSetoresOrdemServicoViewModel vm;
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
         public ModeloSetoresOrdemServico(ModeloGerarOsModel modeloControle)
         {
@@ -185,10 +186,10 @@ namespace Producao.Views.CentralModelos
             try
             {
                 //ModeloSetoresOrdemServicoViewModel vm = (ModeloSetoresOrdemServicoViewModel)DataContext;
-                using ExcelEngine excelEngine = new ExcelEngine();
+                using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = excelEngine.Excel.Workbooks.Open("Modelos/ORDEM_SERVICO_MODELO.xlsx");
+                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
                 var servicos = await Task.Run(() => vm.GetOsEmitidas(vm.ProdutoOsModel.num_os_produto));
@@ -261,13 +262,13 @@ namespace Producao.Views.CentralModelos
                         }
                         pagina = 2;
                         worksheet.ShowRange(range, false);
-                        workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
+                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
                         tot++;
 
                         if (tot == servicos.Count)
                         {
                             Process.Start(
-                            new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
                             {
                                 Verb = "Print",
                                 UseShellExecute = true,
@@ -333,9 +334,9 @@ namespace Producao.Views.CentralModelos
                         pagina = 1;
                         tot++;
                         worksheet.ShowRange(range, true);
-                        workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
+                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
                         Process.Start(
-                            new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
+                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
                             {
                                 Verb = "Print",
                                 UseShellExecute = true,
@@ -434,9 +435,9 @@ namespace Producao.Views.CentralModelos
                         index++;
                     }
                     //workbook.SaveAs($"Impressos/REQUISICAO_{requi.num_requisicao}.xlsx");
-                    workbook.SaveAs(@$"Impressos\REQUISICAO_MODELO_{re.num_requisicao}.xlsx");
+                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{re.num_requisicao}.xlsx");
                     Process.Start(
-                    new ProcessStartInfo(@$"Impressos\REQUISICAO_MODELO_{re.num_requisicao}.xlsx")
+                    new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{re.num_requisicao}.xlsx")
                     {
                         Verb = "Print",
                         UseShellExecute = true,
@@ -507,10 +508,10 @@ namespace Producao.Views.CentralModelos
                     index++;
                 }
 
-                workbook.SaveAs($"Impressos/RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx");
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo($"Impressos\\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx")
                 {
                     Verb = "Print",
                     UseShellExecute = true
