@@ -803,6 +803,7 @@ namespace Producao
                 throw;
             }
         }
+
         public async Task<ObservableCollection<RelplanModel>> GetPlanilhasAsync()
         {
             try
@@ -816,6 +817,21 @@ namespace Producao
                 throw;
             }
         }
+
+        public async Task<ObservableCollection<RelplanModel>> GetTodasPlanilhasAsync()
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                var data = await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1") ).ToListAsync();
+                return new ObservableCollection<RelplanModel>(data);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public async Task<ObservableCollection<ProdutoModel>> GetProdutosAsync(string? planilha)
         {
             try

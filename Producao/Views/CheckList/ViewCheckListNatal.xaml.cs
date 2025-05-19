@@ -41,7 +41,7 @@ namespace Producao.Views.CheckList
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
                 vm.Siglas = await Task.Run(vm.GetSiglasAsync);
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
+                
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -225,6 +225,15 @@ namespace Producao.Views.CheckList
                 vm.CheckListGeralComplementos = [];
                 vm.CheckListGeralComplemento = null;
                 vm.CompleAdicionais = [];
+
+                var sigla = (e.NewValue as SiglaChkListModel);
+                if (sigla != null)
+                {
+                    if (sigla.sigla.Contains("CIPOLATTI"))
+                        vm.Planilhas = await Task.Run(vm.GetTodasPlanilhasAsync);
+                    else
+                        vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
+                }
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
 
