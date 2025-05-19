@@ -386,7 +386,7 @@ namespace Producao.Views.CentralModelos
                     using ExcelEngine excelEngine = new ExcelEngine();
                     IApplication application = excelEngine.Excel;
                     application.DefaultVersion = ExcelVersion.Xlsx;
-                    IWorkbook workbook = application.Workbooks.Open("Modelos/REQUISICAO_MODELO.xlsx");
+                    IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\REQUISICAO_MODELO.xlsx");
                     IWorksheet worksheet = workbook.Worksheets[0];
                     worksheet.Range["C2"].Text = requi?.num_requisicao.ToString();
                     worksheet.Range["C3"].Text = requi?.alterado_por;
@@ -462,7 +462,7 @@ namespace Producao.Views.CentralModelos
                 using ExcelEngine excelEngine = new ExcelEngine();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/RECEITA_CENTRAL_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\RECEITA_CENTRAL_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["A1"].Text = "CENTRAL DE MODELOS - CONTROLE";
                 worksheet.Range["C2"].Text = Modelo.id_modelo.ToString();

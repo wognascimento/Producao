@@ -394,7 +394,7 @@ namespace Producao.Views.CentralModelos
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos/ORDEM_SERVICO_MODELO.xlsx");
+                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
                 //var servicos = await Task.Run(() => vm.GetOsEmitidas(item.num_os_produto));
