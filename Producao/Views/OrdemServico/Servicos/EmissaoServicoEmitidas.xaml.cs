@@ -134,6 +134,9 @@ namespace Producao.Views.OrdemServico.Servicos
 
     public static class ContextMenuCommandsEmissaoServicoEmitidas
     {
+
+        static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         static BaseCommand? cancelarOS;
         public static BaseCommand CancelarOS
         {
@@ -158,7 +161,7 @@ namespace Producao.Views.OrdemServico.Servicos
                 using ExcelEngine excelEngine = new ExcelEngine();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["A1"].Text = $"ORDEM DE SERVIÇO {OS.data_emissao.Value.Year} ";
                 worksheet.Range["F5"].Text = OS.num_os.ToString();
@@ -173,10 +176,10 @@ namespace Producao.Views.OrdemServico.Servicos
                 worksheet.Range["C26"].Text = OS.data_conclusao.Value.ToString();
                 worksheet.Range["C28"].Text = OS.emitido_por;
 
-                workbook.SaveAs($"Impressos/ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_SERVICO_MODELO.xlsx");
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo($"Impressos\\ORDEM_SERVICO_SERVICO_MODELO.xlsx")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_SERVICO_MODELO.xlsx")
                 {
                     UseShellExecute = true
                 });

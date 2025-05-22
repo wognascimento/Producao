@@ -145,7 +145,7 @@ namespace Producao.Views.OrdemServico.Produto
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos/PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
                 IStyle headerStyle;

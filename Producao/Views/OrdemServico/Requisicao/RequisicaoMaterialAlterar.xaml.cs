@@ -208,7 +208,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos/REQUISICAO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\REQUISICAO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["C2"].Text = requi?.num_requisicao.ToString();
                 worksheet.Range["C3"].Text = requi?.alterado_por;

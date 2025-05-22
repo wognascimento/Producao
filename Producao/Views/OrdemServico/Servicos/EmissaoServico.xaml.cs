@@ -1,23 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Producao.Views.CentralModelos;
 using Syncfusion.XlsIO;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Producao.Views.OrdemServico.Servicos
 {
@@ -26,6 +17,8 @@ namespace Producao.Views.OrdemServico.Servicos
     /// </summary>
     public partial class EmissaoServico : UserControl
     {
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public EmissaoServico()
         {
             InitializeComponent();
@@ -72,11 +65,11 @@ namespace Producao.Views.OrdemServico.Servicos
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
 
-                IWorkbook workbook = application.Workbooks.Open("Modelos/ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
 
-                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open("Modelos/PERMISSAO_TRABALHO.xlsx");
+                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\PERMISSAO_TRABALHO.xlsx");
                 IWorksheet wsPt = wbPt.Worksheets[0];
 
 
@@ -94,10 +87,10 @@ namespace Producao.Views.OrdemServico.Servicos
                 worksheet.Range["C26"].Text = OS.data_conclusao.Value.ToString();
                 worksheet.Range["C28"].Text = OS.emitido_por;
 
-                workbook.SaveAs($"Impressos/ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_SERVICO_MODELO.xlsx");
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo($"Impressos\\ORDEM_SERVICO_SERVICO_MODELO.xlsx")
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_SERVICO_MODELO.xlsx")
                 {
                     UseShellExecute = true
                 });
@@ -106,10 +99,10 @@ namespace Producao.Views.OrdemServico.Servicos
                 if (OS.pt == true)
                 {
                     wsPt.Range["G1"].Number = (double)OS.num_os;
-                    wbPt.SaveAs(@"Impressos\PERMISSAO_TRABALHO.xlsx");
+                    wbPt.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx");
 
                     Process.Start(
-                        new ProcessStartInfo(@"Impressos\PERMISSAO_TRABALHO.xlsx")
+                        new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx")
                         {
                             Verb = "Print",
                             UseShellExecute = true,

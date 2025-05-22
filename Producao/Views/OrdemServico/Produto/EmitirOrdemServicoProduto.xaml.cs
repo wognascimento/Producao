@@ -277,10 +277,10 @@ namespace Producao.Views.OrdemServico.Produto
                 using ExcelEngine excelEngine = new ExcelEngine();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = excelEngine.Excel.Workbooks.Open("Modelos/ORDEM_SERVICO_MODELO.xlsx");
+                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
-                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open("Modelos/PERMISSAO_TRABALHO.xlsx");
+                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\PERMISSAO_TRABALHO.xlsx");
                 IWorksheet wsPt = wbPt.Worksheets[0];
 
                 IRange range = worksheet[27, 23, 53, 23];

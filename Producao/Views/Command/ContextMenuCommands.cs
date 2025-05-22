@@ -47,7 +47,7 @@ namespace Producao
                 using ExcelEngine excelEngine = new ExcelEngine();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/ETIQUETA_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ETIQUETA_MODELO.xlsx");
                 IWorksheet worksheet = workbook.Worksheets[0];
 
                 var etiqueta = Enum.Parse(typeof(Etiqueta), "Primeira");

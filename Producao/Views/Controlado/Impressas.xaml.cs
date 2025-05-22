@@ -126,12 +126,12 @@ namespace Producao.Views.Controlado
                 SWriter.WriteLine($@"^FO0,160^GFA,01280,01280,00040,:Z64:eJxjYCAOiAS6EoMEiDRuFIyCUTAKBhwAAHykCLM=:ECE9");
                 SWriter.WriteLine($@"^FT20,168^BQN,2,6");
                 SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
-                SWriter.WriteLine($@"^FT156,126^A0N,11,12^FH\^FDPRODUTO^FS");
-                SWriter.WriteLine($@"^FO156,129^GB63,13,13^FS");
-                SWriter.WriteLine($@"^FT156,139^A0N,11,19^FR^FH\^FD{etiqueta.codcompladicional}^FS");
-                SWriter.WriteLine($@"^FT241,126^A0N,11,12^FH\^FDETIQUETA^FS");
-                SWriter.WriteLine($@"^FO241,129^GB63,13,13^FS");
-                SWriter.WriteLine($@"^FT241,139^A0N,11,19^FR^FH\^FD{etiqueta.codigo}^FS");
+                SWriter.WriteLine($@"^FT156,126^AAN,5,5^FH\^FDPRODUTO^FS");
+                //SWriter.WriteLine($@"^FO156,129^GB63,13,13^FS");
+                SWriter.WriteLine($@"^FT156,145^A0N,16,20^FH\^FD{etiqueta.codcompladicional}^FS");
+                SWriter.WriteLine($@"^FT241,126^AAN,5,5^FH\^FDETIQUETA^FS");
+                //SWriter.WriteLine($@"^FO241,129^GB63,13,13^FS");
+                SWriter.WriteLine($@"^FT241,145^A0N,16,20^FH\^FD{etiqueta.codigo}^FS");
                 /*
                 SWriter.WriteLine($@"^FT157,33^AAN,9,5^FB151,1,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
                 SWriter.WriteLine($@"^FT157,42^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
@@ -142,7 +142,7 @@ namespace Producao.Views.Controlado
                 SWriter.WriteLine($@"^FT157,87^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
                 SWriter.WriteLine($@"^FT157,96^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
                 */
-                SWriter.WriteLine($@"^FT157,105^AAN,9,5^FB151,5,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
+                SWriter.WriteLine($@"^FT157,105^A0N,16^FB151,5,0^FH\^FD{etiqueta.descricao_completa}^FS");
                 SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
 
                 await SWriter.FlushAsync();

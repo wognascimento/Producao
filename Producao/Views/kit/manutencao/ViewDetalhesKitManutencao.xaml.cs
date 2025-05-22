@@ -195,7 +195,7 @@ namespace Producao.Views.kit.solucao
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open("Modelos/REQUISICAO_KIT_MODELO.xlsx", ExcelParseOptions.Default, false, "1@3mudar");
+                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\REQUISICAO_KIT_MODELO.xlsx", ExcelParseOptions.Default, false, "1@3mudar");
 
                 IStyle borderStyle = workbook.Styles.Add("BorderStyle");
                 borderStyle.BeginUpdate();
