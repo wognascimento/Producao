@@ -219,7 +219,7 @@
             AllowFiltering="True"
             ColumnSizer="AutoWithLastColumnFill"
             ShowRowHeader="True" 
-            ItemsSource="{Binding Itens}">
+            ItemsSource="{Binding Itens}" RowValidating="itens_RowValidating">
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:GridTextColumn MappingName="descricao_completa"/>
                 <syncfusion:GridTextColumn MappingName="unidade"/>

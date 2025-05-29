@@ -24,8 +24,10 @@ using Syncfusion.SfSkinManager;
 using Syncfusion.Windows.Tools.Controls;
 using Syncfusion.XlsIO;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
@@ -1774,6 +1776,195 @@ namespace Producao
         private void OnAreasTemas(object sender, RoutedEventArgs e)
         {
             adicionarFilho(new AreaTema(), "ÁREAS TEMAS", "AREAS_TEMAS");
+        }
+
+        private async void OnConsultaEntradaEstoqueClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                string sql = @"
+                    SELECT 
+                        t_entrada_estoque.codcompladicional, 
+                        planilha,
+                        descricao_completa,
+                        unidade,
+                        quantidade, 
+                        procedencia, 
+                        entrada_data, 
+                        entrada_por, 
+                        codigo_entrada, 
+                        local_galpao, 
+                        endereco, 
+                        quantidade_fisica, 
+                        processado
+                    FROM producao.t_entrada_estoque
+                    JOIN producao.qry3descricoes ON producao.t_entrada_estoque.codcompladicional = producao.qry3descricoes.codcompladicional
+                    ORDER BY planilha, descricao_completa;
+                ";
+
+                using var connection = new NpgsqlConnection(BaseSettings.connectionString);
+                connection.Open();
+
+                //var resultado = connection.Query<Object>(sql).ToList();
+                var resultado = connection.Query(sql).ToList();
+                DataTable table = new();
+
+                // Define colunas com tipos específicos
+                table.Columns.Add("codcompladicional", typeof(int));
+                table.Columns.Add("planilha", typeof(string));
+                table.Columns.Add("descricao_completa", typeof(string));
+                table.Columns.Add("unidade", typeof(string));
+                table.Columns.Add("quantidade", typeof(decimal));
+                table.Columns.Add("procedencia", typeof(string));
+                table.Columns.Add("entrada_data", typeof(DateTime));
+                table.Columns.Add("entrada_por", typeof(string));
+                table.Columns.Add("codigo_entrada", typeof(int));
+                table.Columns.Add("local_galpao", typeof(string));
+                table.Columns.Add("endereco", typeof(string));
+                table.Columns.Add("quantidade_fisica", typeof(decimal));
+                table.Columns.Add("processado", typeof(string));
+
+                // Adiciona os dados linha a linha
+                foreach (var row in resultado)
+                {
+                    var dict = (IDictionary<string, object>)row;
+                    var novaLinha = table.NewRow();
+
+                    foreach (DataColumn col in table.Columns)
+                    {
+                        // Verifica se a chave existe no dicionário antes de atribuir
+                        novaLinha[col.ColumnName] = dict.TryGetValue(col.ColumnName, out var valor) && valor != null
+                            ? valor
+                            : DBNull.Value;
+                    }
+
+                    table.Rows.Add(novaLinha);
+                }
+
+                using ExcelEngine excelEngine = new();
+                IApplication application = excelEngine.Excel;
+
+                application.DefaultVersion = ExcelVersion.Xlsx;
+
+                //Create a workbook
+                IWorkbook workbook = application.Workbooks.Create(1);
+                IWorksheet worksheet = workbook.Worksheets[0];
+                //worksheet.IsGridLinesVisible = false;
+                //worksheet.ImportData(resultado, 1, 1, true);
+                worksheet.ImportDataTable(table, true, 1, 1, true);
+
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_MOVEMENTACAO_ENTRADA.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_MOVEMENTACAO_ENTRADA.xlsx")
+                {
+                    UseShellExecute = true
+                });
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private async void OnConsultaSaidaEstoqueClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+
+                string sql = @"
+                    SELECT
+                        t_saida.codcompladicional,
+                        planilha,
+                        descricao_completa,
+                        unidade,
+                        quantidade, 
+                        destino, 
+                        saida_data, 
+                        saida_por, 
+                        codigo_saida, 
+                        observacao, 
+                        local_galpao, 
+                        num_requisicao, 
+                        caminho, 
+                        endereco, 
+                        quantidade_fisica, 
+                        processado
+                    FROM producao.t_saida
+                    JOIN producao.qry3descricoes ON producao.t_saida.codcompladicional = producao.qry3descricoes.codcompladicional
+                    ORDER BY planilha, descricao_completa;
+                ";
+
+                using var connection = new NpgsqlConnection(BaseSettings.connectionString);
+                connection.Open();
+
+                //var resultado = connection.Query<Object>(sql).ToList();
+                var resultado = connection.Query(sql).ToList();
+                DataTable table = new();
+
+                // Define colunas com tipos específicos
+                table.Columns.Add("codcompladicional", typeof(int));
+                table.Columns.Add("planilha", typeof(string));
+                table.Columns.Add("descricao_completa", typeof(string));
+                table.Columns.Add("unidade", typeof(string));
+                table.Columns.Add("quantidade", typeof(decimal));
+                table.Columns.Add("destino", typeof(string));
+                table.Columns.Add("saida_data", typeof(DateTime));
+                table.Columns.Add("saida_por", typeof(string));
+                table.Columns.Add("codigo_saida", typeof(int));
+                table.Columns.Add("local_galpao", typeof(string));
+                table.Columns.Add("num_requisicao", typeof(int));
+                table.Columns.Add("caminho", typeof(string));
+                table.Columns.Add("endereco", typeof(string));
+                table.Columns.Add("quantidade_fisica", typeof(decimal));
+                table.Columns.Add("processado", typeof(string));
+
+                // Adiciona os dados linha a linha
+                foreach (var row in resultado)
+                {
+                    var dict = (IDictionary<string, object>)row;
+                    var novaLinha = table.NewRow();
+
+                    foreach (DataColumn col in table.Columns)
+                    {
+                        // Verifica se a chave existe no dicionário antes de atribuir
+                        novaLinha[col.ColumnName] = dict.TryGetValue(col.ColumnName, out var valor) && valor != null
+                            ? valor
+                            : DBNull.Value;
+                    }
+
+                    table.Rows.Add(novaLinha);
+                }
+
+                using ExcelEngine excelEngine = new();
+                IApplication application = excelEngine.Excel;
+
+                application.DefaultVersion = ExcelVersion.Xlsx;
+
+                //Create a workbook
+                IWorkbook workbook = application.Workbooks.Create(1);
+                IWorksheet worksheet = workbook.Worksheets[0];
+                //worksheet.IsGridLinesVisible = false;
+                //worksheet.ImportData(resultado, 1, 1, true);
+                worksheet.ImportDataTable(table, true, 1, 1, true);
+
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_MOVEMENTACAO_ENTRADA.xlsx");
+                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_MOVEMENTACAO_ENTRADA.xlsx")
+                {
+                    UseShellExecute = true
+                });
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

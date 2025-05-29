@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using Producao.DataBase.Model.Dto;
 using Producao.Views.PopUp;
 using System;
-using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -105,20 +106,22 @@ namespace Producao.Views.Estoque
                 RelplanModel? planilha = e.NewValue as RelplanModel;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                vm.Produtos = new ObservableCollection<ProdutoModel>();
+                vm.Produtos = [];
                 txtDescricao.SelectedItem = null;
                 txtDescricao.Text = string.Empty;
 
-                vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
+                vm.DescAdicionais = [];
                 txtDescricaoAdicional.SelectedItem = null;
                 txtDescricaoAdicional.Text = string.Empty;
 
-                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
+                vm.CompleAdicionais = [];
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
                 vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(planilha?.planilha));
-                //vm.Itens = await Task.Run(() => vm.GetItensAsync(planilha?.planilha));
+
+                vm.Itens = await Task.Run(() => vm.GetItensAsync(planilha?.planilha));
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
 
                 txtDescricao.Focus();
@@ -251,6 +254,37 @@ namespace Producao.Views.Estoque
         {
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
         }
+
+        private async void itens_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        {
+            //SaidaDTO
+            try
+            {
+                var registro = e.RowData as SaidaDTO;
+
+                if (registro.destino == "ACERTO ESTOQUE")
+                {
+                    MessageBox.Show("Não é possivel alterar procedência 'ACERTO ESTOQUE'.", "Validação de Quantidade", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    e.IsValid = false;
+                    return;
+                }
+
+                using DatabaseContext db = new();
+                var saidaExistente = await db.Saidas.FindAsync(registro.codigo_saida);
+                var saidaAlterada = saidaExistente;
+                saidaAlterada.quantidade = registro.quantidade;
+                saidaAlterada.saida_por = Environment.UserName;
+                saidaAlterada.saida_data = DateTime.Now.Date;
+                db.Entry(saidaExistente).CurrentValues.SetValues(saidaAlterada);
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+            {
+                e.IsValid = false;
+                MessageBox.Show(pgEx.MessageText, @$"Erro: {pgEx.SqlState}");
+            }
+        }
+    
     }
 
     class MovimentacaoSaidaViewModel : INotifyPropertyChanged
@@ -319,8 +353,8 @@ namespace Producao.Views.Estoque
             get { return _descricoes; }
             set { _descricoes = value; RaisePropertyChanged("Descricoes"); }
         }
-        private IList _itens;
-        public IList Itens
+        private ObservableCollection<SaidaDTO> _itens;
+        public ObservableCollection<SaidaDTO> Itens
         {
             get { return _itens; }
             set { _itens = value; RaisePropertyChanged("Itens"); }
@@ -335,7 +369,7 @@ namespace Producao.Views.Estoque
 
         public MovimentacaoSaidaViewModel()
         {
-            Itens = new ObservableCollection<object>();
+            Itens = [];
         }
 
         public async Task<ObservableCollection<RelplanModel>> GetPlanilhasAsync()
@@ -422,7 +456,7 @@ namespace Producao.Views.Estoque
             }
         }
 
-        public async Task<object> GetItensAsync(long? codigo_saida)
+        public async Task<SaidaDTO> GetItensAsync(long? codigo_saida)
         {
             try
             {
@@ -431,22 +465,54 @@ namespace Producao.Views.Estoque
                 var resultado = db.Saidas
                     .Join(db.Descricoes, saidas => saidas.codcompladicional, descricao => descricao.codcompladicional, (saidas, descricao) => new { saidas, descricao })
                     .Where(x => x.saidas.codigo_saida == codigo_saida)
-                    .Select(x => new
+                    .Select(x => new SaidaDTO
                     {
-                        x.saidas.codigo_saida,
-                        x.saidas.codcompladicional,
-                        x.saidas.quantidade,
-                        x.saidas.destino,
-                        x.saidas.processado,
-                        x.saidas.saida_data,
-                        x.saidas.saida_por,
-                        x.descricao.descricao_completa,
-                        x.descricao.unidade
+                        codigo_saida = x.saidas.codigo_saida,
+                        codcompladicional = x.saidas.codcompladicional,
+                        quantidade = x.saidas.quantidade,
+                        destino = x.saidas.destino,
+                        processado = x.saidas.processado,
+                        saida_data = x.saidas.saida_data,
+                        saida_por = x.saidas.saida_por,
+                        descricao_completa = x.descricao.descricao_completa,
+                        unidade = x.descricao.unidade
                     });
 
                 //var resultadoToList = await resultado.ToListAsync();
 
                 return await resultado.FirstOrDefaultAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<ObservableCollection<SaidaDTO>> GetItensAsync(string? planilha)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+
+                var resultado = db.Saidas
+                    .Join(db.Descricoes, saidas => saidas.codcompladicional, descricao => descricao.codcompladicional, (saidas, descricao) => new { saidas, descricao })
+                    .Where(x => x.descricao.planilha == planilha)
+                    .Select(x => new SaidaDTO
+                    {
+                        codigo_saida = x.saidas.codigo_saida,
+                        codcompladicional = x.saidas.codcompladicional,
+                        quantidade = x.saidas.quantidade,
+                        destino = x.saidas.destino,
+                        processado = x.saidas.processado,
+                        saida_data = x.saidas.saida_data,
+                        saida_por = x.saidas.saida_por,
+                        descricao_completa = x.descricao.descricao_completa,
+                        unidade = x.descricao.unidade
+                    });
+
+                var resultadoToList = await resultado.ToListAsync();
+
+                return new ObservableCollection<SaidaDTO>(resultadoToList);
             }
             catch (Exception)
             {

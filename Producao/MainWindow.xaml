@@ -147,6 +147,10 @@
                     <syncfusion:MenuItemAdv Header="Entrada" Click="OnEntradaEstoqueClick"/>
                     <syncfusion:MenuItemAdv Header="Saida" Click="OnSaidaEstoqueClick"/>
                     <syncfusion:MenuItemAdv Header="Libera Produto Bloqueado" Click="OnLiberarProdutoBloqueadoClick"/>
+                    <syncfusion:MenuItemAdv Header="Consultas">
+                        <syncfusion:MenuItemAdv Header="Entrada" Click="OnConsultaEntradaEstoqueClick"/>
+                        <syncfusion:MenuItemAdv Header="Saida" Click="OnConsultaSaidaEstoqueClick"/>
+                    </syncfusion:MenuItemAdv>
                 </syncfusion:MenuItemAdv>
                 <syncfusion:MenuItemAdv Header="Baixa de Requisição" Click="OnBaixaRequisicaoClick"/>
             </syncfusion:MenuItemAdv>

@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using Producao.DataBase.Model.Dto;
 using Producao.Views.PopUp;
 using System;
-using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -118,7 +119,9 @@ namespace Producao.Views.Estoque
                 txtComplementoAdicional.Text = string.Empty;
 
                 vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(planilha?.planilha));
-                //vm.Itens = await Task.Run(() => vm.GetItensAsync(planilha?.planilha));
+
+                vm.Itens = await Task.Run(() => vm.GetItensAsync(planilha?.planilha));
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
 
                 txtDescricao.Focus();
@@ -252,6 +255,35 @@ namespace Producao.Views.Estoque
         {
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
         }
+
+        private async void itens_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        {
+            try
+            {
+                var registro = e.RowData as EntradaDTO;
+
+                if (registro.procedencia == "ACERTO ESTOQUE")
+                {
+                    MessageBox.Show("Não é possivel alterar procedência 'ACERTO ESTOQUE'.", "Validação de Quantidade", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    e.IsValid = false;
+                    return;
+                }
+
+                using DatabaseContext db = new();
+                var entradaExistente = await db.Entradas.FindAsync(registro.codigo_entrada);
+                var entradaAlterada = entradaExistente;
+                entradaAlterada.quantidade = registro.quantidade;
+                entradaAlterada.entrada_por = Environment.UserName;
+                entradaAlterada.entrada_data = DateTime.Now.Date;
+                db.Entry(entradaExistente).CurrentValues.SetValues(entradaAlterada);
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+            {
+                e.IsValid = false;
+                MessageBox.Show(pgEx.MessageText, @$"Erro: {pgEx.SqlState}");
+            }
+        }
     }
 
     class MovimentacaoEntradaViewModel : INotifyPropertyChanged
@@ -320,8 +352,8 @@ namespace Producao.Views.Estoque
             get { return _descricoes; }
             set { _descricoes = value; RaisePropertyChanged("Descricoes"); }
         }
-        private IList _itens;
-        public IList Itens
+        private ObservableCollection<EntradaDTO> _itens;
+        public ObservableCollection<EntradaDTO> Itens
         {
             get { return _itens; }
             set { _itens = value; RaisePropertyChanged("Itens"); }
@@ -338,7 +370,7 @@ namespace Producao.Views.Estoque
 
         public MovimentacaoEntradaViewModel()
         {
-            Itens = new ObservableCollection<object>();
+            Itens = new ObservableCollection<EntradaDTO>();
         }
 
 
@@ -426,7 +458,7 @@ namespace Producao.Views.Estoque
             }
         }
 
-        public async Task<object> GetItensAsync(long? codigo_entrada)
+        public async Task<EntradaDTO> GetItensAsync(long? codigo_entrada)
         {
             try
             {
@@ -435,17 +467,17 @@ namespace Producao.Views.Estoque
                 var resultado = db.Entradas
                     .Join(db.Descricoes, entrada => entrada.codcompladicional, descricao => descricao.codcompladicional, (entrada, descricao) => new { entrada, descricao })
                     .Where(x => x.entrada.codigo_entrada == codigo_entrada)
-                    .Select(x => new
+                    .Select(x => new EntradaDTO
                     {
-                        x.entrada.codigo_entrada,
-                        x.entrada.codcompladicional,
-                        x.entrada.quantidade,
-                        x.entrada.procedencia,
-                        x.entrada.processado,
-                        x.entrada.entrada_data,
-                        x.entrada.entrada_por,
-                        x.descricao.descricao_completa,
-                        x.descricao.unidade
+                        codigo_entrada = x.entrada.codigo_entrada,
+                        codcompladicional = x.entrada.codcompladicional,
+                        quantidade = x.entrada.quantidade,
+                        procedencia = x.entrada.procedencia,
+                        processado = x.entrada.processado,
+                        entrada_data = x.entrada.entrada_data,
+                        entrada_por = x.entrada.entrada_por,
+                        descricao_completa = x.descricao.descricao_completa,
+                        unidade = x.descricao.unidade
                     });
 
                 //var resultadoToList = await resultado.ToListAsync();
@@ -457,6 +489,41 @@ namespace Producao.Views.Estoque
                 throw;
             }
         }
+
+
+        public async Task<ObservableCollection<EntradaDTO>> GetItensAsync(string? planilha)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+
+                var resultado = db.Entradas
+                    .Join(db.Descricoes, entrada => entrada.codcompladicional, descricao => descricao.codcompladicional, (entrada, descricao) => new { entrada, descricao })
+                    .Where(x => x.descricao.planilha == planilha)
+                    .Select(x => new EntradaDTO
+                    {
+                        codigo_entrada = x.entrada.codigo_entrada,
+                        codcompladicional = x.entrada.codcompladicional,
+                        quantidade = x.entrada.quantidade,
+                        procedencia = x.entrada.procedencia,
+                        processado = x.entrada.processado,
+                        entrada_data =x.entrada.entrada_data,
+                        entrada_por =x.entrada.entrada_por,
+                        descricao_completa = x.descricao.descricao_completa,
+                        unidade = x.descricao.unidade
+                    });
+
+                var resultadoToList = await resultado.ToListAsync();
+
+                return new ObservableCollection<EntradaDTO>(resultadoToList);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
 
         public async Task<EntradaEstoqueModel> SaveAsync(EntradaEstoqueModel entrada)
         {

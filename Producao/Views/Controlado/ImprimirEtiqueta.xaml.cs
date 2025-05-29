@@ -14,6 +14,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.FieldList;
 
 namespace Producao.Views.Controlado
 {
@@ -177,36 +178,71 @@ namespace Producao.Views.Controlado
                 await Client.ConnectAsync(IPAdress, Port);
                 SWriter = new(Client.GetStream());
                 //SWriter = new(@"C:\TEMP\ETIQUETA.TXT");
-                var etiqueta = await vm.GetImprimirAsync(record.codcompladicional);
-                SWriter.WriteLine($@"^XA");
-                SWriter.WriteLine($@"^CI28");
-                SWriter.WriteLine($@"^PW320");
-                SWriter.WriteLine($@"^FO0,160^GFA,01280,01280,00040,:Z64:eJxjYCAOiAS6EoMEiDRuFIyCUTAKBhwAAHykCLM=:ECE9");
-                SWriter.WriteLine($@"^FT20,168^BQN,2,6");
-                SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
-                SWriter.WriteLine($@"^FT156,126^AAN,5,5^FH\^FDPRODUTO^FS");
-                SWriter.WriteLine($@"^FT156,145^A0N,16,20^FH\^FD{etiqueta.codcompladicional}^FS");
-                SWriter.WriteLine($@"^FT241,126^AAN,5,5^FH\^FDETIQUETA^FS");
-                SWriter.WriteLine($@"^FT241,145^A0N,16,20^FH\^FD{etiqueta.codigo}^FS");
-                /*
-                SWriter.WriteLine($@"^FT157,33^AAN,9,5^FB151,1,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
-                SWriter.WriteLine($@"^FT157,42^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
-                SWriter.WriteLine($@"^FT157,51^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
-                SWriter.WriteLine($@"^FT157,60^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
-                SWriter.WriteLine($@"^FT157,69^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
-                SWriter.WriteLine($@"^FT157,78^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
-                SWriter.WriteLine($@"^FT157,87^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
-                SWriter.WriteLine($@"^FT157,96^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
-                */
-                SWriter.WriteLine($@"^FT157,105^A0N,16^FB151,5,0^FH\^FD{etiqueta.descricao_completa}^FS");
-                SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
 
-                await SWriter.FlushAsync();
-                await SWriter.DisposeAsync();
-                SWriter.Close();
+                RadWindow.Prompt(new DialogParameters()
+                {
+                    Content = "Informa a quantidade de etiquetas:",
+                    Header = "Imprimir Etiqueta(s)",
+                    OkButtonContent = "IMPRIMIR",
+                    DefaultPromptResultValue = "1",
 
-                using DatabaseContext db = new();
-                await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
+                    Closed = async (sender, e) =>
+                    {
+                        if (!string.IsNullOrWhiteSpace(e.PromptResult) && int.TryParse(e.PromptResult, out int quantidade))
+                        {
+                            if (quantidade > record.etiquetas)
+                            {
+                                var alert = new RadDesktopAlert
+                                {
+                                    Header = "NOTIFICAÇÃO IMPRESSÃO ETIQUETA",
+                                    Content = "Está informando uma quantidade maior do que as etiquetas disponíveis.",
+                                    ShowDuration = 3000
+                                };
+                                RadDesktopAlertManager manager = new();
+                                StyleManager.SetTheme(alert, new Windows8Theme());
+                                manager.ShowAlert(alert);
+                                return;
+                            }
+                            for (int i = 0; i < quantidade; i++)
+                            {
+                                var etiqueta = await vm.GetImprimirAsync(record.codcompladicional);
+                                SWriter.WriteLine($@"^XA");
+                                SWriter.WriteLine($@"^CI28");
+                                SWriter.WriteLine($@"^PW320");
+                                SWriter.WriteLine($@"^FO0,160^GFA,01280,01280,00040,:Z64:eJxjYCAOiAS6EoMEiDRuFIyCUTAKBhwAAHykCLM=:ECE9");
+                                SWriter.WriteLine($@"^FT20,168^BQN,2,6");
+                                SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
+                                SWriter.WriteLine($@"^FT156,126^AAN,5,5^FH\^FDPRODUTO^FS");
+                                SWriter.WriteLine($@"^FT156,145^A0N,16,20^FH\^FD{etiqueta.codcompladicional}^FS");
+                                SWriter.WriteLine($@"^FT241,126^AAN,5,5^FH\^FDETIQUETA^FS");
+                                SWriter.WriteLine($@"^FT241,145^A0N,16,20^FH\^FD{etiqueta.codigo}^FS");
+                                /*
+                                SWriter.WriteLine($@"^FT157,33^AAN,9,5^FB151,1,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
+                                SWriter.WriteLine($@"^FT157,42^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                                SWriter.WriteLine($@"^FT157,51^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                                SWriter.WriteLine($@"^FT157,60^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                                SWriter.WriteLine($@"^FT157,69^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                                SWriter.WriteLine($@"^FT157,78^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                                SWriter.WriteLine($@"^FT157,87^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                                SWriter.WriteLine($@"^FT157,96^AAN,9,5^FB151,1,0,C^FH\^FDDESCRI\80\C7O DO PRODUTO FORM^FS");
+                                */
+                                SWriter.WriteLine($@"^FT157,105^A0N,16^FB151,5,0^FH\^FD{etiqueta.descricao_completa}^FS");
+                                SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
+                                using DatabaseContext db = new();
+                                await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
+                                record.etiquetas += 1;
+                                grid.View.Refresh();
+                            }
+                            await SWriter.FlushAsync();
+                            await SWriter.DisposeAsync();
+                            SWriter.Close();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Por favor, insira um número válido.");
+                        }
+                    }
+                });
             }
             catch (Exception ex)
             {

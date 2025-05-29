@@ -219,18 +219,18 @@
             AllowFiltering="True"
             ColumnSizer="AutoWithLastColumnFill"
             ShowRowHeader="True" 
-            ItemsSource="{Binding Itens}">
+            ItemsSource="{Binding Itens}" RowValidating="itens_RowValidating">
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:GridTextColumn MappingName="descricao_completa"/>
                 <syncfusion:GridTextColumn MappingName="unidade"/>
-                <syncfusion:GridNumericColumn MappingName="quantidade" DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"/>
+                <syncfusion:GridNumericColumn MappingName="quantidade" DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}" AllowEditing="True"/>
                 <syncfusion:GridTextColumn MappingName="procedencia"/>
                 <syncfusion:GridCheckBoxColumn
                         MappingName="processado"
                         DisplayBinding="{Binding processado, Converter={StaticResource ConverterBoolen}}"
                         ValueBinding="{Binding processado, Converter={StaticResource ConverterBoolen}}" />
                 <syncfusion:GridDateTimeColumn MappingName="entrada_data"/>
-                <syncfusion:GridTextColumn MappingName="entrada_por"/>
+                <syncfusion:GridTextColumn MappingName="entrada_por" ColumnSizer="SizeToCells"/>
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
 
