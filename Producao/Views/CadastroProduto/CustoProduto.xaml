@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="Producao.Views.CadastroProduto.CustoProduto"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Producao.Views.CadastroProduto" 
+             xmlns:Syncfusion="http://schemas.syncfusion.com/wpf" 
+             xmlns:app="clr-namespace:Producao"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="UserControl_Loaded">
+
+    <UserControl.Resources>
+        <app:ConverterNumber x:Key="ConverterNumber"/>
+        <app:ConverterBoolen x:Key="ConverterBoolen"/>
+    </UserControl.Resources>
+
+
+    <Grid>
+        <Syncfusion:SfDataGrid
+        Name="itens" 
+        ItemsSource="{Binding Produtos}" 
+        ColumnSizer="AutoLastColumnFill" 
+        AllowFiltering="True" 
+        AllowResizingColumns="True" 
+        AutoGenerateColumns="False"
+        AllowResizingHiddenColumns="True" 
+        SelectionUnit="Row"
+        SelectionMode="Extended"
+        GridCopyOption="CopyData,IncludeHeaders,IncludeFormat" RowValidating="itens_RowValidating" >
+            <Syncfusion:SfDataGrid.Columns>
+                <Syncfusion:GridTextColumn MappingName="codcompladicional"/>
+                <Syncfusion:GridTextColumn MappingName="planilha" />
+                <Syncfusion:GridTextColumn MappingName="descricao" ColumnSizer="SizeToHeader"/>
+                <Syncfusion:GridTextColumn MappingName="descricao_adicional" ColumnSizer="SizeToHeader"/>
+                <Syncfusion:GridTextColumn MappingName="complementoadicional" ColumnSizer="SizeToHeader"/>
+                <Syncfusion:GridTextColumn MappingName="unidade"/>
+                <Syncfusion:GridNumericColumn MappingName="vida_util"/>
+                <Syncfusion:GridCheckBoxColumn MappingName="prodcontrolado"
+                                       DisplayBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}}"
+                                       ValueBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}}" />
+                <Syncfusion:GridCheckBoxColumn MappingName="inativo"
+                                       DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
+                                       ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"/>
+                <Syncfusion:GridTextColumn MappingName="tipocusto" AllowEditing="True"/>
+                <Syncfusion:GridNumericColumn MappingName="custo23"/>
+                <Syncfusion:GridNumericColumn MappingName="custo24"/>
+                <Syncfusion:GridNumericColumn MappingName="custo25" AllowEditing="True"/>
+                <Syncfusion:GridNumericColumn MappingName="process_23"/>
+                <Syncfusion:GridNumericColumn MappingName="process_24"/>
+                <Syncfusion:GridNumericColumn MappingName="process_25" AllowEditing="True"/>
+                <Syncfusion:GridNumericColumn MappingName="custo_rec23"/>
+                <Syncfusion:GridNumericColumn MappingName="custo_rec24"/>
+                <Syncfusion:GridNumericColumn MappingName="custo_rec25" AllowEditing="True"/>
+                <Syncfusion:GridNumericColumn MappingName="media_pn_pro1_v"/>
+                <Syncfusion:GridNumericColumn MappingName="media_pn_pro2_v"/>
+                <Syncfusion:GridNumericColumn MappingName="media_rc_pro2_v"/>
+                <Syncfusion:GridNumericColumn MappingName="media_pro3_v"/>
+                <Syncfusion:GridNumericColumn MappingName="media_total_process"/>
+            </Syncfusion:SfDataGrid.Columns>
+        </Syncfusion:SfDataGrid>
+    </Grid>
+</UserControl>

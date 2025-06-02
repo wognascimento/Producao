@@ -1966,5 +1966,10 @@ namespace Producao
                 MessageBox.Show(ex.Message);
             }
         }
+
+        private void OnProdutosCusto(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new CustoProduto(), "CUSTO PRODUTO", "CUSTO_PRODUTO");
+        }
     }
 }
