@@ -14,7 +14,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Telerik.Windows.Controls;
-using Telerik.Windows.Controls.FieldList;
 
 namespace Producao.Views.Controlado
 {
@@ -190,6 +189,8 @@ namespace Producao.Views.Controlado
                     {
                         if (!string.IsNullOrWhiteSpace(e.PromptResult) && int.TryParse(e.PromptResult, out int quantidade))
                         {
+                            //int saldo = (int)((record.etiquetas ?? 0) - (record.impressas ?? 0));
+
                             if (quantidade > record.etiquetas)
                             {
                                 var alert = new RadDesktopAlert
@@ -230,7 +231,7 @@ namespace Producao.Views.Controlado
                                 SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
                                 using DatabaseContext db = new();
                                 await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
-                                record.etiquetas += 1;
+                                record.impressas += 1;
                                 grid.View.Refresh();
                             }
                             await SWriter.FlushAsync();
@@ -275,14 +276,14 @@ namespace Producao.Views.Controlado
                         if (e.PromptResult.All(char.IsDigit)) 
                         {
                             int limit = int.Parse(e.PromptResult);
-                            if (limit > record.saldo_estoque)
+                            int saldo = (int)((record.saldo_estoque ?? 0) - (record.etiquetas ?? 0));
+                            if (saldo < 1 || limit < saldo)
                             {
                                 RadWindow.Alert(new DialogParameters()
                                 {
                                     Content = "Não é possivel adicionar quantidade maior que o saldo de estoque.",
                                     Header = "Adicionar Etiqueta(s)"
                                 });
-
                                 return;
                             }
 
