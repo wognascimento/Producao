@@ -47,7 +47,7 @@ namespace Producao
         public string? solicitado_por { get; set; }
         public string? impresso { get; set; }
         public double? meta_peca { get; set; }
-        public TimeSpan? meta_peca_hora {  get; set; }
+        public string? meta_peca_hora {  get; set; }
         public long? codigo_setor { get; set; }
         public long? num_caminho { get; set; }
         public bool? pt { get; set; }

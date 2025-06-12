@@ -37,5 +37,6 @@ namespace Producao.DataBase.Model
         //public string? dias_fechamento { get; set; }
         public int? dias_expedicao { get; set; }
         public long? cod_compl_adicional { get; set; }
+        public string? meta_peca_hora { get; set; }
     }
 }

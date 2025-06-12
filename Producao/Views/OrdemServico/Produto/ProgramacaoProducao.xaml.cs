@@ -177,7 +177,7 @@ namespace Producao.Views.OrdemServico.Produto
                 headerStyle.Borders[ExcelBordersIndex.EdgeBottom].Color = ExcelKnownColors.Grey_25_percent;
                 headerStyle.Borders[ExcelBordersIndex.EdgeLeft].Color = ExcelKnownColors.Grey_25_percent;
                 headerStyle.Borders[ExcelBordersIndex.EdgeRight].Color = ExcelKnownColors.Grey_25_percent;
-                headerStyle.Font.Size = 10;
+                headerStyle.Font.Size = 8;
                 headerStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
                 headerStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
                 //headerStyle.Font.FontName = "Calibri (Detalhe)";
@@ -205,28 +205,28 @@ namespace Producao.Views.OrdemServico.Produto
                     worksheet.Range[$"F{_l}"].CellStyle = headerStyle;
                     worksheet.Range[$"F{_l}"].Value = item.planilha;
                     
-                    worksheet.Range[$"G{_l}:K{_l}"].Merge();
-                    worksheet.Range[$"G{_l}:K{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"G{_l}:K{_l}"].Value = item.descricao_completa;
-                    worksheet.Range[$"G{_l}:K{_l}"].RowHeight = 26;
+                    worksheet.Range[$"G{_l}:L{_l}"].Merge();
+                    worksheet.Range[$"G{_l}:L{_l}"].CellStyle = headerStyle;
+                    worksheet.Range[$"G{_l}:L{_l}"].Value = item.descricao_completa;
+                    worksheet.Range[$"G{_l}:L{_l}"].RowHeight = 26;
 
-                    worksheet.Range[$"L{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"L{_l}"].Number = item.num_os.GetValueOrDefault();
-                    
                     worksheet.Range[$"M{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"M{_l}"].Number = item.quantidade_os.GetValueOrDefault();
+                    worksheet.Range[$"M{_l}"].Number = item.num_os.GetValueOrDefault();
+                    
+                    worksheet.Range[$"N{_l}"].CellStyle = headerStyle;
+                    worksheet.Range[$"N{_l}"].Number = item.quantidade_os.GetValueOrDefault();
 
-                    worksheet.Range[$"N{_l}:O{_l}"].Merge();
-                    worksheet.Range[$"N{_l}:O{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"N{_l}:O{_l}"].Value = item.programacao_status;
+                    worksheet.Range[$"O{_l}:P{_l}"].Merge();
+                    worksheet.Range[$"O{_l}:P{_l}"].CellStyle = headerStyle;
+                    worksheet.Range[$"O{_l}:P{_l}"].Value = item.programacao_status;
 
-                    worksheet.Range[$"P{_l}:Q{_l}"].Merge();
-                    worksheet.Range[$"P{_l}:Q{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"P{_l}:Q{_l}"].Value = item.setor_caminho;
+                    worksheet.Range[$"Q{_l}:R{_l}"].Merge();
+                    worksheet.Range[$"Q{_l}:R{_l}"].CellStyle = headerStyle;
+                    worksheet.Range[$"Q{_l}:R{_l}"].Value = item.programacao_observacao;
 
-                    worksheet.Range[$"R{_l}:S{_l}"].Merge();
-                    worksheet.Range[$"R{_l}:S{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"R{_l}:S{_l}"].Value = item.programacao_observacao;
+                    //worksheet.Range[$"R{_l}:S{_l}"].Merge();
+                    worksheet.Range[$"S{_l}"].CellStyle = headerStyle;
+                    worksheet.Range[$"S{_l}"].Text = item.meta_peca_hora;
                     
                     worksheet.Range[$"T{_l}"].CellStyle = headerStyle;
                     worksheet.Range[$"T{_l}"].Number = item.ht.GetValueOrDefault();
