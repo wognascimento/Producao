@@ -180,16 +180,16 @@ namespace Producao.Views
             set { _aprovados = value; RaisePropertyChanged("Aprovados"); }
         }
 
-        private ObservableCollection<string> _respPlantaPca = ["AMANDA", "CARLA ROSIN", "HELENA", "JULIANA SANTOS", "RENATA CELANTE", "RENATA LINS",  "NÃO TEM", ""];
+        private ObservableCollection<string> _respPlantaPca = ["AMANDA", "CARLA ROSIN", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS",  "NÃO TEM", ""];
         public ObservableCollection<string> RespPlantaPca { get { return _respPlantaPca; } set { _respPlantaPca = value; RaisePropertyChanged("RespPlantaPca"); } }
         
-        private ObservableCollection<string> _respPlantaBase = ["AMANDA", "CARLA ROSIN", "HELENA", "JULIANA SANTOS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
+        private ObservableCollection<string> _respPlantaBase = ["AMANDA", "CARLA ROSIN", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
         public ObservableCollection<string> RespPlantaBase { get { return _respPlantaBase; } set { _respPlantaBase = value; RaisePropertyChanged("RespPlantaBase"); } }
         
-        private ObservableCollection<string> _respPlantaMall = ["AMANDA", "HELENA", "JULIANA SANTOS", "LH", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
+        private ObservableCollection<string> _respPlantaMall = ["AMANDA", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
         public ObservableCollection<string> RespPlantaMall { get { return _respPlantaMall; } set { _respPlantaMall = value; RaisePropertyChanged("RespPlantaMall"); } }
         
-        private ObservableCollection<string> _respPlantaFachada = ["AMANDA", "HELENA", "JULIANA SANTOS", "LH", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
+        private ObservableCollection<string> _respPlantaFachada = ["AMANDA", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
         public ObservableCollection<string> RespPlantaFachada { get { return _respPlantaFachada; } set { _respPlantaFachada = value; RaisePropertyChanged("RespPlantaFachada"); } }
 
         public async Task<ObservableCollection<AprovadoModel>> GetAprovados()
