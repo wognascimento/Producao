@@ -59,9 +59,10 @@ namespace Producao.Views.CentralModelos
                 FilterValue = modelo.id_modelo
             });
 
-            this.itens = new ObservableCollection<ModeloReceitaModel>();
+            this.itens = [];
             var filteredResult = this.dgModelos.View.Records.Select(recordentry => recordentry.Data);
-            foreach (HistoricoModeloCompletaModel item in filteredResult)
+            foreach (HistoricoModeloCompletaModel item in filteredResult.Cast<HistoricoModeloCompletaModel>())
+            {
                 this.itens.Add(
                     new ModeloReceitaModel
                     {
@@ -73,6 +74,7 @@ namespace Producao.Views.CentralModelos
                         cadastrado_por = Environment.UserName,
                         data_cadastro = DateTime.Now,
                     });
+            }
 
             this.DialogResult = true;
         }
@@ -84,7 +86,7 @@ namespace Producao.Views.CentralModelos
         public void RaisePropertyChanged(string propName)
         {
             if (this.PropertyChanged != null)
-                this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
+                PropertyChanged(this, new PropertyChangedEventArgs(propName));
         }
 
         private HistoricoModeloCompletaModel _itemReceita;

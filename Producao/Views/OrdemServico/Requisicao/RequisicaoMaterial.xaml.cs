@@ -340,6 +340,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
                 txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
                 txtQuantidade.Text = record?.quantidade.ToString();
+                txtObservacao.Text = record?.observacao ?? string.Empty;
 
                 vm.RequisicaoDetalhe = new DetalheRequisicaoModel
                 {

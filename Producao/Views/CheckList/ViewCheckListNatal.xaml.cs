@@ -433,7 +433,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro ao inserir", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Erro ao alterar", MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
