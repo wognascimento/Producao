@@ -11,5 +11,6 @@ namespace Producao.DataBase.Model
         public string? impresso { get; set; }
         public int? impressa { get; set; }
         public long? codcompladicional { get; set; }
+        public bool? vinculado { get; set; }
     }
 }

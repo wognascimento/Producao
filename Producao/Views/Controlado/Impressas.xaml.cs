@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.UI.Xaml.Utility;
 using System;
 using System.Collections.ObjectModel;
@@ -41,6 +40,89 @@ namespace Producao.Views.Controlado
             {
                 MessageBox.Show(ex.Message);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+        }
+
+        private void OnPrintAll(object sender, RoutedEventArgs e)
+        {
+            ImpressasViewModel vm = (ImpressasViewModel)DataContext;
+            if (!vm.Impressas.Any(f => f.vinculado == false))
+            {
+                RadWindow.Alert(new DialogParameters()
+                {
+                    Theme = new CrystalTheme(),
+                    Content = "Não existem etiquetas não vinculadas a uma requisição.",
+                    Header = "Atenção",
+                });
+                return;
+            }
+
+            RadWindow.Confirm(new DialogParameters()
+            {
+                Theme = new CrystalTheme(),
+                OkButtonContent = "Sim",
+                CancelButtonContent = "Não",
+                Content = "Deseja imprimir todas as etiquetas não vinculadas a uma requisição ?",
+                Header = "Atenção",
+                Closed = OnPrintdAsync
+            });
+            
+        }
+
+        private async void OnPrintdAsync(object sender, WindowClosedEventArgs e)
+        {
+            var result = e.DialogResult;
+            if (result == true)
+            {
+                try
+                {
+                    string IPAdress = "192.168.0.113";
+                    int Port = 9100;
+                    StreamWriter? SWriter;
+                    TcpClient? Client = new();
+
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                    ImpressasViewModel vm = (ImpressasViewModel)DataContext;
+                    await Client.ConnectAsync(IPAdress, Port);
+                    SWriter = new(Client.GetStream());
+                    foreach (var impressa in vm.Impressas.Where(f => f.vinculado == false))
+                    {
+                        var record = impressa;
+                        var etiqueta = await vm.GetImprimirAsync(record.codigo);
+                        SWriter.WriteLine($@"^XA");
+                        SWriter.WriteLine($@"^CI28");
+                        SWriter.WriteLine($@"^PW320");
+                        SWriter.WriteLine($@"^FO0,160^GFA,01280,01280,00040,:Z64:eJxjYCAOiAS6EoMEiDRuFIyCUTAKBhwAAHykCLM=:ECE9");
+                        SWriter.WriteLine($@"^FT20,168^BQN,2,6");
+                        SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
+                        SWriter.WriteLine($@"^FT156,126^AAN,5,5^FH\^FDPRODUTO^FS");
+                        SWriter.WriteLine($@"^FT156,145^A0N,16,20^FH\^FD{etiqueta.codcompladicional}^FS");
+                        SWriter.WriteLine($@"^FT241,126^AAN,5,5^FH\^FDETIQUETA^FS");
+                        SWriter.WriteLine($@"^FT241,145^A0N,16,20^FH\^FD{etiqueta.codigo}^FS");
+                        SWriter.WriteLine($@"^FT157,105^A0N,16^FB151,5,0^FH\^FD{etiqueta.descricao_completa}^FS");
+                        SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
+                        //using DatabaseContext db = new();
+                        //await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
+                    }
+                    await SWriter.FlushAsync();
+                    await SWriter.DisposeAsync();
+                    SWriter.Close();
+
+                    RadWindow.Alert(new DialogParameters()
+                    {
+                        Theme = new CrystalTheme(),
+                        Content = "Etiquetas impressas.",
+                        Header = "Atenção",
+                    });
+
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                }
+                
             }
         }
     }
