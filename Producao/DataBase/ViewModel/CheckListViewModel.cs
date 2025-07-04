@@ -1138,6 +1138,8 @@ namespace Producao
                         s.descricao_dd,
                         s.unidade,
                         s.qtd, //qtd = string.Format(CultureInfo.GetCultureInfo("pt-BR"), "{0:D}", s.qtd),
+                        s.custo_unitario,
+                        s.custo_total,
                         s.orient_montagem,
                         s.coddetalhescompl
                     })

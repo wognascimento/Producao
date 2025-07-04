@@ -580,19 +580,25 @@ namespace Producao.Views.CheckList
                 worksheet.Range["F2"].Text = $"QTDE";
                 worksheet.Range["F2"].ColumnWidth = 5;
 
-                worksheet.Range["G2"].Text = $"ORIENTAÇÃO DE MONTAGEM";
-                worksheet.Range["G2"].ColumnWidth = 30;
+                worksheet.Range["G2"].Text = $"C. UNIT";
+                worksheet.Range["G2"].ColumnWidth = 5;
 
-                worksheet.Range["H2"].Text = $"COD DETALHES COMPL";
-                worksheet.Range["H2"].ColumnWidth = 10;
-                worksheet.Range["H2"].WrapText = true;
+                worksheet.Range["H2"].Text = $"C. TOT";
+                worksheet.Range["H2"].ColumnWidth = 5;
+
+                worksheet.Range["I2"].Text = $"ORIENTAÇÃO DE MONTAGEM";
+                worksheet.Range["I2"].ColumnWidth = 30;
+
+                worksheet.Range["J2"].Text = $"COD DETALHES COMPL";
+                worksheet.Range["J2"].ColumnWidth = 10;
+                worksheet.Range["J2"].WrapText = true;
 
                 worksheet.Rows[1].CellStyle = bodyStyle;
 
                 var dados = await Task.Run(() => vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado));
                 worksheet.ImportData(dados, 3, 1, false);
 
-                worksheet.Range[$"A3:H{dados.Count + 2}"].CellStyle = headerStyle;
+                worksheet.Range[$"A3:J{dados.Count + 2}"].CellStyle = headerStyle;
 
                 worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
@@ -606,15 +612,21 @@ namespace Producao.Views.CheckList
                 worksheet.Range[$"E3:E{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"E3:E{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
-                worksheet.Range[$"F3:G{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                worksheet.Range[$"F3:G{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                worksheet.Range[$"F3:F{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                worksheet.Range[$"F3:F{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
+                worksheet.Range[$"G3:G{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"G3:G{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
                 worksheet.Range[$"H3:H{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"H3:H{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
-                worksheet.PageSetup.PrintTitleColumns = "$A:$H";
+                worksheet.Range[$"I3:I{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                worksheet.Range[$"J3:J{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                worksheet.Range[$"J3:J{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                worksheet.PageSetup.PrintTitleColumns = "$A:$J";
                 worksheet.PageSetup.PrintTitleRows = "$1:$2";
                 worksheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
                 worksheet.PageSetup.LeftMargin = 0.0;
