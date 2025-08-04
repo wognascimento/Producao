@@ -1,7 +1,5 @@
-﻿using iText.Commons.Actions.Contexts;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using Producao.Views.CentralModelos;
 using Producao.Views.OrdemServico.Requisicao;
 using Syncfusion.UI.Xaml.Grid;
 using System;

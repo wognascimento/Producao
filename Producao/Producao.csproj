@@ -7,9 +7,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icones\logo-verde.ico</ApplicationIcon>
 	  <!-- Configurações de versão -->
-	  <Version>1.0.15</Version>
-	  <AssemblyVersion>1.0.0.15</AssemblyVersion>
-	  <FileVersion>1.0.0.15</FileVersion>
+	  <Version>1.0.16</Version>
+	  <AssemblyVersion>1.0.0.16</AssemblyVersion>
+	  <FileVersion>1.0.0.16</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="App.ico" />
@@ -69,8 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
-    <PackageReference Include="EPPlus" Version="8.0.3" />
-    <PackageReference Include="itext7" Version="9.1.0" />
+    <PackageReference Include="EPPlus" Version="8.0.8" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.5" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
@@ -81,12 +80,13 @@
     </PackageReference>
     <PackageReference Include="SharpCompress" Version="0.39.0" />
     <PackageReference Include="squirrel.windows" Version="1.9.0" />
+    <PackageReference Include="Syncfusion.DataGridExcelExport.Wpf" Version="27.1.58" />
     <PackageReference Include="syncfusion.ui.wpf.net" Version="27.1.56" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="Telerik.UI.for.Wpf.70.Xaml">
       <Version>2023.2.718</Version>
     </PackageReference>
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.8.1" />
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.9.2" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="App.ico" />

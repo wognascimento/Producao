@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:Syncfusion="clr-namespace:Syncfusion.UI.Xaml.Grid;assembly=Syncfusion.SfGrid.WPF" 
-             xmlns:local="clr-namespace:Producao.Views" 
+             xmlns:local="clr-namespace:Producao.Views"
              xmlns:vewModel="clr-namespace:Producao"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" 
@@ -35,6 +35,15 @@
             CurrentCellValueChanged="itens_CurrentCellValueChanged" 
             RowValidating="itens_RowValidating"
             ShowRowHeader="True" PasteGridCellContent="itens_PasteGridCellContent">
+
+            <Syncfusion:SfDataGrid.HeaderContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsViewCheckListRevisao.ExportarExcel}}"
+                              CommandParameter="{Binding}"
+                              Header="Exportar Excel"/>
+
+                </ContextMenu>
+            </Syncfusion:SfDataGrid.HeaderContextMenu>
 
             <Syncfusion:SfDataGrid.Columns>
 
