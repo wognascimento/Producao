@@ -7,9 +7,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icones\logo-verde.ico</ApplicationIcon>
 	  <!-- Configurações de versão -->
-	  <Version>1.0.16</Version>
-	  <AssemblyVersion>1.0.0.16</AssemblyVersion>
-	  <FileVersion>1.0.0.16</FileVersion>
+	  <Version>1.0.17</Version>
+	  <AssemblyVersion>1.0.0.17</AssemblyVersion>
+	  <FileVersion>1.0.0.17</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="App.ico" />
