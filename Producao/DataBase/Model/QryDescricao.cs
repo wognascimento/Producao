@@ -26,5 +26,8 @@ namespace Producao
         public long? codigo { get; set; }
         public double? saldo_estoque {  get; set; }
         public double? peso {  get; set; }
+        public double? m3 {  get; set; }
+        public double? pl {  get; set; }
+        public double? pb {  get; set; }
     }
 }

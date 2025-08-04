@@ -28,6 +28,25 @@
             SelectionUnit="Row"
             SelectionMode="Extended"
             GridCopyOption="CopyData,IncludeHeaders,IncludeFormat" >
+
+
+            <Syncfusion:SfDataGrid.HeaderContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsCadastroProduto.ExportarExcel}}"
+                              CommandParameter="{Binding}"
+                              Header="Exportar Excel"/>
+
+                </ContextMenu>
+            </Syncfusion:SfDataGrid.HeaderContextMenu>
+
+
+            <Syncfusion:SfDataGrid.StackedHeaderRows>
+                <Syncfusion:StackedHeaderRow>
+                    <Syncfusion:StackedHeaderRow.StackedColumns>
+                        <Syncfusion:StackedColumn ChildColumns="m3,pl,pb" HeaderText="Media Expedida"/>
+                    </Syncfusion:StackedHeaderRow.StackedColumns>
+                </Syncfusion:StackedHeaderRow>
+            </Syncfusion:SfDataGrid.StackedHeaderRows>
             <Syncfusion:SfDataGrid.Columns>
                 <Syncfusion:GridTextColumn MappingName="codcompladicional"/>
                 <Syncfusion:GridTextColumn MappingName="planilha" />
@@ -48,6 +67,10 @@
                 <Syncfusion:GridNumericColumn MappingName="custo"/>
                 <Syncfusion:GridNumericColumn MappingName="saldo_estoque"/>
                 <Syncfusion:GridNumericColumn MappingName="peso"/>
+
+                <Syncfusion:GridNumericColumn MappingName="m3" ColumnSizer="SizeToCells"/>
+                <Syncfusion:GridNumericColumn MappingName="pl" ColumnSizer="SizeToCells"/>
+                <Syncfusion:GridNumericColumn MappingName="pb" ColumnSizer="SizeToCells"/>
             </Syncfusion:SfDataGrid.Columns>
         </Syncfusion:SfDataGrid>
     </Grid>
