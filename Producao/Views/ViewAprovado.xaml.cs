@@ -180,7 +180,7 @@ namespace Producao.Views
             set { _aprovados = value; RaisePropertyChanged("Aprovados"); }
         }
 
-        private ObservableCollection<string> _respPlantaPca = ["ANA LOPES", "AMANDA LIMA", "CARLA ROSIN", "DANIELLE BRAGA", "ELDER SILVA", "JACK MELLOR", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS",  "NÃO TEM", ""];
+        private ObservableCollection<string> _respPlantaPca = ["ANA LOPES", "AMANDA LIMA", "CARLA MATTEUCCI", "CARLA ROSIN", "DANIELLE BRAGA", "ELDER SILVA", "JACK MELLOR", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS",  "NÃO TEM", ""];
         public ObservableCollection<string> RespPlantaPca { get { return _respPlantaPca; } set { _respPlantaPca = value; RaisePropertyChanged("RespPlantaPca"); } }
         
         private ObservableCollection<string> _respPlantaBase = ["AMANDA LIMA", "CARLA ROSIN", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
