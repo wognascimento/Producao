@@ -89,17 +89,18 @@ namespace Producao.Views.Controlado
                     {
                         var record = impressa;
                         var etiqueta = await vm.GetImprimirAsync(record.codigo);
-
                         SWriter.WriteLine($@"^XA");
+                        SWriter.WriteLine($@"^PW184");
                         SWriter.WriteLine($@"^CI28");
-                        SWriter.WriteLine($@"^FT24,318^BQN,2,6");
+                        SWriter.WriteLine($@"^FT24,313^BQN,2,6");
                         SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
-                        SWriter.WriteLine($@"^FT124,164^AAB,9,5^FH\^FDPRODUTO^FS");
-                        SWriter.WriteLine($@"^FT139,164^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
-                        SWriter.WriteLine($@"^FT124,79^AAB,9,5^FH\^FDETIQUETA^FS");
-                        SWriter.WriteLine($@"^FT139,79^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
-                        SWriter.WriteLine($@"^FT105,163^A0B,14^FB151,6,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
+                        SWriter.WriteLine($@"^FT124,159^AAB,9,5^FH\^FDPRODUTO^FS");
+                        SWriter.WriteLine($@"^FT139,159^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
+                        SWriter.WriteLine($@"^FT124,93^AAB,9,5^FH\^FDETIQUETA^FS");
+                        SWriter.WriteLine($@"^FT139,93^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
+                        SWriter.WriteLine($@"^FT105,160^AAB,9,5^FB121,6,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
                         SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
+
                         //using DatabaseContext db = new();
                         //await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
                     }
@@ -204,14 +205,15 @@ namespace Producao.Views.Controlado
 
                 //SWriter.WriteLine($@"^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR2,2~SD15^JUS^LRN^CI28^XZ");
                 SWriter.WriteLine($@"^XA");
+                SWriter.WriteLine($@"^PW184");
                 SWriter.WriteLine($@"^CI28");
-                SWriter.WriteLine($@"^FT24,318^BQN,2,6");
+                SWriter.WriteLine($@"^FT24,313^BQN,2,6");
                 SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
-                SWriter.WriteLine($@"^FT124,164^AAB,9,5^FH\^FDPRODUTO^FS");
-                SWriter.WriteLine($@"^FT139,164^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
-                SWriter.WriteLine($@"^FT124,79^AAB,9,5^FH\^FDETIQUETA^FS");
-                SWriter.WriteLine($@"^FT139,79^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
-                SWriter.WriteLine($@"^FT105,163^A0B,14^FB151,6,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
+                SWriter.WriteLine($@"^FT124,159^AAB,9,5^FH\^FDPRODUTO^FS");
+                SWriter.WriteLine($@"^FT139,159^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
+                SWriter.WriteLine($@"^FT124,93^AAB,9,5^FH\^FDETIQUETA^FS");
+                SWriter.WriteLine($@"^FT139,93^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
+                SWriter.WriteLine($@"^FT105,160^AAB,9,5^FB121,6,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
                 SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
 
                 await SWriter.FlushAsync();
