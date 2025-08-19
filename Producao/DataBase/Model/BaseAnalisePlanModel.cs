@@ -14,6 +14,7 @@ namespace Producao
         public string? confirmado { get; set; }
         public long? codcompl { get; set; }
         public long? coddetalhescompl { get; set; }
+        public string? grupo { get; set; }
         public string? sigla { get; set; }
         public string? planilha { get; set; }
         public string? descricao { get; set; }

@@ -11,6 +11,7 @@ namespace Producao
     {
         public long? num_os_servico { get; set; }
         public long? num_requisicao { get; set; }
+        public string? grupo { get; set; }
         public string? cliente { get; set; }
         public DateTime? data { get; set; }
         public string? alterado_por { get; set; }
