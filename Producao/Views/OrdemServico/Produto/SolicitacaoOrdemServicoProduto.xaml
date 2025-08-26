@@ -196,8 +196,8 @@
             SmallIcon="/icones/icons8-vassoura-40.png" 
             LargeIcon="/icones/icons8-vassoura-80.png" 
             SizeMode="Small" 
-            Click="OnCriarNovaOS" 
-            Visibility="Collapsed" />
+            Visibility="Collapsed"
+            Click="OnCriarNovaOS" />
 
 
         <syncfusion:SfDataGrid

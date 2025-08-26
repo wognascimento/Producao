@@ -243,7 +243,11 @@ namespace Producao.Views.OrdemServico.Produto
             btnCriar.Visibility = Visibility.Visible;
             caminhos.Visibility = Visibility.Collapsed;
 
-            cmbTipoOs.SelectedValue = null;
+            cmbTipoOs.SelectedItem = null;
+            cmbTipoOs.SelectedIndex = -1;
+            cmbTipoOs.SelectedItems = null;
+            cmbTipoOs.Text = string.Empty;
+
             tbCodproduto.Text = null;
             txtPlanilha.SelectedItem = null;
             txtDescricao.SelectedItem = null;
@@ -383,15 +387,15 @@ namespace Producao.Views.OrdemServico.Produto
             set { _setores = value; RaisePropertyChanged("Setores"); }
         }
 
-        private List<string> _distribuirOS = new List<string> { "No setor", "No Solicitante", "No Encarregado"};
-        public List<string> DistribuirOS
+        private ObservableCollection<string> _distribuirOS = ["No setor", "No Solicitante", "No Encarregado"];
+        public ObservableCollection<string> DistribuirOS
         {
             get { return _distribuirOS; }
             set { _distribuirOS = value; RaisePropertyChanged("DistribuirOS"); }
         }
 
-        private List<string> _ipoOS = new List<string> { "PEÇA NOVA", "RECUPERAÇÃO", "RETRABALHO", "KIT", "PREPARAÇÃO" };
-        public List<string> TpoOS
+        private ObservableCollection<string> _ipoOS = ["PEÇA NOVA", "RECUPERAÇÃO", "RETRABALHO", "KIT", "PREPARAÇÃO"];
+        public ObservableCollection<string> TpoOS
         {
             get { return _ipoOS; }
             set { _ipoOS = value; RaisePropertyChanged("TpoOS"); }
