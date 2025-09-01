@@ -226,6 +226,8 @@ namespace Producao.Views.CheckList
                 vm.CheckListGeralComplemento = null;
                 vm.CompleAdicionais = [];
 
+                Limpar();
+
                 var sigla = (e.NewValue as SiglaChkListModel);
                 if (sigla != null)
                 {
