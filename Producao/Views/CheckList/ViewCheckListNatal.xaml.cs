@@ -216,6 +216,8 @@ namespace Producao.Views.CheckList
                 dgCheckListGeral.SelectedItem = null;
                 dgComplemento.SelectedItem = null;
 
+                Limpar();
+
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
@@ -226,7 +228,7 @@ namespace Producao.Views.CheckList
                 vm.CheckListGeralComplemento = null;
                 vm.CompleAdicionais = [];
 
-                Limpar();
+                
 
                 var sigla = (e.NewValue as SiglaChkListModel);
                 if (sigla != null)
@@ -377,6 +379,7 @@ namespace Producao.Views.CheckList
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.ComplementoCheckList.codcompl = null;
                 vm.ComplementoCheckList.sigla = vm.Sigla.sigla_serv;
+                vm.ComplementoCheckList.id_aprovado = vm.Sigla.id_aprovado;
                 vm.ComplementoCheckList.inserido_por = Environment.UserName;
                 vm.ComplementoCheckList.inserido_em = DateTime.Now;
 
