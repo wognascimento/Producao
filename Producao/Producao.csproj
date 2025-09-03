@@ -69,7 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
-    <PackageReference Include="EPPlus" Version="8.0.8" />
+    <PackageReference Include="EPPlus" Version="8.1.0" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.5" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
@@ -82,11 +82,13 @@
     <PackageReference Include="squirrel.windows" Version="1.9.0" />
     <PackageReference Include="Syncfusion.DataGridExcelExport.Wpf" Version="27.1.58" />
     <PackageReference Include="syncfusion.ui.wpf.net" Version="27.1.56" />
+    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="9.0.8" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageReference Include="Telerik.UI.for.Wpf.70.Xaml">
       <Version>2023.2.718</Version>
     </PackageReference>
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.9.2" />
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.9.3" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="App.ico" />
