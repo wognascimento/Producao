@@ -219,6 +219,7 @@ namespace Producao.Views.CheckList
                 Limpar();
 
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
+                vm.Sigla = (SiglaChkListModel)e.NewValue;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 SiglaChkListModel valor = (SiglaChkListModel)this.cbSiglaShopping.SelectedItem;
