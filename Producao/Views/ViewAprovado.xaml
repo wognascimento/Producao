@@ -61,9 +61,15 @@
                 <Syncfusion:GridTextColumn HeaderText="Resp Memo Visual" MappingName="resp_memo_visual" AllowEditing="True"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Data Memo Visual" MappingName="data_memo_visual" AllowEditing="True"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Data Reunião Conceito" MappingName="data_reuniao_conceito" AllowEditing="True"/>
-                
-                
-<!--                
+
+                <Syncfusion:GridTextColumn HeaderText="Resp Revisão Planta Base" MappingName="resp_revisao_planta_base"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Conclusão Revisão Planta Base" MappingName="data_revisao_planta_base"/>
+                <Syncfusion:GridTextColumn HeaderText="Resp Planta Praça" MappingName="resp_planta_pca" />
+                <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Praça" MappingName="prazo_planta_pca" AllowNullValue="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Conclusão Planta Praça" MappingName="liberacao_planta_pca"/>
+
+
+                <!--                
                 <Syncfusion:GridComboBoxColumn
                     ItemsSource="{Binding RespPlantaPca}"
                     AllowEditing="True"
