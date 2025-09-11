@@ -247,7 +247,7 @@ namespace Producao.Views.CheckList
                 worksheet.Range["E3"].ColumnWidth = 25;
                 worksheet.Range["E3"].WrapText = true;
                                   
-                worksheet.Range["F3"].Text = $"Nº CAMINÃO";
+                worksheet.Range["F3"].Text = $"Nº CAMINHÃO";
                 worksheet.Range["F3"].ColumnWidth = 10;
                 worksheet.Range["F3"].WrapText = true;
                                   
