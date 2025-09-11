@@ -87,14 +87,14 @@ namespace Producao.Views
 
             var dataRow = this.itens.RowGenerator.Items.FirstOrDefault(item => item.RowIndex == e.RowColumnIndex.RowIndex);
             
-
+            /*
             if (column.MappingName.Equals("OkPlantaPca"))
             {
                 record.PlantaPca = Environment.UserName;
-                record.LiberacaoPlantaPca = DateTimeOffset.Now;
+                record.LiberacaoPlantaPca = DateTime.Now;
 
                 ((AprovadoModel)dataRow.RowData).PlantaPca = Environment.UserName;
-                ((AprovadoModel)dataRow.RowData).LiberacaoPlantaPca = DateTimeOffset.Now;
+                ((AprovadoModel)dataRow.RowData).LiberacaoPlantaPca = DateTime.Now;
 
                 dataGrid.View.Refresh();
                 await new AprovadoViewModel().SaveAsync(record);
@@ -102,7 +102,7 @@ namespace Producao.Views
             else if (column.MappingName.Equals("OkPlantaBase"))
             {
                 record.PlantaBase = Environment.UserName;
-                record.LiberacaoPlantaBase = DateTimeOffset.Now;
+                record.LiberacaoPlantaBase = DateTime.Now;
 
                 dataGrid.View.Refresh();
                 await new AprovadoViewModel().SaveAsync(record);
@@ -110,7 +110,7 @@ namespace Producao.Views
             else if (column.MappingName.Equals("OkPlantaMall"))
             {
                 record.PlantaMall = Environment.UserName;
-                record.ConclusaoPlantaMall = DateTimeOffset.Now;
+                record.ConclusaoPlantaMall = DateTime.Now;
 
                 dataGrid.View.Refresh();
                 await new AprovadoViewModel().SaveAsync(record);
@@ -118,12 +118,12 @@ namespace Producao.Views
             else if (column.MappingName.Equals("OkPlantaFachada"))
             {
                 record.PlantaFachada = Environment.UserName;
-                record.ConclusaoPlantaFachada = DateTimeOffset.Now;
+                record.ConclusaoPlantaFachada = DateTime.Now;
 
                 dataGrid.View.Refresh();
                 await new AprovadoViewModel().SaveAsync(record);
             }
-
+            */
             try
             {
                 //dataGrid.View.Refresh();
@@ -197,7 +197,7 @@ namespace Producao.Views
             try
             {
                 using DatabaseContext db = new();
-                var data = await db.Aprovados.OrderBy(c => c.Ordem).ToListAsync();
+                var data = await db.Aprovados.OrderBy(c => c.ordem).ToListAsync();
                 return new ObservableCollection<AprovadoModel>(data);
             }
             catch (Exception)
@@ -211,7 +211,7 @@ namespace Producao.Views
             try
             {
                 using DatabaseContext db = new();
-                AprovadoModel found = await db.Aprovados.FindAsync(aprovado.IdAprovado);
+                AprovadoModel found = await db.Aprovados.FindAsync(aprovado.id_aprovado);
                 db.Entry(found).CurrentValues.SetValues(aprovado);
                 await db.SaveChangesAsync();
             }

@@ -68,6 +68,7 @@
     <None Include="Project_Readme.html" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="EPPlus" Version="8.1.0" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.5" />
@@ -165,7 +166,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Impressos\" />
-    <Folder Include="Views\Helpers\" />
     <Folder Include="Views\SearchControl\" />
   </ItemGroup>
   <ItemGroup>

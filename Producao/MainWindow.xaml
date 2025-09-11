@@ -20,7 +20,9 @@
             VerticalAlignment="Center" 
             VerticalContentAlignment="Center">
             <syncfusion:MenuItemAdv Click="MenuItemAdv_Click" Header="Aprovados"/>
-            <!--<syncfusion:MenuItemAdv Header="Memorial"/>-->
+            <syncfusion:MenuItemAdv Header="Controles">
+                <syncfusion:MenuItemAdv Header="Plantas" Click="OnOpenControlePlantaClick"/>
+            </syncfusion:MenuItemAdv>
             <syncfusion:MenuItemAdv Header="Check list">
                 <syncfusion:MenuItemAdv Header="Natal">
                     <syncfusion:MenuItemAdv x:Name="Checklist" Header="Checklist" Click="OnChecklist_Click"/>

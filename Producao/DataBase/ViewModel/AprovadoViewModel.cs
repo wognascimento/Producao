@@ -16,7 +16,7 @@ namespace Producao
             try
             {
                 using DatabaseContext db = new();
-                var data = await db.Aprovados.OrderBy(c => c.Ordem).ToListAsync();
+                var data = await db.Aprovados.OrderBy(c => c.ordem).ToListAsync();
                 //var data = await query.ToListAsync();
                 return new ObservableCollection<AprovadoModel>(data);
 
@@ -35,7 +35,7 @@ namespace Producao
             try
             {
                 using DatabaseContext db = new();
-                AprovadoModel found = await db.Aprovados.FindAsync(aprovado.IdAprovado);
+                AprovadoModel found = await db.Aprovados.FindAsync(aprovado.id_aprovado);
                 db.Entry(found).CurrentValues.SetValues(aprovado);
                 await db.SaveChangesAsync();
             }

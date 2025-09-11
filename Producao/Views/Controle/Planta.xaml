@@ -1,0 +1,119 @@
+﻿<UserControl x:Class="Producao.Views.Controle.Planta"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:Syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:local="clr-namespace:Producao.Views.Controle"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="UserControl_Loaded">
+
+
+    <Grid>
+        <Syncfusion:SfDataGrid 
+            Name="itens" 
+            ItemsSource="{Binding Aprovados}" 
+            ColumnSizer="SizeToHeader" 
+            AllowFiltering="True" 
+            AutoGenerateColumns="False"
+            FrozenColumnCount="7"
+            AllowResizingColumns="True" 
+            SelectionUnit="Row"
+            SelectionMode="Extended"
+            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat"
+            CurrentCellEndEdit="OnCurrentCellEndEdit" 
+            CurrentCellValueChanged="OnCurrentCellValueChanged" 
+            RowValidated="itens_RowValidated">
+            <Syncfusion:SfDataGrid.Columns>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Expedição" MappingName="data_de_expedicao"/>
+                <Syncfusion:GridTextColumn MappingName="sigla"/>
+                <Syncfusion:GridTextColumn HeaderText="Sigla Serviço" MappingName="sigla_serv"/>
+                <Syncfusion:GridTextColumn MappingName="tema"/>
+                <Syncfusion:GridTextColumn HeaderText="Resp Cliente" MappingName="resp_cliente"/>
+                <Syncfusion:GridTextColumn MappingName="est"/>
+                <Syncfusion:GridTextColumn MappingName="cidade"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Planta Chapas" MappingName="resp_planta_base" ItemsSource="{Binding RespPlantaChapas}" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Chapas" MappingName="prazo_planta_base" AllowEditing="True" AllowNullValue="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Planta Chapas" MappingName="ok_planta_base" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Planta Chapas Concluida por" MappingName="planta_base"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Resp Planta Chapas" MappingName="liberacao_planta_base"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Planta Cercas" MappingName="resp_planta_cercas" ItemsSource="{Binding RespPlantaCercas}" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Cercas" MappingName="prazo_planta_cercas" AllowEditing="True" AllowNullValue="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Planta Cerca" MappingName="conclusao_planta_cerca" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Planta Cercas Concluida por" MappingName="planta_cercas_concluida_por"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Conclusão Planta Cercas" MappingName="data_conclusao_planta_cercas"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Revisão Planta Base" MappingName="resp_revisao_planta_base" ItemsSource="{Binding RespPlantaBases}" AllowEditing="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Revisão Planta Base" MappingName="conclusao_revisao_planta_base" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Planta Cercas Concluida por" MappingName="revisao_planta_base_concluida_por"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Conclusão Revisão Planta Base" MappingName="data_revisao_planta_base"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Planta Praça" MappingName="resp_planta_pca" ItemsSource="{Binding RespPlantaPracas}" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Praça" MappingName="prazo_planta_pca" AllowEditing="True" AllowNullValue="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Planta Praça" MappingName="ok_planta_pca" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Planta Praça Concluida por" MappingName="planta_pca"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Conclusão Planta Praça" MappingName="liberacao_planta_pca"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Revisão Planta Praça" MappingName="resp_revisao_planta_praca" ItemsSource="{Binding RespRevisaoPlantaPracas}" AllowEditing="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Revisão Planta Praça" MappingName="conclusao_revisao_planta_praca" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Revisão Planta Praça Concluida por" MappingName="revisao_planta_praca_concluida_por"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Conclusão Revisão Planta Praça" MappingName="data_conclusso_revisao_planta_praca"/>
+
+                <Syncfusion:GridTextColumn HeaderText="Resp Cliente Planta" MappingName="resp_revisao_planta" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Liberação Resp Cliente" MappingName="data_revisao_planta" AllowNullValue="True" AllowEditing="True"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Revisão Final" MappingName="resp_revisao_final" ItemsSource="{Binding RespRevisaoPlantaPracas}" AllowEditing="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Revisão Final" MappingName="conclusao_revisao_final" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Revisão  Final Concluida por" MappingName="revisao_final_concluida_por"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Conclusão Revisão Final" MappingName="data_conclusao_revisao_final"/>
+
+                <Syncfusion:GridTextColumn HeaderText="Ajuste" MappingName="ajuste" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Obs ajuste" MappingName="obs_ajuste" AllowEditing="True"/>
+
+                <Syncfusion:GridTextColumn HeaderText="Resp VT" MappingName="resp_vt" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data VT" MappingName="data_vt" AllowEditing="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Retorno VT" MappingName="conclusao_retorno_vt" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Resp Retorno VT" MappingName="resp_retorno_vt"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Retorno VT" MappingName="data_retorno_vt"/>
+                <Syncfusion:GridTextColumn HeaderText="Alteração Planta Praça VT" MappingName="alteracao_planta_praca_vt" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Obs Planta Praça VT" MappingName="obs_planta_praca_vt" AllowEditing="True"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Planta Mall" MappingName="resp_planta_mall" ItemsSource="{Binding RespPlantaMalls}" AllowEditing="True" IsEditable="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Mall" MappingName="prazo_planta_mall" AllowEditing="True" AllowNullValue="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Planta Mall" MappingName="ok_planta_mall" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Planta Mall concluida por" MappingName="planta_mall"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data conclusão Planta Mall" MappingName="conclusao_planta_mall"/>
+                <Syncfusion:GridTextColumn HeaderText="Alteração Planta Mall VT" MappingName="alteracao_planta_mall_vt" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Obs Planta Mall VT" MappingName="obs_planta_mall_vt" AllowEditing="True"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Planta Fachada" MappingName="resp_planta_fachada" ItemsSource="{Binding RespPlantaFachadas}" AllowEditing="True" IsEditable="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Fachada" MappingName="prazo_planta_fachada" AllowEditing="True" AllowNullValue="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Planta Fachada" MappingName="ok_planta_fachada" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Planta Fachada Concluida por" MappingName="planta_fachada"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Conclusão Planta Fachada" MappingName="conclusao_planta_fachada"/>
+                <Syncfusion:GridTextColumn HeaderText="Alteração Planta Fachada VT" MappingName="alteracao_planta_fachada_vt" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Obs Planta Fachada VT" MappingName="obs_planta_fachada_vt" AllowEditing="True"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Planta Corte/Elevação" MappingName="resp_planta_corte_elevacao" ItemsSource="{Binding RespPlantaCorteElevacoes}" AllowEditing="True" IsEditable="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta Corte/Elevação" MappingName="prazo_planta_corte_elevacao" AllowEditing="True" AllowNullValue="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Planta Corte Elevação" MappingName="conclusao_planta_corte_elevacao" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Planta Corte/Elevação concluida por" MappingName="planta_corte_elevacao_concluida_por"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data conclusão Planta Corte/Elevação" MappingName="data_conclusao_planta_corte_elevacao"/>
+
+                <Syncfusion:GridTextColumn HeaderText="Obs Gerais" MappingName="obs_gerais" AllowEditing="True"/>
+
+                <Syncfusion:GridComboBoxColumn HeaderText="Resp Planta AS BUILT" MappingName="resp_planta_as_built" ItemsSource="{Binding RespPlantaAsBuilts}" AllowEditing="True" IsEditable="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Prazo Planta AS BUILT" MappingName="prazo_planta_as_built" AllowEditing="True" AllowNullValue="True"/>
+                <Syncfusion:GridCheckBoxColumn HeaderText="Conclusão Planta AS BUILT" MappingName="conclusao_planta_as_built" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Planta AS BUILT Concluida por" MappingName="as_built_plantas"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Conclusão Planta AS BUILT" MappingName="as_built_plantas_data"/>
+
+            </Syncfusion:SfDataGrid.Columns>
+        </Syncfusion:SfDataGrid>
+    </Grid>
+
+
+</UserControl>

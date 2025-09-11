@@ -24,47 +24,46 @@
             CurrentCellValueChanged="OnCurrentCellValueChanged" 
             RowValidated="itens_RowValidated">
             <Syncfusion:SfDataGrid.Columns>
-                <Syncfusion:GridTextColumn HeaderText="Evento" MappingName="TipoEvento" ColumnSizer="SizeToCells"/>
-                <Syncfusion:GridNumericColumn MappingName="Ordem" NumberDecimalDigits="1" AllowEditing="True"/>
-                <Syncfusion:GridNumericColumn HeaderText="Ordem Sigla Serviço" MappingName="OrdemSiglaServ" NumberDecimalDigits="0"
-                                      AllowEditing="True"/>
-                <Syncfusion:GridTextColumn MappingName="Nivel" AllowEditing="True"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="Data Aprovado" MappingName="DataAprovado"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="Data Expedição" MappingName="DataExpedicao"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="Meta Producao" MappingName="MetaProducao"/>
-                <Syncfusion:GridTextColumn MappingName="Sigla"/>
-                <Syncfusion:GridTextColumn HeaderText="Sigla Serviço" MappingName="SiglaServ"/>
-                <Syncfusion:GridTextColumn MappingName="Rede"/>
-                <Syncfusion:GridTextColumn MappingName="Nome"/>
-                <Syncfusion:GridTextColumn MappingName="Tema"/>
-                <Syncfusion:GridNumericColumn HeaderText="Projeto Novo" MappingName="ProjetoNovo" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Obs Especial" MappingName="ObsEspecial" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Resp Cliente" MappingName="RespCliente"/>
-                <Syncfusion:GridTextColumn MappingName="Est"/>
-                <Syncfusion:GridTextColumn MappingName="Cidade"/>
-                <Syncfusion:GridTextColumn MappingName="MemoResp" AllowEditing="True"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="Memo Data" MappingName="MemoData" AllowEditing="True"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="Cronog Data" MappingName="CronogData" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Cronog Resp" MappingName="CronogResp" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="As Built Plantas" MappingName="AsBuiltPlantas" AllowEditing="True"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="As Built Plantas Data" MappingName="AsBuiltPlantasData" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Rel Inflamabilidade" MappingName="RelInflamabilidade" AllowEditing="True"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="Data Rel Inflamabilidade" MappingName="DataRelInflamabilidade" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Meta Rel Inflamabilidade" MappingName="MetaRelInflamabilidade" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Pa" MappingName="Pa" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Acabamento Construção" MappingName="AcabamentoConstrucao" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Acabamento Fibra" MappingName="AcabamentoFibra" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Acabamento Moveis" MappingName="AcabamentoMoveis" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Laço" MappingName="Laco" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Cor Predominante" MappingName="CorPredominante" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Iluminação" MappingName="Iluminacao" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Obs Iluminação" MappingName="ObsIluminacao" AllowEditing="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Resp Memo Visual" MappingName="RespMemoVisual" AllowEditing="True"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="Data Memo Visual" MappingName="DataMemoVisual" AllowEditing="True"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="Data Reunião Conceito" MappingName="DataReuniaoConceito" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Evento" MappingName="tipo_evento" ColumnSizer="SizeToCells"/>
+                <Syncfusion:GridNumericColumn MappingName="ordem" NumberDecimalDigits="2" AllowEditing="True"/>
+                <Syncfusion:GridNumericColumn HeaderText="Ordem Sigla Serviço" MappingName="ordem_sigla_serv" NumberDecimalDigits="0" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn MappingName="nivel" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Aprovado" MappingName="data_aprovado"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Expedição" MappingName="data_de_expedicao"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Meta Producao" MappingName="meta_producao"/>
+                <Syncfusion:GridTextColumn MappingName="sigla"/>
+                <Syncfusion:GridTextColumn HeaderText="Sigla Serviço" MappingName="sigla_serv"/>
+                <Syncfusion:GridTextColumn MappingName="rede"/>
+                <Syncfusion:GridTextColumn MappingName="nome"/>
+                <Syncfusion:GridTextColumn MappingName="tema"/>
+                <Syncfusion:GridNumericColumn HeaderText="Projeto Novo" MappingName="projeto_novo" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Obs Especial" MappingName="obs_especial" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Resp Cliente" MappingName="resp_cliente"/>
+                <Syncfusion:GridTextColumn MappingName="est"/>
+                <Syncfusion:GridTextColumn MappingName="cidade"/>
+                <Syncfusion:GridTextColumn MappingName="memo_resp" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Memo Data" MappingName="memo_data" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Cronog Data" MappingName="cronog_data" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Cronog Resp" MappingName="cronog_resp" AllowEditing="True"/>
+                <!--<Syncfusion:GridTextColumn HeaderText="As Built Plantas" MappingName="AsBuiltPlantas" AllowEditing="True"/>-->
+                <!--<Syncfusion:GridDateTimeColumn HeaderText="As Built Plantas Data" MappingName="AsBuiltPlantasData" AllowEditing="True"/>-->
+                <Syncfusion:GridTextColumn HeaderText="Rel Inflamabilidade" MappingName="rel_inflamabilidade" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Rel Inflamabilidade" MappingName="data_rel_inflamabilidade" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Meta Rel Inflamabilidade" MappingName="meta_rel_inflamabilidade" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Pa" MappingName="pa" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Acabamento Construção" MappingName="acabamento_construcao" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Acabamento Fibra" MappingName="acabamento_fibra" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Acabamento Moveis" MappingName="acabamento_moveis" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Laço" MappingName="laco" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Cor Predominante" MappingName="cor_predominante" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Iluminação" MappingName="mlamp_led" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Obs Iluminação" MappingName="obs_iluminacao" AllowEditing="True"/>
+                <Syncfusion:GridTextColumn HeaderText="Resp Memo Visual" MappingName="resp_memo_visual" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Memo Visual" MappingName="data_memo_visual" AllowEditing="True"/>
+                <Syncfusion:GridDateTimeColumn HeaderText="Data Reunião Conceito" MappingName="data_reuniao_conceito" AllowEditing="True"/>
                 
-                <!--<Syncfusion:GridTextColumn HeaderText="Resp Planta Pça" MappingName="RespPlantaPca" AllowEditing="True"/>-->
                 
+<!--                
                 <Syncfusion:GridComboBoxColumn
                     ItemsSource="{Binding RespPlantaPca}"
                     AllowEditing="True"
@@ -81,8 +80,6 @@
                 <Syncfusion:GridTextColumn HeaderText="Planta Pça" MappingName="PlantaPca"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Liberação Planta Pça" MappingName="LiberacaoPlantaPca" AllowNullValue="True"/>
                 
-                <!--<Syncfusion:GridTextColumn HeaderText="Resp Planta Base" MappingName="RespPlantaBase" AllowEditing="True"/>-->
-
                 <Syncfusion:GridComboBoxColumn
                     ItemsSource="{Binding RespPlantaBase}"
                     AllowEditing="True"
@@ -97,9 +94,7 @@
                 <Syncfusion:GridCheckBoxColumn HeaderText="Ok Planta Base" MappingName="OkPlantaBase" AllowEditing="True"/>
                 <Syncfusion:GridTextColumn HeaderText="Planta Base" MappingName="PlantaBase"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Liberação Planta Base" MappingName="LiberacaoPlantaBase" AllowNullValue="True"/>
-                
-                <!--<Syncfusion:GridTextColumn HeaderText="Resp Planta Mall" MappingName="RespPlantaMall" AllowEditing="True"/>-->
-
+               
                 <Syncfusion:GridComboBoxColumn
                     ItemsSource="{Binding RespPlantaMall}"
                     AllowEditing="True"
@@ -113,8 +108,6 @@
                 <Syncfusion:GridTextColumn HeaderText="Planta Mall" MappingName="PlantaMall"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Conclusão Planta Mall" MappingName="ConclusaoPlantaMall" AllowNullValue="True"/>
                 
-                <!--<Syncfusion:GridTextColumn HeaderText="Resp Planta Fachada" MappingName="RespPlantaFachada" AllowEditing="True"/>-->
-
                 <Syncfusion:GridComboBoxColumn
                     ItemsSource="{Binding RespPlantaFachada}"
                     AllowEditing="True"
@@ -127,8 +120,9 @@
                 <Syncfusion:GridCheckBoxColumn HeaderText="Ok Planta Fachada" MappingName="OkPlantaFachada" AllowEditing="True"/>
                 <Syncfusion:GridTextColumn HeaderText="Planta Fachada" MappingName="PlantaFachada"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Conclusão Planta Fachada" MappingName="ConclusaoPlantaFachada" AllowNullValue="True"/>
-                <Syncfusion:GridTextColumn HeaderText="Divi Caminhão" MappingName="DiviCaminhao"/>
-                <Syncfusion:GridTextColumn HeaderText="Resp Estruturas" MappingName="RespEstruturas" AllowEditing="True"/>
+-->
+                <Syncfusion:GridTextColumn HeaderText="Divi Caminhão" MappingName="divi_caminhao"/>
+                <Syncfusion:GridTextColumn HeaderText="Resp Estruturas" MappingName="resp_estruturas" AllowEditing="True"/>
             </Syncfusion:SfDataGrid.Columns>
         </Syncfusion:SfDataGrid>
     </Grid>

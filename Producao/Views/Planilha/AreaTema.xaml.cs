@@ -130,14 +130,14 @@ namespace Producao.Views.Planilha
                 if (registro != null)
                 {
                     // Obtém o nome selecionado no ComboBox
-                    string? nomeSelecionado = ((AprovadoModel)e.SelectedItem).SiglaServ;
+                    string? nomeSelecionado = ((AprovadoModel)e.SelectedItem).sigla_serv;
 
                     // Busca o setor correspondente ao funcionário selecionado
-                    var funcionario = ((AreaTemaViewModel)this.DataContext).Siglas.FirstOrDefault(f => f.SiglaServ == nomeSelecionado);
+                    var funcionario = ((AreaTemaViewModel)this.DataContext).Siglas.FirstOrDefault(f => f.sigla_serv == nomeSelecionado);
 
                     if (funcionario != null)
                     {
-                        registro.tema = funcionario.Tema;
+                        registro.tema = funcionario.tema;
                         //sfdatagrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
                         gridAreaTema.UpdateDataRow(rowIndex);
                     }
@@ -212,7 +212,7 @@ namespace Producao.Views.Planilha
             {
                 using DatabaseContext db = new();
                 var data = await db.Aprovados
-                    .OrderBy(a => a.SiglaServ)
+                    .OrderBy(a => a.sigla_serv)
                     .ToListAsync();
                 return new ObservableCollection<AprovadoModel>(data);
             }
@@ -228,9 +228,9 @@ namespace Producao.Views.Planilha
             {
                 using DatabaseContext db = new();
                 var data = await db.Aprovados
-                    .Where(a => a.SiglaServ == sigla)
-                    .OrderBy(a => a.Tema)
-                    .GroupBy(a => a.Tema)
+                    .Where(a => a.sigla_serv == sigla)
+                    .OrderBy(a => a.tema)
+                    .GroupBy(a => a.tema)
                     .Select(a => a.Key)
                     .ToListAsync();
                 return new ObservableCollection<string>(data);

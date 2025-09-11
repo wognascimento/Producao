@@ -8,6 +8,7 @@ using Producao.Views.CentralModelos;
 using Producao.Views.CheckList;
 using Producao.Views.Construcao;
 using Producao.Views.Controlado;
+using Producao.Views.Controle;
 using Producao.Views.Estoque;
 using Producao.Views.kit;
 using Producao.Views.kit.desmontagem;
@@ -1970,6 +1971,11 @@ namespace Producao
         private void OnProdutosCusto(object sender, RoutedEventArgs e)
         {
             adicionarFilho(new CustoProduto(), "CUSTO PRODUTO", "CUSTO_PRODUTO");
+        }
+
+        private void OnOpenControlePlantaClick(object sender, RoutedEventArgs e)
+        {
+            adicionarFilho(new Planta(), "CONTROLE PLANTAS", "CONTROLE_PLANTA");
         }
     }
 }
