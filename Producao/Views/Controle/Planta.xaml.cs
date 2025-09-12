@@ -24,8 +24,16 @@ public partial class Planta : UserControl
 
     public Planta()
     {
-        InitializeComponent();
-        this.DataContext = new ViewPlantaViewModel();
+        try
+        {
+            InitializeComponent();
+            this.DataContext = new ViewPlantaViewModel();
+        }
+        catch (Exception ex)
+        {
+            System.IO.File.WriteAllText("crash_constructor.log", ex.ToString());
+            MessageBox.Show($"Erro no construtor: {ex.Message}");
+        }
     }
 
     private async void UserControl_Loaded(object sender, RoutedEventArgs e)
