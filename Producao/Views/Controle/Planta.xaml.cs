@@ -7,21 +7,11 @@ using Producao.Views.Helper;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.UI.Xaml.Grid.Helpers;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Producao.Views.Controle;
 
@@ -44,7 +34,6 @@ public partial class Planta : UserControl
         {
             var vm = (ViewPlantaViewModel)DataContext;
             await vm.GetAprovadosAsync();
-
             await vm.GetRespPlantaChapasAsync();
             await vm.GetRespPlantaCercasAsync();
             await vm.GetRespPlantaBasesAsync();
@@ -63,6 +52,10 @@ public partial class Planta : UserControl
         catch (PostgresException ex)
         {
             MessageBox.Show($"Erro: {ex.InnerException.Message}");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Erro: {ex.Message}");
         }
     }
 
@@ -89,24 +82,28 @@ public partial class Planta : UserControl
                 record.planta_base = _dataBaseSettings.Username;
                 record.liberacao_planta_base = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
             else if (column.MappingName.Equals("conclusao_planta_cerca"))
             {
                 record.planta_cercas_concluida_por = _dataBaseSettings.Username;
                 record.data_conclusao_planta_cercas = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
             else if (column.MappingName.Equals("conclusao_revisao_planta_base"))
             {
                 record.revisao_planta_base_concluida_por = _dataBaseSettings.Username;
                 record.data_revisao_planta_base = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
             else if (column.MappingName.Equals("ok_planta_pca"))
             {
                 record.planta_pca = _dataBaseSettings.Username;
                 record.liberacao_planta_pca = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
 
             else if (column.MappingName.Equals("conclusao_revisao_planta_praca"))
@@ -114,47 +111,50 @@ public partial class Planta : UserControl
                 record.revisao_planta_praca_concluida_por = _dataBaseSettings.Username;
                 record.data_conclusso_revisao_planta_praca = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
             else if (column.MappingName.Equals("conclusao_revisao_final"))
             {
                 record.revisao_final_concluida_por = _dataBaseSettings.Username;
                 record.data_conclusao_revisao_final = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
             else if (column.MappingName.Equals("conclusao_retorno_vt"))
             {
                 record.resp_retorno_vt = _dataBaseSettings.Username;
                 record.data_retorno_vt = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
             else if (column.MappingName.Equals("ok_planta_mall"))
             {
                 record.planta_mall = _dataBaseSettings.Username;
                 record.conclusao_planta_mall = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
             else if (column.MappingName.Equals("OkPlantaFachada"))
             {
                 record.planta_fachada = _dataBaseSettings.Username;
                 record.conclusao_planta_fachada = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
             else if (column.MappingName.Equals("conclusao_planta_corte_elevacao"))
             {
                 record.planta_corte_elevacao_concluida_por = _dataBaseSettings.Username;
                 record.data_conclusao_planta_corte_elevacao = DateTime.Now;
                 await vm.SaveAsync(newEntity);
+                dataGrid.View.Refresh();
             }
             else if (column.MappingName.Equals("conclusao_planta_as_built"))
             {
                 record.as_built_plantas = _dataBaseSettings.Username;
                 record.as_built_plantas_data = DateTime.Now;
                 await vm.SaveAsync(newEntity);
-            }
-
-            dataGrid.View.Refresh();
-
-            
+                dataGrid.View.Refresh();
+            }  
         }
         catch (Exception ex)
         {
