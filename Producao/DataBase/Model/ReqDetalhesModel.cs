@@ -27,6 +27,7 @@ namespace Producao
         public long? num_os_produto { get; set; }
         public string? tema { get; set; }
         public string? item_memorial { get; set; }
+        public string? local_shoppings { get; set; }
         public long? coddetalhescompl { get; set; }
         public string? sigla { get; set; }
         public string? produtocompleto { get; set; }

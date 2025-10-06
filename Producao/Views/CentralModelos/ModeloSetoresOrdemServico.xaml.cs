@@ -388,16 +388,17 @@ namespace Producao.Views.CentralModelos
                     application.DefaultVersion = ExcelVersion.Xlsx;
                     IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\REQUISICAO_MODELO.xlsx");
                     IWorksheet worksheet = workbook.Worksheets[0];
-                    worksheet.Range["C2"].Text = requi?.num_requisicao.ToString();
+                    worksheet.Range["C2"].Number = Convert.ToDouble(requi?.num_requisicao);
+                    worksheet.Range["E2"].DateTime = Convert.ToDateTime(requi?.data);
                     worksheet.Range["C3"].Text = requi?.alterado_por;
                     worksheet.Range["G3"].Text = requi?.setor_caminho;
-                    worksheet.Range["C4"].Text = String.Format("{0:dd/MM/yyyy}", requi?.data);
-                    worksheet.Range["G4"].Text = requi?.cliente;
-                    worksheet.Range["M4"].Text = requi?.coddetalhescompl.ToString();
+                    worksheet.Range["C4"].Text = requi?.cliente;
+                    worksheet.Range["F4"].Text = requi?.tema;
                     worksheet.Range["C5"].Text = requi?.item_memorial;
-                    worksheet.Range["G5"].Text = requi?.tema;
-                    worksheet.Range["C6"].Text = requi?.num_os_servico.ToString();
-                    worksheet.Range["F6"].Text = requi?.produtocompleto;
+                    worksheet.Range["F5"].Text = requi?.local_shoppings;
+                    worksheet.Range["C6"].Number = Convert.ToDouble(requi?.num_os_servico);
+                    worksheet.Range["E6"].Text = requi?.produtocompleto;
+                    worksheet.Range["N6"].Number = Convert.ToDouble(requi?.coddetalhescompl);
 
                     var itens = (from i in vm.ReqDetalhes where i.quantidade > 0 select new { i.quantidade, i.planilha, i.descricao_completa, i.unidade, i.observacao, i.codcompladicional }).ToList();
                     var index = 9;
