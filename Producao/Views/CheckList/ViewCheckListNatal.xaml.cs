@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using Telerik.Windows.Documents.Spreadsheet.Model;
 
 namespace Producao.Views.CheckList
 {
@@ -599,12 +600,16 @@ namespace Producao.Views.CheckList
                 worksheet.Range["J2"].ColumnWidth = 10;
                 worksheet.Range["J2"].WrapText = true;
 
+                worksheet.Range["K2"].Text = $"CAMINÃO";
+                worksheet.Range["K2"].ColumnWidth = 10;
+                worksheet.Range["K2"].WrapText = true;
+
                 worksheet.Rows[1].CellStyle = bodyStyle;
 
                 var dados = await Task.Run(() => vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado));
                 worksheet.ImportData(dados, 3, 1, false);
 
-                worksheet.Range[$"A3:J{dados.Count + 2}"].CellStyle = headerStyle;
+                worksheet.Range[$"A3:K{dados.Count + 2}"].CellStyle = headerStyle;
 
                 worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
@@ -632,7 +637,10 @@ namespace Producao.Views.CheckList
                 worksheet.Range[$"J3:J{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"J3:J{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
 
-                worksheet.PageSetup.PrintTitleColumns = "$A:$J";
+                worksheet.Range[$"K3:K{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                worksheet.Range[$"K3:K{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+
+                worksheet.PageSetup.PrintTitleColumns = "$A:$K";
                 worksheet.PageSetup.PrintTitleRows = "$1:$2";
                 worksheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
                 worksheet.PageSetup.LeftMargin = 0.0;
@@ -641,6 +649,7 @@ namespace Producao.Views.CheckList
                 worksheet.PageSetup.BottomMargin = 0.5;
                 worksheet.PageSetup.RightFooter = "&P";
                 worksheet.PageSetup.LeftFooter = "&D";
+                worksheet.PageSetup.Zoom = 88;
                 //worksheet.PageSetup.CenterVertically = true;
                 worksheet.PageSetup.CenterHorizontally = true;
 

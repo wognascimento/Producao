@@ -1139,7 +1139,8 @@ namespace Producao
                         s.custo_unitario,
                         s.custo_total,
                         s.orient_montagem,
-                        s.coddetalhescompl
+                        s.coddetalhescompl,
+                        s.caminhao
                     })
                     .ToListAsync();
                 return data;

@@ -33,5 +33,6 @@ namespace Producao
         public string? descricao_dd { get; set; }
         public long? id_aprovado { get; set; }
         public DateTime? data_aprovado { get; set; }
+        public string? caminhao { get; set; }
     }
 }
