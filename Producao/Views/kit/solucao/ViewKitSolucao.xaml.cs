@@ -187,6 +187,11 @@ namespace Producao.Views.kit.solucao
             //GRIobj = { Syncfusion.UI.Xaml.Grid.SfDataGrid}
             var sfdatagrid = obj as SfDataGrid;
 
+            if (OsKit == null)
+            {
+                MessageBox.Show("A linha não foi totalmente inserida.", "Atenção", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             ((MainWindow)Application.Current.MainWindow).adicionarFilho(new ViewDetalhesKitSolucao(OsKit), $"DETALHES KIT SOLUÇÃO {OsKit.os}", "DETALHES_KIT_SOLUCAO");
         }
 
