@@ -20,5 +20,6 @@ namespace Producao.DataBase.Model
         public double? qtd_baixa { get; set; }
         public string? descricao_setor { get; set; }
         public string? cliente_os { get; set; }
+        public DateTime? data_de_expedicao { get; set; }
     }
 }
