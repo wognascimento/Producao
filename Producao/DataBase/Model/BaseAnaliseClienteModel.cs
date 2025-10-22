@@ -12,6 +12,9 @@ namespace Producao.DataBase.Model
         public DateTime? fechamento_shopp { get; set; }
         public string? sigla { get; set; }
         public string? id { get; set; }
+        public int? bloco_revisao { get; set; }
+        public string? resp_revisao { get; set; }
+        public string? ok_revisao_alterada { get; set; }
         public string? item_memorial { get; set; }
         public string? local_shoppings { get; set; }
         public string? planilha { get; set; }

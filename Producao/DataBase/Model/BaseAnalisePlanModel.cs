@@ -8,6 +8,9 @@ namespace Producao
     [Table("qrybaseanaliseplan", Schema = "producao")]
     public class BaseAnalisePlanModel
     {
+        public int? bloco_revisao { get; set; }
+        public string? resp_revisao { get; set; }
+        public string? ok_revisao_alterada { get; set; }
         public string? item_memorial { get; set; }
         public DateTime? data_de_expedicao { get; set; }
         public string? ok { get; set; }
