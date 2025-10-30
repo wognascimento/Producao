@@ -276,7 +276,7 @@ namespace Producao.Views.Controlado
                         {
                             int limit = int.Parse(e.PromptResult);
                             int saldo = (int)((record.saldo_estoque ?? 0) - (record.etiquetas ?? 0));
-                            if (saldo < 1 || limit < saldo)
+                            if (saldo < 1 || limit > saldo)
                             {
                                 RadWindow.Alert(new DialogParameters()
                                 {
