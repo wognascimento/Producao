@@ -48,5 +48,7 @@ namespace Producao
         public string? coordenador {get; set; }
         public string? motivos { get; set; }
         public string? nome { get; set; }
+        public string? inserido_por { get; set; }
+        public DateTime? inserido_em { get; set; }
     }
 }
