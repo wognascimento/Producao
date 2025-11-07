@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
 using Telerik.Windows.Documents.Spreadsheet.Model;
 
 namespace Producao.Views.CheckList
@@ -672,6 +673,50 @@ namespace Producao.Views.CheckList
 
         }
 
+        private void OnCopyClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CheckListViewModel vm) return;
+
+            if (vm.Sigla == null)
+            {
+                MessageBox.Show("Selecione uma SIGLA para copiar os checklists.", "Atenção", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var meuUserControl = new CopiaChklist(vm.Sigla);
+            RadWindow radWindow = new()
+            {
+                Content = meuUserControl,
+                Header = $"Copiar Para: {vm.Sigla.sigla_serv}",
+                Width = 1000,
+                Height = 600,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Application.Current.MainWindow,
+                RestrictedAreaMargin = new Thickness(0),
+                IsRestricted = false,
+                ResizeMode = ResizeMode.NoResize,
+                CanClose = true,
+                HideMinimizeButton = true,
+                HideMaximizeButton = true
+            };
+            // Evento disparado após fechar
+            radWindow.Closed += async (sender, e) =>
+            {
+                // Exemplo: atualizar dados
+                CheckListViewModel vm = (CheckListViewModel)DataContext;
+                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                SiglaChkListModel valor = (SiglaChkListModel)this.cbSiglaShopping.SelectedItem;
+                vm.Locaisshopping = await vm.GetLocaisShoppAsync(vm?.Sigla?.id_aprovado);
+                vm.CheckListGerais = await vm.GetCheckListGeralAsync(vm?.Sigla?.id_aprovado);
+                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            };
+            // Abre como modal
+            radWindow.ShowDialog();
+
+        }
+
         private void OnDropDownOpened(object sender, EventArgs e)
         {
             dbClick = false;
@@ -941,6 +986,8 @@ namespace Producao.Views.CheckList
                 e.Cancel = true;
             }
         }
+
+
     }
 
     public class NameButtonConverter : IValueConverter

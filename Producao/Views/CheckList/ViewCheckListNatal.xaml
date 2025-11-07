@@ -428,6 +428,15 @@
                     Label="IMPRIMIR" 
                     Click="OnPrintClick"/>
                 
+
+                <syncfusion:ButtonAdv 
+                    Margin="2" 
+                    SmallIcon="/icones/icons8-auto-deskew-100.png" 
+                    LargeIcon="/icones/icons8-auto-deskew-100.png" 
+                    SizeMode="Large" 
+                    Label="COPIAR" 
+                    Click="OnCopyClick"/>
+                
             </StackPanel>
             
             <!--
