@@ -26,6 +26,7 @@ using Syncfusion.Windows.Tools.Controls;
 using Syncfusion.XlsIO;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Data;
@@ -34,6 +35,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using Telerik.Windows.Controls;
+using Telerik.Windows.Documents.Spreadsheet.Expressions.Functions;
 using SizeMode = Syncfusion.SfSkinManager.SizeMode;
 namespace Producao
 {
@@ -1338,7 +1340,7 @@ namespace Producao
                     foreach (var row in data)
                     {
                         i++;
-                        worksheet.Range[$"A{i}"].Number = Convert.ToDouble(row.codcompladicional);
+                        worksheet.Range[$"A{i}"].Number = System.Convert.ToDouble(row.codcompladicional);
                         worksheet.Range[$"A{i}"].CellStyle = bodyStyle;
 
                         worksheet.Range[$"B{i}"].Text = row.planilha;
@@ -1350,7 +1352,7 @@ namespace Producao
                         worksheet.Range[$"D{i}"].Text = row.unidade;
                         worksheet.Range[$"D{i}"].CellStyle = bodyStyle;
 
-                        worksheet.Range[$"E{i}"].Number = Convert.ToDouble(row.solucao_manutencao) + Convert.ToDouble(row.expedido);
+                        worksheet.Range[$"E{i}"].Number = System.Convert.ToDouble(row.solucao_manutencao) + System.Convert.ToDouble(row.expedido);
                         worksheet.Range[$"E{i}"].CellStyle = bodyStyle;
                         worksheet.Range[$"E{i}"].NumberFormat = "0.00"; //"#,##0.00"; 
 
@@ -1458,7 +1460,7 @@ namespace Producao
                     foreach (var row in data)
                     {
                         i++;
-                        worksheet.Range[$"A{i}"].Number = Convert.ToDouble(row.codcompladicional);
+                        worksheet.Range[$"A{i}"].Number = System.Convert.ToDouble(row.codcompladicional);
                         worksheet.Range[$"A{i}"].CellStyle = bodyStyle;
 
                         worksheet.Range[$"B{i}"].Text = row.sigla;
@@ -1470,7 +1472,7 @@ namespace Producao
                         worksheet.Range[$"D{i}"].Text = row.unidade;
                         worksheet.Range[$"D{i}"].CellStyle = bodyStyle;
 
-                        worksheet.Range[$"E{i}"].Number = Convert.ToDouble(row.solucao_manutencao) + Convert.ToDouble(row.expedido);
+                        worksheet.Range[$"E{i}"].Number = System.Convert.ToDouble(row.solucao_manutencao) + System.Convert.ToDouble(row.expedido);
                         worksheet.Range[$"E{i}"].CellStyle = bodyStyle;
                         worksheet.Range[$"E{i}"].NumberFormat = "0.00"; //"#,##0.00"; 
 
@@ -1517,7 +1519,16 @@ namespace Producao
 
                 using DatabaseContext db = new();
                 //var data = await db.PendenciaProducaos.ToListAsync();
-                var data = await db.HistoricoCheckList.Where(h => h.ano != Convert.ToInt16(BaseSettings.Database)).ToListAsync();
+                //var data = await db.HistoricoCheckList.Where(h => h.ano != Convert.ToInt16(BaseSettings.Database)).ToListAsync();
+
+                const string sql = @"
+                    SELECT ano, sigla, tema, ordem, item_memorial, local_shoppings, obs, orient_montagem, orient_desmont, planilha, qtd_chk, codcompladicional, descricao_completa, qtd_comple
+	                FROM producao.view_checklist_completo_historico;
+                ";
+
+                await using var conn = new NpgsqlConnection(BaseSettings.connectionString);
+                await conn.OpenAsync();
+                var data = await conn.QueryAsync<HistoricoCheckListExcelDTO>(sql);
 
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
@@ -1528,7 +1539,7 @@ namespace Producao
                 IWorkbook workbook = application.Workbooks.Create(1);
                 IWorksheet worksheet = workbook.Worksheets[0];
                 //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
+                worksheet.ImportData(data.ToList(), 1, 1, true);
 
                 workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\HISTORICO-CHECK-LIST.xlsx");
                 Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\HISTORICO-CHECK-LIST.xlsx")
