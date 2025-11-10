@@ -210,6 +210,7 @@ namespace Producao.Views.kit.desmontagem
                 borderStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
                 borderStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 borderStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                borderStyle.Font.Size = 8;
                 borderStyle.WrapText = true;
                 borderStyle.EndUpdate();
 
@@ -217,21 +218,22 @@ namespace Producao.Views.kit.desmontagem
                 IWorksheet worksheet = workbook.Worksheets[0];
 
                 worksheet.Range["A1"].Text = "KIT MONTAGEM";
-                worksheet.Range["C2"].Text = vm.ChkGeral.sigla;
-                worksheet.Range["F2"].Number = (double)vm.ChkGeral.t_os_mont;
-                worksheet.Range["I2"].Number = (double)vm.ChkGeral.os;
-                worksheet.Range["C3"].Number = (double)vm.ChkGeral.distancia; //String.Format("{0:dd/MM/yyyy}", requi.data);  // "03/09/2008" //vm.Requisicao.data.ToString("MM/dd/yyyy");
-                worksheet.Range["G3"].Text = vm.ChkGeral.cidade;
-                worksheet.Range["L3"].Text = vm.ChkGeral.est;
-                worksheet.Range["C4"].Text = vm.ChkGeral.solicitante;
-                worksheet.Range["J4"].Text = String.Format("{0:dd/MM/yyyy HH:mm:ss}", vm.ChkGeral.data_solicitacao); //(DateTime)vm.ChkGeral.data_solicitacao;
-                worksheet.Range["C6"].Text = vm.ChkGeral.noite_montagem;
+                worksheet.Range["B2"].Text = vm.ChkGeral.sigla;
+                worksheet.Range["L3"].Number = (double)vm.ChkGeral.t_os_mont;
+                worksheet.Range["O3"].Number = (double)vm.ChkGeral.os;
+                worksheet.Range["I3"].Number = (double)vm.ChkGeral.distancia; //String.Format("{0:dd/MM/yyyy}", requi.data);  // "03/09/2008" //vm.Requisicao.data.ToString("MM/dd/yyyy");
+                worksheet.Range["H2"].Text = vm.ChkGeral.cidade;
+                worksheet.Range["M2"].Text = vm.ChkGeral.est;
+                worksheet.Range["C4"].Text = vm.ChkGeral.atendente;
+                worksheet.Range["C5"].Text = vm.ChkGeral.solicitante;
+                worksheet.Range["J5"].Text = String.Format("{0:dd/MM/yyyy HH:mm:ss}", vm.ChkGeral.data_solicitacao); //(DateTime)vm.ChkGeral.data_solicitacao;
+                worksheet.Range["C7"].Text = vm.ChkGeral.noite_montagem;
 
                 //worksheet.Range["C6"].Text = requi.num_os_servico.ToString();
                 //worksheet.Range["F6"].Text = requi.produtocompleto;
 
                 //var itens = (from i in vm.QryRequisicaoDetalhes where i.quantidade > 0 select new { i.quantidade, i.planilha, i.descricao_completa, i.unidade, i.observacao, i.codcompladicional }).ToList(); //new { a.Name, a.Age }
-                var index = 9;
+                var index = 10;
                 foreach (var item in vm.ChkGerais)
                 {
                     worksheet.Range[$"A{index}"].Number = (double)item.qtd;
@@ -280,6 +282,9 @@ namespace Producao.Views.kit.desmontagem
 
                     worksheet.Range[$"R{index}"].Number = Convert.ToDouble(item.peso);
                     worksheet.Range[$"R{index}"].CellStyle = borderStyle;
+
+                    worksheet.Range[$"S{index}"].Text = item.inserido_por;
+                    worksheet.Range[$"S{index}"].CellStyle = borderStyle;
 
                     index++;
                 }
