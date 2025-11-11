@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dapper;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Producao.DataBase.Model;
 using Syncfusion.UI.Xaml.Grid;
 using System;
@@ -29,6 +31,7 @@ namespace Producao.Views.kit.solucao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 KitSolucaoViewModel vm = (KitSolucaoViewModel)DataContext;
+                await vm.CriarOSAsync();
                 vm.Siglas = await Task.Run(vm.GetSiglasAsync);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -136,6 +139,8 @@ namespace Producao.Views.kit.solucao
 
     public class KitSolucaoViewModel : INotifyPropertyChanged
     {
+        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -257,6 +262,64 @@ namespace Producao.Views.kit.solucao
             {
                 throw;
             }
+        }
+
+        public async Task CriarOSAsync()
+        {
+            using var conn = new NpgsqlConnection(BaseSettings.connectionString);
+
+            await conn.ExecuteAsync(
+                @"INSERT INTO producao.tbl_servicos (
+                    tipo,
+                    codigo_setor,
+                    descricao_setor,
+                    descricao_servico,
+                    orientacao,
+                    quantidade,
+                    data_emissao,
+                    emitido_por,
+                    planilha,
+                    cliente,
+                    data_conclusao,
+                    codigo_servico,
+                    sigla
+                )
+                SELECT
+                    producao.tbl_tipo_os.tipo_servico AS tipo,
+                    79 AS codigo_setor,
+                    'TODOS TAB/JAC' AS descricao_setor,
+                    producao.tbl_tipo_os.descricao_servico || ' ' || EXTRACT(YEAR FROM CURRENT_DATE) AS descricao_servico,
+                    'OS REF GRUPOS DE MOMADES' AS orientacao,
+                    1 AS quantidade,
+                    CURRENT_DATE AS data_emissao,
+                    'SISTEMA' AS emitido_por,
+                    'TODAS' AS planilha,
+                    CASE 
+                        WHEN tipo_servico = 'KIT MANUTENÇÃO' THEN sigla_serv || '-M'
+                        WHEN tipo_servico = 'KIT SOLUÇÃO' THEN sigla_serv || '-S'
+                        WHEN tipo_servico = 'KIT DESMONTAGEM' THEN sigla_serv || '-D'
+                        ELSE sigla_serv
+                    END AS cliente,
+                    make_date(EXTRACT(YEAR FROM CURRENT_DATE)::integer, 12, 31) AS data_conclusao,
+                    producao.tbl_tipo_os.codigo_tipo AS codigo_servico,
+                    qry_siglas_emit_os.sigla_serv
+                FROM
+                    producao.tbl_tipo_os
+                    CROSS JOIN producao.qry_siglas_emit_os
+                WHERE
+                    producao.tbl_tipo_os.tipo_servico IN ('KIT MANUTENÇÃO', 'KIT SOLUÇÃO', 'KIT DESMONTAGEM')
+                GROUP BY
+                    producao.tbl_tipo_os.tipo_servico,
+                    producao.tbl_tipo_os.descricao_servico,
+                    producao.tbl_tipo_os.codigo_tipo,
+                    qry_siglas_emit_os.sigla_serv
+                ORDER BY
+                    CASE 
+                        WHEN tipo_servico = 'KIT MANUTENÇÃO' THEN sigla_serv || '-M'
+                        WHEN tipo_servico = 'KIT SOLUÇÃO' THEN sigla_serv || '-S'
+                        WHEN tipo_servico = 'KIT DESMONTAGEM' THEN sigla_serv || '-D'
+                        ELSE sigla_serv
+                    END;");
         }
 
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dapper;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.Views.CadastroProduto;
 using Syncfusion.Data;
@@ -49,6 +50,8 @@ namespace Producao.Views.kit.solucao
                 vm.Sigla = await Task.Run(() => vm.GetSiglaAsync(OsKit.shopping[..^2]));
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+
+                
             }
             catch (Exception ex)
             {
@@ -738,6 +741,7 @@ namespace Producao.Views.kit.solucao
 
     public class DetalhesKitSolucaoViewModel : INotifyPropertyChanged
     {
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -1150,5 +1154,7 @@ namespace Producao.Views.kit.solucao
                 throw;
             }
         }
+
+        
     }
 }
