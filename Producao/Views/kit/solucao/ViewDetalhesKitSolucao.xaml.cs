@@ -411,6 +411,23 @@ namespace Producao.Views.kit.solucao
                         col1E1 += 3;
                         col2E1 += 1;
 
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].Text = "OBSERVAÇÃO";
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].Merge();
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].CellStyle = borderStyle;
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].CellStyle.Font.Bold = true;
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].CellStyle.Font.Size = 20;
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].RowHeight = 26.25;
+                        col1E1 += 1;
+                        col2E1 += 1;
+
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].Text = item.obs;
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].Merge();
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].CellStyle = borderStyle;
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].CellStyle.Font.Size = 20;
+                        wsheet.Range[$"A{col1E1}:J{col2E1}"].RowHeight = 57;
+                        col1E1 += 1;
+                        col2E1 += 1;
+
                         wsheet.Range[$"A{col2E1}:G{col2E1}"].Text = "SOLICITANTE";
                         wsheet.Range[$"A{col2E1}:G{col2E1}"].Merge();
                         wsheet.Range[$"A{col2E1}:G{col2E1}"].CellStyle = borderStyle;
@@ -452,8 +469,13 @@ namespace Producao.Views.kit.solucao
                 wsheet.PageSetup.LeftMargin = 0.5;
                 wsheet.PageSetup.RightMargin = 0.5;
 
-                wsheet.PageSetup.TopMargin = 0.8;
-                wsheet.PageSetup.BottomMargin = 0.8;
+                //wsheet.PageSetup.TopMargin = 0.8;
+                //wsheet.PageSetup.BottomMargin = 0.8;
+
+                wsheet.PageSetup.CenterHorizontally = true;
+                wsheet.PageSetup.CenterVertically = true;
+
+                wsheet.PageSetup.Zoom = 90;
 
                 //Save the Excel document
                 workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_KIT_{vm.ChkGeral.os}.xlsx");
