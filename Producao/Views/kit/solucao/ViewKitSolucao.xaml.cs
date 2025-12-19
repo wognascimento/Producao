@@ -123,6 +123,10 @@ namespace Producao.Views.kit.solucao
                 }
                 */
 
+                //data.concluir_ate = data.concluir_ate.Value.Date;
+                //data.data_emissao = data.data_emissao.Value.Date;
+                //data.data_solicitacao = data.data_solicitacao.Value.Date;
+
                 await Task.Run(() => vm.AddOsKitsAsync(data));
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });

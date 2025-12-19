@@ -49,8 +49,8 @@
                 <syncfusion:GridComboBoxColumn  
                     MappingName="sigla" 
                     ItemsSource="{Binding Siglas}" 
-                    DisplayMemberPath="SiglaServ" 
-                    SelectedValuePath="SiglaServ"/>
+                    DisplayMemberPath="sigla_serv" 
+                    SelectedValuePath="sigla_serv"/>
                 <syncfusion:GridTextColumn      MappingName="tema"/>
                 <syncfusion:GridTextColumn      MappingName="ano" />
                 <syncfusion:GridComboBoxColumn  MappingName="local" ItemsSource="{Binding Locais}"/>

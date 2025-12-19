@@ -13,10 +13,10 @@ namespace Producao
         [Key]
         public long? os { get; set; }
         public DateTime? data_solicitacao { get; set; }
-        public DateTime? hora_solicitacao { get; set; }
+        //public DateTime? hora_solicitacao { get; set; }
         public string? solicitante { get; set; }
         public DateTime? concluir_ate { get; set; }
-        public DateTime? hora_concluir { get; set; }
+        //public DateTime? hora_concluir { get; set; }
         public string? forma_de_envio { get; set; }
         public string? responsavel { get; set; }
         public string? obs_de_envio { get; set; }
