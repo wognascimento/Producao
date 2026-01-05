@@ -1229,6 +1229,7 @@ namespace Producao
                     {
                         BaseSettings.Database = e.PromptResult;
                         txtDataBase.Text = BaseSettings.Database;
+                        BaseSettings.connectionString = $"Host={BaseSettings.Host};Database={BaseSettings.Database};Username={BaseSettings.Username};Password={BaseSettings.Password}";
                         _mdi.Items.Clear();
                     }
                 }

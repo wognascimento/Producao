@@ -45,6 +45,9 @@ namespace Producao
                     config.Save(ConfigurationSaveMode.Modified);
                     ConfigurationManager.RefreshSection("appSettings");
 
+                    BaseSettings.Username = txtLogin.Text;
+                    BaseSettings.connectionString = $"Host={BaseSettings.Host};Database={BaseSettings.Database};Username={BaseSettings.Username};Password={BaseSettings.Password}";
+
                     this.DialogResult = true;
                     this.Close();
                 }
