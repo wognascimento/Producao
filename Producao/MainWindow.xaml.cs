@@ -1523,8 +1523,10 @@ namespace Producao
                 //var data = await db.HistoricoCheckList.Where(h => h.ano != Convert.ToInt16(BaseSettings.Database)).ToListAsync();
 
                 const string sql = @"
-                    SELECT ano, sigla, tema, ordem, item_memorial, local_shoppings, obs, orient_montagem, orient_desmont, planilha, qtd_chk, codcompladicional, descricao_completa, qtd_comple
-	                FROM producao.view_checklist_completo_historico;
+                    SELECT ano, sigla, tema, ordem, item_memorial, local_shoppings, obs, orient_montagem, orient_desmont, qry3descricoes.planilha, qtd_chk, qry3descricoes.codcompladicional, qry3descricoes.descricao_completa, qtd_comple, m3 AS m3_media_produto_unitario, m3 * qtd_comple::numeric(12,2) AS m3_media_produto_total
+                    FROM producao.view_checklist_completo_historico
+                    LEFT JOIN producao.qry3descricoes ON view_checklist_completo_historico.codcompladicional = qry3descricoes.codcompladicional
+                    ORDER BY ano, sigla, tema, ordem, item_memorial;
                 ";
 
                 await using var conn = new NpgsqlConnection(BaseSettings.connectionString);

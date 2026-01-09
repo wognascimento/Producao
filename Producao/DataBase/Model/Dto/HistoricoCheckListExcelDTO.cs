@@ -16,4 +16,6 @@ public class HistoricoCheckListExcelDTO
     public int codcompladicional { get; set; }
     public string descricao_completa { get; set; }
     public double qtd_comple { get; set; }
+    public double m3_media_produto_unitario { get; set; }
+    public double m3_media_produto_total { get; set; }
 }
