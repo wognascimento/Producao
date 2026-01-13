@@ -130,7 +130,7 @@ namespace Producao.Views.kit.solucao
                 vm.ComplementoCheckList.class_solucao = cmbClassificacoes.SelectedItem.ToString();
                 vm.ComplementoCheckList.motivos = cmbMotivos.SelectedItem.ToString();
                 vm.ComplementoCheckList.inserido_por = Environment.UserName;
-                vm.ComplementoCheckList.inserido_em = DateTime.UtcNow;
+                vm.ComplementoCheckList.inserido_em = DateTime.Now;
 
                 ComplementoCheckListModel compl = await vm.AddComplementoCheckListAsync(vm.ComplementoCheckList);
 
