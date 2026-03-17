@@ -17,6 +17,7 @@ namespace Producao
         public string? cliente { get; set; }
         public string? planilha { get; set; }
         public string? descricao_completa { get; set; }
+        public string? produto_novo { get; set; }
         public DateTime? emitida_data { get; set; }
         public double? quantidade { get; set; }
         public DateTime? meta_data { get; set; }
