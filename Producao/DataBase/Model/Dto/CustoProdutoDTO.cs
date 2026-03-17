@@ -12,16 +12,16 @@ public class CustoProdutoDTO
     public int?    vida_util { get; set; }
     public string? inativo { get; set; }
     public string? prodcontrolado { get; set; }
-    public double? custo25 { get; set; }
-    public double? custo24 { get; set; }
-    public double? custo23 { get; set; }
-    public double? custo_rec23 { get; set; }
+    public double? custo_atual { get; set; }
+    public double? custo_anterior { get; set; }
+    public double? custo_retrasado { get; set; }
     public string? tipocusto { get; set; }
-    public double? custo_rec25 { get; set; }
-    public double? custo_rec24 { get; set; }
-    public double? process_25 { get; set; }
-    public double? process_24 { get; set; }
-    public double? process_23 { get; set; }
+    public double? custo_rec_atual { get; set; }
+    public double? custo_rec_anterior { get; set; }
+    public double? custo_rec_retrasado { get; set; }
+    public double? process_atual { get; set; }
+    public double? process_anterior { get; set; }
+    public double? process_retrasado { get; set; }
     public double? media_pn_pro1_v { get; set; }
     public double? media_pn_pro2_v { get; set; }
     public double? media_rc_pro2_v { get; set; }

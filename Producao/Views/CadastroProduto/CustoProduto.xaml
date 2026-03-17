@@ -43,15 +43,15 @@
                                        DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
                                        ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"/>
                 <Syncfusion:GridTextColumn MappingName="tipocusto" AllowEditing="True"/>
-                <Syncfusion:GridNumericColumn MappingName="custo23"/>
-                <Syncfusion:GridNumericColumn MappingName="custo24"/>
-                <Syncfusion:GridNumericColumn MappingName="custo25" AllowEditing="True"/>
-                <Syncfusion:GridNumericColumn MappingName="process_23"/>
-                <Syncfusion:GridNumericColumn MappingName="process_24"/>
-                <Syncfusion:GridNumericColumn MappingName="process_25" AllowEditing="True"/>
-                <Syncfusion:GridNumericColumn MappingName="custo_rec23"/>
-                <Syncfusion:GridNumericColumn MappingName="custo_rec24"/>
-                <Syncfusion:GridNumericColumn MappingName="custo_rec25" AllowEditing="True"/>
+                <Syncfusion:GridNumericColumn MappingName="custo_retrasado"/>
+                <Syncfusion:GridNumericColumn MappingName="custo_anterior"/>
+                <Syncfusion:GridNumericColumn MappingName="custo_atual" AllowEditing="True"/>
+                <Syncfusion:GridNumericColumn MappingName="process_retrasado"/>
+                <Syncfusion:GridNumericColumn MappingName="process_anterior"/>
+                <Syncfusion:GridNumericColumn MappingName="process_atual" AllowEditing="True"/>
+                <Syncfusion:GridNumericColumn MappingName="custo_rec_retrasado"/>
+                <Syncfusion:GridNumericColumn MappingName="custo_rec_anterior"/>
+                <Syncfusion:GridNumericColumn MappingName="custo_rec_atual" AllowEditing="True"/>
                 <Syncfusion:GridNumericColumn MappingName="media_pn_pro1_v"/>
                 <Syncfusion:GridNumericColumn MappingName="media_pn_pro2_v"/>
                 <Syncfusion:GridNumericColumn MappingName="media_rc_pro2_v"/>

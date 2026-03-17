@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.DataBase.Model.Dto;
 using System;
@@ -98,16 +97,16 @@ public class CustoProdutoViewModel : INotifyPropertyChanged
                     vida_util, 
                     inativo, 
                     prodcontrolado, 
-                    custo25, 
-                    custo24, 
-                    custo23, 
-                    custo_rec23, 
+                    custo_atual, 
+                    custo_anterior, 
+                    custo_retrasado, 
                     tipocusto, 
-                    custo_rec25, 
-                    custo_rec24, 
-                    process_25, 
-                    process_24, 
-                    process_23, 
+                    custo_rec_atual, 
+                    custo_rec_anterior, 
+                    custo_rec_retrasado, 
+                    process_atual, 
+                    process_anterior, 
+                    process_retrasado, 
                     media_pn_pro1_v, 
                     media_pn_pro2_v, 
                     media_rc_pro2_v, 
@@ -137,9 +136,9 @@ public class CustoProdutoViewModel : INotifyPropertyChanged
             var custoNovo = custoExistente;
             custoNovo.codcompladicional = custoDTO.codcompladicional;
             custoNovo.tipocusto = custoDTO.tipocusto;
-            custoNovo.custo = custoDTO.custo25;
-            custoNovo.custo_recuperacao = custoDTO.custo_rec25;
-            custoNovo.process = custoDTO.process_25;
+            custoNovo.custo = custoDTO.custo_atual;
+            custoNovo.custo_recuperacao = custoDTO.custo_rec_atual;
+            custoNovo.process = custoDTO.process_atual;
             custoNovo.alteradopor = Environment.UserName;
             custoNovo.dataaltera = DateTime.Now.Date;
 
