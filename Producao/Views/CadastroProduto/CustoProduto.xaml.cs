@@ -29,8 +29,13 @@ public partial class CustoProduto : UserControl
         {
             CustoProdutoViewModel vm = (CustoProdutoViewModel)DataContext;
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-            vm.Produtos = await Task.Run(vm.GetProdutosAsync);
+            vm.Produtos = await vm.GetProdutosAsync();
 
+            Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+        }
+        catch(PostgresException ex)
+        {
+            MessageBox.Show($"Erro ao conectar com o banco de dados: {ex.Message}");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
@@ -83,8 +88,8 @@ public class CustoProdutoViewModel : INotifyPropertyChanged
 
     public async Task<ObservableCollection<CustoProdutoDTO>> GetProdutosAsync()
     {
-        try
-        {
+        //try
+        //{
             string sql = @"
                 SELECT 
                     planilha, 
@@ -120,11 +125,11 @@ public class CustoProdutoViewModel : INotifyPropertyChanged
 
             var resultado = (await connection.QueryAsync<CustoProdutoDTO>(sql)).ToList();
             return new ObservableCollection<CustoProdutoDTO>(resultado);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Erro ao buscar os produtos", ex);
-        }
+        //}
+        //catch (Exception ex)
+        //{
+            //throw new Exception("Erro ao buscar os produtos", ex);
+        //}
     }
 
     public async Task AtualizarCustoProdutoAsync(CustoProdutoDTO custoDTO)
