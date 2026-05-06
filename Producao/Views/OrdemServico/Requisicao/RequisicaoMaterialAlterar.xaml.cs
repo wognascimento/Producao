@@ -201,9 +201,11 @@ namespace Producao.Views.OrdemServico.Requisicao
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
                 var numreq = long.Parse(tbNumRequisicao.Text);
-                vm.ReqDetalhes = await Task.Run(() => vm.GetByRequisicaoDetalhesAsync(numreq));
 
-                ReqDetalhesModel requi = (from r in vm.ReqDetalhes select r).FirstOrDefault();
+                //vm.ReqDetalhes = await Task.Run(() => vm.GetByRequisicaoDetalhesAsync(numreq));
+
+                //ReqDetalhesModel requi = (from r in vm.ReqDetalhes select r).FirstOrDefault();
+                QryRequisicaoDetalheModel requi = (from r in vm.QryRequisicaoDetalhes select r).FirstOrDefault();
 
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
@@ -222,7 +224,8 @@ namespace Producao.Views.OrdemServico.Requisicao
                 worksheet.Range["E6"].Text = requi?.produtocompleto;
                 worksheet.Range["N6"].Number = Convert.ToDouble(requi?.coddetalhescompl);
 
-                var itens = (from i in vm.ReqDetalhes where i.quantidade > 0 select new { i.quantidade, i.planilha, i.descricao_completa, i.unidade, i.observacao, i.codcompladicional, i.volume }).ToList();
+                //var itens = (from i in vm.ReqDetalhes where i.quantidade > 0 select new { i.quantidade, i.planilha, i.descricao_completa, i.unidade, i.observacao, i.codcompladicional, i.volume }).ToList();
+                var itens = (from i in vm.QryRequisicaoDetalhes where i.quantidade > 0 select new { i.quantidade, i.planilha, i.descricao_completa, i.unidade, i.observacao, i.codcompladicional, i.volume }).ToList();
 
                 var volumes = from r in itens
                          orderby r.volume
@@ -274,9 +277,9 @@ namespace Producao.Views.OrdemServico.Requisicao
                     index++;
                 }
                 //workbook.SaveAs($"Impressos/REQUISICAO_{requi.num_requisicao}.xlsx");
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{tbNumRequisicao.Text}.xlsx");
+                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{numreq}.xlsx");
                 Process.Start(
-                new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{tbNumRequisicao.Text}.xlsx")
+                new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{numreq}.xlsx")
                 {
                     Verb = "Print",
                     UseShellExecute = true,
