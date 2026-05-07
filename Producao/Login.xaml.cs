@@ -19,13 +19,13 @@ namespace Producao
             txtLogin.Focus();
         }
 
-        private void OnSair(object sender, System.Windows.RoutedEventArgs e)
+        private void OnSair(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
             this.Close();
         }
 
-        private void OnLogar(object sender, System.Windows.RoutedEventArgs e)
+        private void OnLogar(object sender, RoutedEventArgs e)
         {
 
             if (!string.IsNullOrWhiteSpace(txtLogin.Text) && !string.IsNullOrWhiteSpace(txtSenha.Password))
@@ -35,7 +35,8 @@ namespace Producao
                     // ContextType.Domain já usa seu domínio padrão ou especifique "cipodominio.com.br"
                     using var ctx = new PrincipalContext(
                            ContextType.Domain,
-                           "cipodominio.com.br");
+                           "192.168.0.254", // Controlador de domínio
+                           "cipodominio.com.br"); // Domínio
                     if (!ctx.ValidateCredentials(txtLogin.Text, txtSenha.Password))
                         throw new Exception("Credenciais inválidas.");
 
