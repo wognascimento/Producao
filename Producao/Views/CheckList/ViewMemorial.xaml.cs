@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using Npgsql;
 using Producao.DataBase.Model;
-using Syncfusion.XlsIO;
+using Producao.Views.CentralModelos.Compat;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -13,6 +13,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 using Telerik.Windows.Persistence.Core;
 
 namespace Producao.Views.CheckList
@@ -36,7 +38,7 @@ namespace Producao.Views.CheckList
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
+                vm.Siglas = await vm.GetSiglasAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -46,16 +48,16 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private async void OnSiglaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSiglaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
-                if (e.NewValue != null)
+                if (e.AddedItems.Count > 0 && e.AddedItems[0] is PropostaFechaSiglaModel selectedSigla)
                 {
-                    sigla = (PropostaFechaSiglaModel)e.NewValue;
+                    sigla = selectedSigla;
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    vm.Temas = await Task.Run(async () => await vm.GetTemasAsync(sigla));
+                    vm.Temas = await vm.GetTemasAsync(sigla);
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 else
@@ -74,17 +76,17 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private async void OnTemaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnTemaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
-                if (e.NewValue != null) 
+                if (e.AddedItems.Count > 0 && e.AddedItems[0] is PropostaFechaTemaModel selectedTema)
                 {
-                    tema = (PropostaFechaTemaModel)e.NewValue;
+                    tema = selectedTema;
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    vm.Itens = await Task.Run(async () => await vm.GetFechaAsync(tema));
-                    vm.Links = await Task.Run(async () => await vm.GetFechaLinksAsync(sigla.sigla, tema.tema));
+                    vm.Itens = await vm.GetFechaAsync(tema);
+                    vm.Links = await vm.GetFechaLinksAsync(sigla.sigla, tema.tema);
 
                     if (vm.Links.Count == 0)
                     {
@@ -127,7 +129,7 @@ namespace Producao.Views.CheckList
                     {
                         var folderName = folderDialog.FolderName;
 
-                       vm.Link =  await Task.Run(async () => await vm.SaveLinksAsync( new FechaLinkModel { idtema = vm.Tema.idtema, tema = vm.Tema.tema, sigla = vm.Sigla.sigla, data_link = DateTime.Now, links = folderName } ));
+                       vm.Link =  await vm.SaveLinksAsync( new FechaLinkModel { idtema = vm.Tema.idtema, tema = vm.Tema.tema, sigla = vm.Sigla.sigla, data_link = DateTime.Now, links = folderName } );
                         
                     }
                     return;
@@ -145,28 +147,6 @@ namespace Producao.Views.CheckList
                 MessageBox.Show(ex.Message);
             }
 
-        }
-
-        private void SfDataGrid_CurrentCellRequestNavigate(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellRequestNavigateEventArgs e)
-        {
-            try
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-
-                Process explorer = new Process();
-                explorer.StartInfo.FileName = "explorer.exe";
-                explorer.StartInfo.Arguments = e.NavigateText.Replace("#", null);
-                explorer.Start();
-
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-
-            }
-            catch (Exception ex)
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
-            }
-            
         }
 
         private async void OnPrintMemorial(object sender, RoutedEventArgs e)
@@ -306,8 +286,8 @@ namespace Producao.Views.CheckList
                 //worksheet.PageSetup.CenterVertically = true;
                 worksheet.PageSetup.CenterHorizontally = true;
 
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\MEMORIAL.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\\MEMORIAL.xlsx")
+                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"MEMORIAL.xlsx"));
+                Process.Start(new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"MEMORIAL.xlsx"))
                 {
                     UseShellExecute = true
                 });
@@ -323,19 +303,20 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private async void SfDataGrid_CurrentCellValidated(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValidatedEventArgs e)
+        private async void Itens_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
             try
             {
                 ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
-                var column = e.Column; //Column = {Syncfusion.UI.Xaml.Grid.GridTextColumn}
-                var data = e.RowData as ViewFechaModel;
-                if (e.Column.MappingName == "baia_caminhao")
+                var data = e.Cell?.DataContext as ViewFechaModel;
+                if (data is null)
                 {
-                    if (e.NewValue != e.OldValue)
-                    {
-                        await vm.SaveBaiaCaminhaoAsync(new ControleBaiaEnderecamentoModel { sigla_serv = data.sigla_serv, id_aprovado = data.id_aprovado, item_memorial = data.item, baia_caminhao = data.baia_caminhao, inserido_por = Environment.UserName, inserido_em = DateTime.Now.Date });
-                    }
+                    return;
+                }
+
+                if (e.Cell?.Column?.UniqueName == "baia_caminhao")
+                {
+                    await vm.SaveBaiaCaminhaoAsync(new ControleBaiaEnderecamentoModel { sigla_serv = data.sigla_serv, id_aprovado = data.id_aprovado, item_memorial = data.item, baia_caminhao = data.baia_caminhao, inserido_por = Environment.UserName, inserido_em = DateTime.Now.Date });
                 }
             }
             catch (PostgresException ex)

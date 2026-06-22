@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.XlsIO;
+using Microsoft.EntityFrameworkCore;
+using Producao.Views.CentralModelos.Compat;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -33,10 +33,10 @@ namespace Producao.Views.OrdemServico.Servicos
 
                 EmissaoServicoViewModel vm = (EmissaoServicoViewModel)DataContext;
                 vm.OrdemServico = new TblServicoModel();
-                vm.Tipos = await Task.Run(vm.GetTiposAsync);
-                vm.Setores = await Task.Run(vm.GetSetoresAsync);
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
+                vm.Tipos = await vm.GetTiposAsync();
+                vm.Setores = await vm.GetSetoresAsync();
+                vm.Planilhas = await vm.GetPlanilhasAsync();
+                vm.Siglas = await vm.GetSiglasAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -59,17 +59,17 @@ namespace Producao.Views.OrdemServico.Servicos
                 vm.OrdemServico.emitido_por_data = DateTime.Now;
                 vm.OrdemServico.quantidade = Convert.ToDouble(txtQuantidade.Text);
 
-                var OS = await Task.Run(() => vm.GravarAsync(vm.OrdemServico));
+                var OS = await vm.GravarAsync(vm.OrdemServico);
 
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
 
-                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("ORDEM_SERVICO_SERVICO_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
 
 
-                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\PERMISSAO_TRABALHO.xlsx");
+                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open(BaseSettings.ResolveModeloPath("PERMISSAO_TRABALHO.xlsx"));
                 IWorksheet wsPt = wbPt.Worksheets[0];
 
 
@@ -87,10 +87,10 @@ namespace Producao.Views.OrdemServico.Servicos
                 worksheet.Range["C26"].Text = OS.data_conclusao.Value.ToString();
                 worksheet.Range["C28"].Text = OS.emitido_por;
 
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"ORDEM_SERVICO_SERVICO_MODELO.xlsx"));
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_SERVICO_MODELO.xlsx")
+                Process.Start(new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"ORDEM_SERVICO_SERVICO_MODELO.xlsx"))
                 {
                     UseShellExecute = true
                 });
@@ -99,10 +99,10 @@ namespace Producao.Views.OrdemServico.Servicos
                 if (OS.pt == true)
                 {
                     wsPt.Range["G1"].Number = (double)OS.num_os;
-                    wbPt.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx");
+                    wbPt.SaveAs(BaseSettings.ResolveImpressosPath($"PERMISSAO_TRABALHO.xlsx"));
 
                     Process.Start(
-                        new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx")
+                        new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"PERMISSAO_TRABALHO.xlsx"))
                         {
                             Verb = "Print",
                             UseShellExecute = true,

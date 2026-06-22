@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,6 +6,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.Planilha
 {
@@ -27,7 +28,7 @@ namespace Producao.Views.Planilha
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ControleGrupoViewModel vm = (ControleGrupoViewModel)DataContext;
-                vm.ControlePlanilhaGrupos = await Task.Run(vm.GetItensAsync);
+                vm.ControlePlanilhaGrupos = await vm.GetItensAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -37,25 +38,17 @@ namespace Producao.Views.Planilha
             }
         }
 
-        private async void OnCurrentCellValueChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValueChangedEventArgs e)
+        private async void OnCellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
-            SfDataGrid grid = (SfDataGrid)sender;
-            int columnindex = grid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
-            var column = grid.Columns[columnindex];
-            if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "os")
+            if (e.Cell?.Column?.UniqueName == "os" &&
+                e.Cell.DataContext is ControlePlanilhaGrupoModel record)
             {
                 try
                 {
-                    var rowIndex = grid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-                    if (rowIndex > -1)
-                    {
-                        var record = (ControlePlanilhaGrupoModel)grid.View.Records[rowIndex].Data;
-                        var value = record.os;
-                        Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                        ControleGrupoViewModel vm = (ControleGrupoViewModel)DataContext;
-                        await Task.Run(() => vm.SaveAsync(record));
-                        Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    }
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                    ControleGrupoViewModel vm = (ControleGrupoViewModel)DataContext;
+                    await vm.SaveAsync(record);
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (Exception ex)
                 {
@@ -65,14 +58,18 @@ namespace Producao.Views.Planilha
             }
         }
 
-        private async void OnRowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void OnRowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ControleGrupoViewModel vm = (ControleGrupoViewModel)DataContext;
-                ControlePlanilhaGrupoModel data = (ControlePlanilhaGrupoModel)e.RowData;
-                data = await Task.Run(() => vm.SaveAsync(data));
+                if (e.EditedItem is not ControlePlanilhaGrupoModel data)
+                {
+                    return;
+                }
+
+                data = await vm.SaveAsync(data);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -82,7 +79,7 @@ namespace Producao.Views.Planilha
             }
         }
 
-        private void OnRowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
 
         }

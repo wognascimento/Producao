@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Grid.Converter;
-using Syncfusion.UI.Xaml.Utility;
-using Syncfusion.XlsIO;
+using ClosedXML.Excel;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -12,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
 
 namespace Producao.Views.CadastroProduto;
 
@@ -49,10 +48,69 @@ public partial class TodasDescricoes : UserControl
     {
         //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
     }
+
+    private void OnExportarExcelClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dados = itens.Items.OfType<QryDescricao>().ToList();
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Produtos");
+
+            var col = 1;
+            foreach (var coluna in itens.Columns.OfType<GridViewDataColumn>())
+            {
+                worksheet.Cell(1, col).Value = coluna.Header?.ToString() ?? coluna.UniqueName;
+                col++;
+            }
+
+            var row = 2;
+            foreach (var item in dados)
+            {
+                col = 1;
+                foreach (var coluna in itens.Columns.OfType<GridViewDataColumn>())
+                {
+                    var propertyName = coluna.UniqueName;
+                    var valor = item.GetType().GetProperty(propertyName)?.GetValue(item);
+                    worksheet.Cell(row, col).Value = valor switch
+                    {
+                        null => string.Empty,
+                        string texto => texto,
+                        int numero => numero,
+                        long numero => numero,
+                        double numero => numero,
+                        decimal numero => numero,
+                        DateTime data => data,
+                        _ => valor.ToString()
+                    };
+                    col++;
+                }
+                row++;
+            }
+
+            var lastColumn = Math.Max(itens.Columns.Count, 1);
+            var lastRow = Math.Max(row - 1, 1);
+            worksheet.Range(1, 1, lastRow, lastColumn).CreateTable("CadastroProduto");
+            worksheet.Columns().AdjustToContents();
+
+            var filePath = DataBaseSettings.Instance.ResolveImpressosPath("CADASTRO_PRODUTO.xlsx");
+            workbook.SaveAs(filePath);
+            Process.Start(new ProcessStartInfo(filePath)
+            {
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
+    }
 }
 
 public class TodasDescricoesViewModel : INotifyPropertyChanged
 {
+    readonly DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
     public event PropertyChangedEventHandler PropertyChanged;
     public void RaisePropertyChanged(string propName)
     {
@@ -76,95 +134,15 @@ public class TodasDescricoesViewModel : INotifyPropertyChanged
     {
         try
         {
-            using DatabaseContext db = new();
-            var data = await db.Descricoes.ToListAsync();
+            using var conn = new NpgsqlConnection(BaseSettings.ConnectionString);
+            var data = await conn.QueryAsync<QryDescricao>(
+                @"SELECT *
+                  FROM producao.qry3descricoes;");
             return new ObservableCollection<QryDescricao>(data);
         }
         catch (Exception)
         {
             throw;
-        }
-    }
-}
-
-public static class ContextMenuCommandsCadastroProduto
-{
-
-    static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
-
-    static BaseCommand? exportarExcel;
-    public static BaseCommand ExportarExcel
-    {
-        get { exportarExcel ??= new BaseCommand(OnExportarExcel); return exportarExcel; }
-    }
-    private static void OnExportarExcel(object? obj)
-    {
-        try
-        {
-            if (obj is GridColumnContextMenuInfo grid)
-            {
-                //var excelEngine = grid.DataGrid.ExportToExcel(grid.DataGrid.View, options);
-                //var workbook = excelEngine.Excel.Workbooks[0];
-                //var sheet = workbook.Worksheets[0];
-                // Supondo que seu SfDataGrid se chame "sfDataGrid"
-                //var dados = grid.DataGrid.View.SourceCollection.Cast<object>().ToList();
-                // 🔹 Pega apenas os itens filtrados e visíveis no grid
-                var dados = grid.DataGrid.View.Records
-                    .Select(r => r.Data)
-                    .ToList();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-                application.DefaultVersion = ExcelVersion.Excel2016;
-
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-
-                // 🔹 1. Cabeçalhos (nomes das colunas do SfDataGrid)
-                int col = 1;
-                foreach (var coluna in grid.DataGrid.Columns)
-                {
-                    worksheet.Range[1, col].Text = coluna.HeaderText;
-                    col++;
-                }
-
-                // 🔹 2. Dados
-                int row = 2;
-                foreach (var item in dados)
-                {
-                    col = 1;
-                    foreach (var coluna in grid.DataGrid.Columns)
-                    {
-                        var valor = item.GetType().GetProperty(coluna.MappingName)?.GetValue(item);
-
-                        // Forçar como texto se contiver caracteres especiais
-                        if (valor == null)
-                            worksheet.Range[row, col].Value = "";
-                        else if (valor is string texto)
-                            worksheet.Range[row, col].Text = texto; // Texto puro
-                        else if (double.TryParse(valor.ToString(), out double numero))
-                            worksheet.Range[row, col].Number = numero; // Numérico
-                        else
-                            worksheet.Range[row, col].Text = valor.ToString();
-
-                        col++;
-                    }
-                    row++;
-                }
-
-                // 🔹 Ajustar largura automática
-                worksheet.UsedRange.AutofitColumns();
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CADASTRO_PRODUTO.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CADASTRO_PRODUTO.xlsx")
-                {
-                    UseShellExecute = true
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message);
         }
     }
 }

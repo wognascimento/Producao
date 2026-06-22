@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.Controlado"
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation" 
              mc:Ignorable="d" 
              xmlns:app="clr-namespace:Producao"
              d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
@@ -18,64 +18,43 @@
     
     <Grid>
 
-        <syncfusion:SfDataGrid 
+        <telerik:RadGridView 
+            x:Name="ProdutosGrid"
             AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            AllowDraggingColumns="True"
-            ColumnSizer="AutoWithLastColumnFill" AllowFiltering="True"
-            ShowRowHeader="True" 
+            CanUserResizeColumns="True"
+            CanUserReorderColumns="True"
+            IsFilteringAllowed="True"
+            ShowGroupPanel="False"
             ItemsSource="{Binding Produtos}"
             SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 
-            <syncfusion:SfDataGrid.RecordContextMenu>
+            <telerik:RadGridView.ContextMenu>
                 <ContextMenu Style="{x:Null}">
 
-                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Imprimir}}"
-                              CommandParameter="{Binding}"
+                    <MenuItem Click="OnImprimirEtiquetaClick"
                               Header="Imprimir"/>
 
-                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Adicionar}}"
-                              CommandParameter="{Binding}"
+                    <MenuItem Click="OnAdicionarEtiquetaClick"
                               Header="Adicionar" />
 
-                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Remover}}"
-                              CommandParameter="{Binding}"
+                    <MenuItem Click="OnRemoverEtiquetaClick"
                               Header="Remover Não Impressa" />
 
-                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Impressas}}"
-                              CommandParameter="{Binding}"
+                    <MenuItem Click="OnImpressasEtiquetaClick"
                               Header="Impressas" />
-                    <!--
-                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsImprimirEtiqueta.Gerar}}"
-                              CommandParameter="{Binding}"
-                              Header="Gerar Etiqueta" />
-                    -->
                 </ContextMenu>
-            </syncfusion:SfDataGrid.RecordContextMenu>
+            </telerik:RadGridView.ContextMenu>
             
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn 
-                    MappingName="codcompladicional"
-                    DisplayBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}"
-                    ColumnSizer="SizeToCells"/>
-                <syncfusion:GridTextColumn MappingName="planilha" ColumnSizer="SizeToCells"/>
-                <syncfusion:GridTextColumn MappingName="desc_completa"/>
-                <syncfusion:GridTextColumn MappingName="unidade"/>
-                <syncfusion:GridNumericColumn 
-                    MappingName="saldo_estoque" 
-                    DisplayBinding="{Binding saldo_estoque, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
-                <syncfusion:GridNumericColumn 
-                    MappingName="etiquetas" 
-                    DisplayBinding="{Binding etiquetas, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
-                <syncfusion:GridNumericColumn 
-                    MappingName="impressas" 
-                    DisplayBinding="{Binding impressas, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
-
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="codcompladicional" DataMemberBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="planilha" DataMemberBinding="{Binding planilha}"/>
+                <telerik:GridViewDataColumn Header="desc_completa" DataMemberBinding="{Binding desc_completa}"/>
+                <telerik:GridViewDataColumn Header="unidade" DataMemberBinding="{Binding unidade}"/>
+                <telerik:GridViewDataColumn Header="saldo_estoque" DataMemberBinding="{Binding saldo_estoque, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="etiquetas" DataMemberBinding="{Binding etiquetas, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="impressas" DataMemberBinding="{Binding impressas, Converter={StaticResource ConverterNumber}}"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
     </Grid>
 </UserControl>

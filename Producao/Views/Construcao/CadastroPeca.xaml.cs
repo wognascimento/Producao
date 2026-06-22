@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.UI.Xaml.Grid;
+﻿using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.Construcao
 {
@@ -39,12 +41,12 @@ namespace Producao.Views.Construcao
             }
         }
 
-        private async void OnSelectedPlanilha(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 CadastroPecaViewModel vm = (CadastroPecaViewModel)DataContext;
-                PlanilhaConstrucaoModel? planilha = e.NewValue as PlanilhaConstrucaoModel;
+                PlanilhaConstrucaoModel? planilha = txtPlanilha.SelectedItem as PlanilhaConstrucaoModel;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.Produtos = new ObservableCollection<ProdutoModel>();
@@ -72,12 +74,12 @@ namespace Producao.Views.Construcao
             }
         }
 
-        private async void OnSelectedDescricao(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 CadastroPecaViewModel vm = (CadastroPecaViewModel)DataContext;
-                ProdutoModel? produto = e.NewValue as ProdutoModel;
+                ProdutoModel? produto = txtDescricao.SelectedItem as ProdutoModel;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
@@ -101,12 +103,12 @@ namespace Producao.Views.Construcao
             }
         }
 
-        private async void OnSelectedDescricaoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 CadastroPecaViewModel vm = (CadastroPecaViewModel)DataContext;
-                TabelaDescAdicionalModel? adicional = e.NewValue as TabelaDescAdicionalModel;
+                TabelaDescAdicionalModel? adicional = txtDescricaoAdicional.SelectedItem as TabelaDescAdicionalModel;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
@@ -126,55 +128,60 @@ namespace Producao.Views.Construcao
             }
         }
 
-        private async void OnSelectedComplementoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
         {
             CadastroPecaViewModel vm = (CadastroPecaViewModel)DataContext;
-            TblComplementoAdicionalModel? complemento = e.NewValue as TblComplementoAdicionalModel;
+            TblComplementoAdicionalModel? complemento = txtComplementoAdicional.SelectedItem as TblComplementoAdicionalModel;
             vm.Compledicional = complemento;
             vm.Detalhes = await Task.Run(() => vm.GetDetalhesAsync(complemento?.codcompladicional));
         }
 
-        private void itens_AddNewRowInitiating(object sender, Syncfusion.UI.Xaml.Grid.AddNewRowInitiatingEventArgs e)
+        private void itens_AddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
             CadastroPecaViewModel vm = (CadastroPecaViewModel)DataContext;
-            ((ConstrucaoDetalheModel)e.NewObject).codcompladicional = vm.Compledicional?.codcompladicional;
+            if (e.NewObject is ConstrucaoDetalheModel novo)
+            {
+                novo.codcompladicional = vm.Compledicional?.codcompladicional;
+            }
         }
 
-        private void itens_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void itens_RowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-            ConstrucaoDetalheModel rowData = (ConstrucaoDetalheModel)e.RowData;
+            if (e.Row?.Item is not ConstrucaoDetalheModel rowData)
+            {
+                return;
+            }
+
             if (!rowData.codcompladicional.HasValue)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("item", "Não é possível adicionar peça na construção.");
-                e.ErrorMessages.Add("descricao_peca", "Não é possível adicionar peça na construção.");
-                e.ErrorMessages.Add("volume", "Não é possível adicionar peça na construção.");
+                AddValidation(e, nameof(ConstrucaoDetalheModel.item), "Não é possível adicionar peça na construção.");
+                AddValidation(e, nameof(ConstrucaoDetalheModel.descricao_peca), "Não é possível adicionar peça na construção.");
+                AddValidation(e, nameof(ConstrucaoDetalheModel.volume), "Não é possível adicionar peça na construção.");
             }
             else if (!rowData.item.HasValue)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("item", "Informe a sequência ordinal da Peça.");
+                AddValidation(e, nameof(ConstrucaoDetalheModel.item), "Informe a sequência ordinal da peça.");
             }
-            else if (rowData.descricao_peca == "")
+            else if (string.IsNullOrWhiteSpace(rowData.descricao_peca))
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("descricao_peca", "Informe a descrição da Peça.");
+                AddValidation(e, nameof(ConstrucaoDetalheModel.descricao_peca), "Informe a descrição da peça.");
             }
             else if (!rowData.volume.HasValue)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("volume", "Informe o agrupamento dos itens");
+                AddValidation(e, nameof(ConstrucaoDetalheModel.volume), "Informe o agrupamento dos itens.");
             }
         }
 
-        private async void itens_RowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void itens_RowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-            var sfdatagrid = sender as SfDataGrid;
             CadastroPecaViewModel vm = (CadastroPecaViewModel)DataContext;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                ConstrucaoDetalheModel data = (ConstrucaoDetalheModel)e.RowData;
+                if (e.Row?.Item is not ConstrucaoDetalheModel data)
+                {
+                    return;
+                }
 
                 vm.Detalhe = await Task.Run(() => vm.SaveConstrucaoDetalheAsync(data));
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -189,16 +196,19 @@ namespace Producao.Views.Construcao
             }
         }
 
-        private async void itens_RecordDeleting(object sender, RecordDeletingEventArgs e)
+        private async void itens_Deleting(object sender, GridViewDeletingEventArgs e)
         {
             try
             {
                 CadastroPecaViewModel vm = (CadastroPecaViewModel)DataContext;
                 var confirma = MessageBox.Show("Deseja Deletar esta item?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
-                var item = e.Items[0] as ConstrucaoDetalheModel;
+                var item = e.Items.OfType<ConstrucaoDetalheModel>().FirstOrDefault();
                 if (confirma == MessageBoxResult.Yes)
                 {
-                    await Task.Run(() => vm.DeleteControladoAsync((long)item.id_contrucao_detalhes));
+                    if (item?.id_contrucao_detalhes is long id)
+                    {
+                        await Task.Run(() => vm.DeleteControladoAsync(id));
+                    }
 
                 }
                 else
@@ -212,10 +222,24 @@ namespace Producao.Views.Construcao
             }
             
         }
+
+        private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
+        {
+            e.ValidationResults.Add(new GridViewCellValidationResult
+            {
+                ErrorMessage = message,
+                PropertyName = propertyName
+            });
+        }
     }
 
     public class CadastroPecaViewModel : INotifyPropertyChanged
     {
+        private static NpgsqlConnection CreateConnection()
+        {
+            return new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -293,8 +317,12 @@ namespace Producao.Views.Construcao
         {
             try
             {
-                using DatabaseContext db = new();
-                return new ObservableCollection<PlanilhaConstrucaoModel>(await db.PlanilhasConstrucao.OrderBy(c => c.planilha).ToListAsync());
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<PlanilhaConstrucaoModel>(
+                    @"SELECT planilha
+                      FROM projetos.tbl_planilhas_construcao
+                      ORDER BY planilha;");
+                return new ObservableCollection<PlanilhaConstrucaoModel>(data);
             }
             catch (Exception)
             {
@@ -307,12 +335,14 @@ namespace Producao.Views.Construcao
             try
             {
                 Produtos = new ObservableCollection<ProdutoModel>();
-                using DatabaseContext db = new();
-                var data = await db.Produtos
-                    .OrderBy(c => c.descricao)
-                    .Where(c => c.planilha.Equals(planilha))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<ProdutoModel>(
+                    @"SELECT *
+                      FROM producao.produtos
+                      WHERE planilha = @planilha
+                        AND COALESCE(inativo, '') <> '-1'
+                      ORDER BY descricao;",
+                    new { planilha });
                 return new ObservableCollection<ProdutoModel>(data);
             }
             catch (Exception)
@@ -326,12 +356,14 @@ namespace Producao.Views.Construcao
             try
             {
                 DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.DescAdicionais
-                    .OrderBy(c => c.descricao_adicional)
-                    .Where(c => c.codigoproduto.Equals(codigo))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<TabelaDescAdicionalModel>(
+                    @"SELECT *
+                      FROM producao.tabela_desc_adicional
+                      WHERE codigoproduto = @codigo
+                        AND COALESCE(inativo, '') <> '-1'
+                      ORDER BY descricao_adicional;",
+                    new { codigo });
                 return new ObservableCollection<TabelaDescAdicionalModel>(data);
             }
             catch (Exception)
@@ -345,12 +377,14 @@ namespace Producao.Views.Construcao
             try
             {
                 CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.complementoadicional)
-                    .Where(c => c.coduniadicional.Equals(coduniadicional))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<TblComplementoAdicionalModel>(
+                    @"SELECT *
+                      FROM producao.tblcomplementoadicional
+                      WHERE coduniadicional = @coduniadicional
+                        AND COALESCE(inativo, '') <> '-1'
+                      ORDER BY complementoadicional;",
+                    new { coduniadicional });
                 return new ObservableCollection<TblComplementoAdicionalModel>(data);
             }
             catch (Exception)
@@ -363,11 +397,13 @@ namespace Producao.Views.Construcao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ConstrucaoDetalhes
-                    .OrderBy(c => c.item)
-                    .Where(c => c.codcompladicional == codcompladicional)
-                    .ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<ConstrucaoDetalheModel>(
+                    @"SELECT *
+                      FROM projetos.tbl_construcao_detalhes
+                      WHERE codcompladicional = @codcompladicional
+                      ORDER BY item;",
+                    new { codcompladicional });
                 return new ObservableCollection<ConstrucaoDetalheModel>(data);
             }
             catch (Exception)
@@ -380,9 +416,30 @@ namespace Producao.Views.Construcao
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ConstrucaoDetalhes.SingleMergeAsync(construcaoDetalhe);
-                await db.SaveChangesAsync();
+                using var conn = CreateConnection();
+                if (construcaoDetalhe.id_contrucao_detalhes.HasValue)
+                {
+                    await conn.ExecuteAsync(
+                        @"UPDATE projetos.tbl_construcao_detalhes
+                          SET codcompladicional = @codcompladicional,
+                              nome_fantasia = @nome_fantasia,
+                              item = @item,
+                              descricao_peca = @descricao_peca,
+                              volume = @volume
+                          WHERE id_contrucao_detalhes = @id_contrucao_detalhes;",
+                        construcaoDetalhe);
+                }
+                else
+                {
+                    construcaoDetalhe.id_contrucao_detalhes = await conn.ExecuteScalarAsync<long>(
+                        @"INSERT INTO projetos.tbl_construcao_detalhes
+                            (codcompladicional, nome_fantasia, item, descricao_peca, volume)
+                          VALUES
+                            (@codcompladicional, @nome_fantasia, @item, @descricao_peca, @volume)
+                          RETURNING id_contrucao_detalhes;",
+                        construcaoDetalhe);
+                }
+
                 return construcaoDetalhe;
             }
             catch (Exception)
@@ -395,10 +452,11 @@ namespace Producao.Views.Construcao
         {
             try
             {
-                using DatabaseContext db = new();
-                var peca = await db.ConstrucaoDetalhes.FindAsync(idContrucaoDetalhes);
-                await db.ConstrucaoDetalhes.SingleDeleteAsync(peca);
-                await db.SaveChangesAsync();
+                using var conn = CreateConnection();
+                await conn.ExecuteAsync(
+                    @"DELETE FROM projetos.tbl_construcao_detalhes
+                      WHERE id_contrucao_detalhes = @idContrucaoDetalhes;",
+                    new { idContrucaoDetalhes });
             }
             catch (Exception)
             {

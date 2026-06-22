@@ -1,9 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.DataBase.Model;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Grid.Helpers;
-using Syncfusion.UI.Xaml.Grid.ScrollAxis;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -12,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 using Telerik.Windows.Persistence.Core;
 
 namespace Producao.Views.Controlado
@@ -33,7 +32,7 @@ namespace Producao.Views.Controlado
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ControladoEtiquetaRetornoManualViewModel vm = (ControladoEtiquetaRetornoManualViewModel)DataContext;
-                vm.Retornos = await Task.Run(vm.GetRetornoItensAsync);
+                vm.Retornos = await vm.GetRetornoItensAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -43,26 +42,24 @@ namespace Producao.Views.Controlado
             }
         }
 
-        private void OnRowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-
-        }
-
-        private async void OnRowValidating(object sender, RowValidatingEventArgs e)
-        {
-            var sfdatagrid = sender as SfDataGrid;
             ControladoEtiquetaRetornoManualViewModel vm = (ControladoEtiquetaRetornoManualViewModel)DataContext;
             try
             {
+                if (e.Row?.Item is not QryControladoEtiquetaRetornoModel data)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                QryControladoEtiquetaRetornoModel data = (QryControladoEtiquetaRetornoModel)e.RowData;
-                var saida = await Task.Run(() => vm.GetSaidaAsync(data.codigo));
+                var saida = await vm.GetSaidaAsync(data.codigo);
                 if (saida == null)
                 {
                     MessageBox.Show("Por favor, verifique se a etiqueta foi marcada como 'saída' ou se já retornou.", "Etiqueta não encontrada");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
 
-                    var toRemove = vm.Retornos.Where(x => x.codigo == ((QryControladoEtiquetaRetornoModel)e.RowData).codigo).ToList();
+                    var toRemove = vm.Retornos.Where(x => x.codigo == data.codigo).ToList();
                     foreach (var item in toRemove)
                         vm.Retornos.Remove(item);
                 }
@@ -75,11 +72,14 @@ namespace Producao.Views.Controlado
                         inserido_em = DateTime.Now
                     };
 
-                    vm.RetornoBaixa = await Task.Run(() => vm.AddRetornoEtiquetaAsync(vm.RetornoBaixa));
+                    vm.RetornoBaixa = await vm.AddRetornoEtiquetaAsync(vm.RetornoBaixa);
 
-                    ((QryControladoEtiquetaRetornoModel)e.RowData).planilha = saida.planilha;
-                    ((QryControladoEtiquetaRetornoModel)e.RowData).descricao_completa = saida.descricao_completa;
-                    sfdatagrid.View.Refresh();
+                    data.planilha = saida.planilha;
+                    data.descricao_completa = saida.descricao_completa;
+                    if (sender is RadGridView radGridView)
+                    {
+                        radGridView.Items.Refresh();
+                    }
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 
@@ -87,14 +87,36 @@ namespace Producao.Views.Controlado
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                var toRemove = vm.Retornos.Where(x => x.codigo == ((QryControladoEtiquetaRetornoModel)e.RowData).codigo).ToList();
-                foreach (var item in toRemove)
-                    vm.Retornos.Remove(item);
+                if (e.Row?.Item is QryControladoEtiquetaRetornoModel itemComErro)
+                {
+                    var toRemove = vm.Retornos.Where(x => x.codigo == itemComErro.codigo).ToList();
+                    foreach (var item in toRemove)
+                        vm.Retornos.Remove(item);
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
 
-        private async void retornos_CurrentCellValidating(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValidatingEventArgs e)
+        private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
+        {
+            if (e.Row?.Item is not QryControladoEtiquetaRetornoModel data)
+            {
+                return;
+            }
+
+            if (data.codigo <= 0)
+            {
+                e.IsValid = false;
+                e.ValidationResults.Add(new GridViewCellValidationResult
+                {
+                    ErrorMessage = "Informe o código.",
+                    PropertyName = nameof(QryControladoEtiquetaRetornoModel.codigo)
+                });
+            }
+        }
+
+        private async void retornos_CurrentCellValidating(object sender, GridViewCellValidatingEventArgs e)
         {
             /*
             try

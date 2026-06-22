@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
 using Npgsql;
 using Producao.DataBase.Model;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.ScrollAxis;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.CheckList
 {
@@ -31,9 +31,9 @@ namespace Producao.Views.CheckList
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
-                vm.Grupos = await Task.Run(vm.GetGruposAsync);
+                vm.Siglas = await vm.GetSiglasAsync();
+                vm.Planilhas = await vm.GetPlanilhasAsync();
+                vm.Grupos = await vm.GetGruposAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -43,7 +43,7 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private async void OnSiglaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSiglaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace Producao.Views.CheckList
                 ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 //SiglaChkListModel valor = (SiglaChkListModel)this.cbSigla.SelectedItem;
-                vm.Itens = await Task.Run(async () => await vm.GetItensSiglaAsync(vm?.Sigla?.id_aprovado));
+                vm.Itens = await vm.GetItensSiglaAsync(vm?.Sigla?.id_aprovado);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -61,7 +61,7 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private async void OnPlanilhaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnPlanilhaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
@@ -69,7 +69,7 @@ namespace Producao.Views.CheckList
                 ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 //SiglaChkListModel valor = (SiglaChkListModel)this.cbSigla.SelectedItem;
-                vm.Itens = await Task.Run(async () => await vm.GetItensPlanilhaAsync(vm?.Planilha?.planilha));
+                vm.Itens = await vm.GetItensPlanilhaAsync(vm?.Planilha?.planilha);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -79,15 +79,17 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private async void OnGrupoSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnGrupoSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
 
                 ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                var dado = this.cbGrupo.SelectedItem;
-                vm.Itens = await Task.Run(async () => await vm.GetItensGrupoAsync((string)dado));
+                if (cbGrupo.SelectedItem is string grupo)
+                {
+                    vm.Itens = await vm.GetItensGrupoAsync(grupo);
+                }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -103,8 +105,8 @@ namespace Producao.Views.CheckList
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(vm?.Chklist?.coduniadicional));
-                vm.CheckListGeralComplementos = await Task.Run(() => vm.GetCheckListGeralComplementoAsync(vm?.Chklist?.codcompl));
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm?.Chklist?.coduniadicional);
+                vm.CheckListGeralComplementos = await vm.GetCheckListGeralComplementoAsync(vm?.Chklist?.codcompl);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -114,54 +116,66 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private void OnSelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
+        private void OnSelectionChanged(object sender, SelectionChangeEventArgs e)
         {
 
         }
 
-        private void dgComplemento_AddNewRowInitiating(object sender, Syncfusion.UI.Xaml.Grid.AddNewRowInitiatingEventArgs e)
+        private void dgComplemento_AddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
             ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
 
-            ((QryCheckListGeralComplementoModel)e.NewObject).codcompl = vm.Chklist.codcompl;
+            e.NewObject = new QryCheckListGeralComplementoModel
+            {
+                codcompl = vm.Chklist?.codcompl
+            };
         }
 
-        private void OnCurrentCellDropDownSelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellDropDownSelectionChangedEventArgs e)
+        private void OnComplementoAdicionalSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (sender is not RadComboBox combo ||
+                combo.DataContext is not QryCheckListGeralComplementoModel record ||
+                combo.SelectedItem is not TblComplementoAdicionalModel complemento)
+            {
+                return;
+            }
+
+            record.unidade = complemento.unidade;
+            record.saldoestoque = complemento.saldo_estoque;
+
+        }
+
+        private void dgComplemento_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
+        {
+            if (e.Cell?.Column?.UniqueName != "codcompladicional" ||
+                e.Cell.DataContext is not QryCheckListGeralComplementoModel record)
+            {
+                return;
+            }
+
             ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
-
-            var sfdatagrid = sender as SfDataGrid;
-            int RowIndex = sfdatagrid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-            var ColumnIndex = sfdatagrid.ResolveToScrollColumnIndex(3);
-            QryCheckListGeralComplementoModel? record;
-            if (RowIndex == -1)
+            var complemento = vm.CompleAdicionais?.FirstOrDefault(x => x.codcompladicional == record.codcompladicional);
+            if (complemento is null)
             {
-                record = sfdatagrid.View.CurrentAddItem as QryCheckListGeralComplementoModel;
-                RowIndex = 1;
+                return;
             }
-            else
-            {
-                record = sfdatagrid.View.Records[RowIndex].Data as QryCheckListGeralComplementoModel;
-            }
-            record.unidade = "UNID";
-            record.saldoestoque = 0;
-            sfdatagrid.MoveCurrentCell(new RowColumnIndex(RowIndex, ColumnIndex));
 
+            record.unidade = complemento.unidade;
+            record.saldoestoque = complemento.saldo_estoque;
+            dgComplemento.Rebind();
         }
 
-        private void dgComplemento_CurrentCellValueChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValueChangedEventArgs e)
+        private async void dgComplemento_RowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-
-        }
-
-        private async void dgComplemento_RowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
-        {
-            var sfdatagrid = sender as SfDataGrid;
             ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                QryCheckListGeralComplementoModel data = (QryCheckListGeralComplementoModel)e.RowData;
+                if (e.Row.Item is not QryCheckListGeralComplementoModel data)
+                {
+                    return;
+                }
+
                 vm.DetCompl = new()
                 {
                     coddetalhescompl = data?.coddetalhescompl,
@@ -175,9 +189,9 @@ namespace Producao.Views.CheckList
                     desabilitado_confirmado_por = data.confirmado == "-1" ? Environment.UserName : null
                 };
 
-                vm.DetCompl = await Task.Run(() => vm.AddDetalhesComplementoCheckListAsync(vm.DetCompl));
-                ((QryCheckListGeralComplementoModel)e.RowData).coddetalhescompl = vm.DetCompl.coddetalhescompl;
-                sfdatagrid.View.Refresh();
+                vm.DetCompl = await vm.AddDetalhesComplementoCheckListAsync(vm.DetCompl);
+                data.coddetalhescompl = vm.DetCompl.coddetalhescompl;
+                dgComplemento.Rebind();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -190,25 +204,82 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private void dgComplemento_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void OnRequisicaoClick(object sender, RoutedEventArgs e)
         {
-            QryCheckListGeralComplementoModel rowData = (QryCheckListGeralComplementoModel)e.RowData;
+            if (sender is not FrameworkElement { DataContext: QryCheckListGeralComplementoModel detalhe })
+            {
+                return;
+            }
+
+            ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
+            if (vm.Chklist is null)
+            {
+                MessageBox.Show("Selecione um item antes de abrir a requisição.");
+                return;
+            }
+
+            var sigla = vm.Siglas?.FirstOrDefault(s => s.id_aprovado == vm.Chklist.id_aprovado)
+                        ?? vm.Siglas?.FirstOrDefault(s => s.sigla_serv == vm.Chklist.sigla);
+
+            if (sigla is null)
+            {
+                MessageBox.Show("Não foi possível localizar a sigla para abrir a requisição.");
+                return;
+            }
+
+            var helper = new CheckListViewModel
+            {
+                Sigla = sigla,
+                CheckListGeral = new QryCheckListGeralModel
+                {
+                    sigla = vm.Chklist.sigla,
+                    planilha = vm.Chklist.planilha,
+                    codigo = vm.Chklist.codproduto,
+                    coduniadicional = vm.Chklist.coduniadicional,
+                    codcompl = vm.Chklist.codcompl,
+                    descricao = vm.Chklist.descricao,
+                    descricao_adicional = vm.Chklist.descricao_adicional,
+                    orient_montagem = vm.Chklist.orient_montagem,
+                    obs = vm.Chklist.obs,
+                    id_aprovado = vm.Chklist.id_aprovado,
+                    nivel = vm.Chklist.nivel,
+                    local_shoppings = vm.Chklist.local_shoppings
+                },
+                CheckListGeralComplemento = detalhe
+            };
+
+            helper.ChangeCanExecute(sender);
+        }
+
+        private void dgComplemento_RowValidating(object sender, GridViewRowValidatingEventArgs e)
+        {
+            if (e.Row.Item is not QryCheckListGeralComplementoModel rowData)
+            {
+                return;
+            }
+
             if (!rowData.codcompl.HasValue)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("codcompladicional", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("qtd", "Erro ao selecionar a linha.");
+                AddValidation(e, "codcompladicional", "Erro ao selecionar a linha.");
+                AddValidation(e, "qtd", "Erro ao selecionar a linha.");
             }
             else if (!rowData.codcompladicional.HasValue)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("codcompladicional", "Seleciona o COMPLEMENTO ADICIONAL.");
+                AddValidation(e, "codcompladicional", "Seleciona o COMPLEMENTO ADICIONAL.");
             }
             else if (rowData.qtd == null)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("qtd", "Informa a QTDE.");
+                AddValidation(e, "qtd", "Informa a QTDE.");
             }
+        }
+
+        private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
+        {
+            e.ValidationResults.Add(new GridViewCellValidationResult
+            {
+                PropertyName = propertyName,
+                ErrorMessage = message
+            });
         }
 
         public class ViewComplementoCheckListNatalViewModel : INotifyPropertyChanged
@@ -302,8 +373,35 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    using DatabaseContext db = new();
-                    var data = await db.Siglas.OrderBy(c => c.sigla_serv).ToListAsync();
+                    const string sql = """
+                        SELECT sigla,
+                               sigla_serv,
+                               nome,
+                               tema,
+                               CASE
+                                   WHEN data_de_expedicao IS NULL THEN NULL
+                                   ELSE data_de_expedicao::timestamp
+                               END AS data_de_expedicao,
+                               nivel,
+                               baia_local,
+                               pa,
+                               kit_pa,
+                               tipo_arvore,
+                               kit_enf_arv_p,
+                               forracao,
+                               tipo_festao,
+                               obs_materiais,
+                               iluminacao,
+                               obs_iluminacao,
+                               id_aprovado,
+                               staus,
+                               laco,
+                               cor_predominante
+                        FROM producao.view_sigla_chkgeral
+                        ORDER BY sigla_serv;
+                        """;
+                    await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                    var data = await conn.QueryAsync<SiglaChkListModel>(sql);
                     return new ObservableCollection<SiglaChkListModel>(data);
                 }
                 catch (Exception)
@@ -316,8 +414,16 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    using DatabaseContext db = new();
-                    var data = await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1") && !c.planilha.Contains("ESTOQUE") && !c.planilha.Contains("ALMOX")).ToListAsync();
+                    const string sql = """
+                        SELECT *
+                        FROM producao.relplan
+                        WHERE ativo = '1'
+                          AND planilha NOT LIKE '%ESTOQUE%'
+                          AND planilha NOT LIKE '%ALMOX%'
+                        ORDER BY planilha;
+                        """;
+                    await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                    var data = await conn.QueryAsync<RelplanModel>(sql);
                     return new ObservableCollection<RelplanModel>(data);
                 }
                 catch (Exception)
@@ -330,13 +436,17 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    using DatabaseContext db = new();
-
-                    var data = await db.Relplans
-                        .Where(c => c.ativo.Equals("1") && !c.planilha.Contains("ESTOQUE") && !c.planilha.Contains("ALMOX"))
-                        .OrderBy(g => g.agrupamento)
-                        .GroupBy(g => new { g.agrupamento })
-                        .Select(p => p.Key.agrupamento).ToListAsync();
+                    const string sql = """
+                        SELECT DISTINCT agrupamento
+                        FROM producao.relplan
+                        WHERE ativo = '1'
+                          AND planilha NOT LIKE '%ESTOQUE%'
+                          AND planilha NOT LIKE '%ALMOX%'
+                          AND agrupamento IS NOT NULL
+                        ORDER BY agrupamento;
+                        """;
+                    await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                    var data = await conn.QueryAsync<string>(sql);
                     return new ObservableCollection<string>(data);
                 }
                 catch (Exception)
@@ -349,8 +459,50 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    using DatabaseContext db = new();
-                    var data = await db.ChklistNaoCompletados.OrderBy(c => c.planilha).Where(p => p.id_aprovado == id_aprovado).ToListAsync();
+                    const string sql = """
+                        SELECT coddetalhescompl,
+                               ordem,
+                               agrupamento,
+                               sigla,
+                               local_shoppings,
+                               codproduto,
+                               obs,
+                               dataalteracaodesc,
+                               alteradopor,
+                               orient_montagem,
+                               item_memorial,
+                               datainclusaodesc,
+                               incluidopordesc,
+                               kp,
+                               kp2,
+                               qtd,
+                               coduniadicional,
+                               dataalteradescadic,
+                               alteradopordescadic,
+                               codcompl,
+                               nivel,
+                               descricao,
+                               planilha,
+                               descricao_adicional,
+                               ok,
+                               confirmado,
+                               CASE
+                                   WHEN fechamento_shopp IS NULL THEN NULL
+                                   ELSE fechamento_shopp::timestamp
+                               END AS fechamento_shopp,
+                               CASE
+                                   WHEN data_de_expedicao IS NULL THEN NULL
+                                   ELSE data_de_expedicao::timestamp
+                               END AS data_de_expedicao,
+                               baia_local,
+                               ok_revisao_alterada,
+                               id_aprovado
+                        FROM producao.qry_chklist_nao_completado
+                        WHERE id_aprovado = @id_aprovado
+                        ORDER BY planilha;
+                        """;
+                    await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                    var data = await conn.QueryAsync<ChklistNaoCompletadoModel>(sql, new { id_aprovado });
                     return new ObservableCollection<ChklistNaoCompletadoModel>(data);
                 }
                 catch (Exception)
@@ -363,8 +515,50 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    using DatabaseContext db = new();
-                    var data = await db.ChklistNaoCompletados.OrderBy(c => c.planilha).Where(p => p.planilha == planilha).ToListAsync();
+                    const string sql = """
+                        SELECT coddetalhescompl,
+                               ordem,
+                               agrupamento,
+                               sigla,
+                               local_shoppings,
+                               codproduto,
+                               obs,
+                               dataalteracaodesc,
+                               alteradopor,
+                               orient_montagem,
+                               item_memorial,
+                               datainclusaodesc,
+                               incluidopordesc,
+                               kp,
+                               kp2,
+                               qtd,
+                               coduniadicional,
+                               dataalteradescadic,
+                               alteradopordescadic,
+                               codcompl,
+                               nivel,
+                               descricao,
+                               planilha,
+                               descricao_adicional,
+                               ok,
+                               confirmado,
+                               CASE
+                                   WHEN fechamento_shopp IS NULL THEN NULL
+                                   ELSE fechamento_shopp::timestamp
+                               END AS fechamento_shopp,
+                               CASE
+                                   WHEN data_de_expedicao IS NULL THEN NULL
+                                   ELSE data_de_expedicao::timestamp
+                               END AS data_de_expedicao,
+                               baia_local,
+                               ok_revisao_alterada,
+                               id_aprovado
+                        FROM producao.qry_chklist_nao_completado
+                        WHERE planilha = @planilha
+                        ORDER BY planilha;
+                        """;
+                    await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                    var data = await conn.QueryAsync<ChklistNaoCompletadoModel>(sql, new { planilha });
                     return new ObservableCollection<ChklistNaoCompletadoModel>(data);
                 }
                 catch (Exception)
@@ -377,8 +571,50 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    using DatabaseContext db = new();
-                    var data = await db.ChklistNaoCompletados.OrderBy(c => c.planilha).Where(p => p.agrupamento.Contains(grupo)).ToListAsync();
+                    const string sql = """
+                        SELECT coddetalhescompl,
+                               ordem,
+                               agrupamento,
+                               sigla,
+                               local_shoppings,
+                               codproduto,
+                               obs,
+                               dataalteracaodesc,
+                               alteradopor,
+                               orient_montagem,
+                               item_memorial,
+                               datainclusaodesc,
+                               incluidopordesc,
+                               kp,
+                               kp2,
+                               qtd,
+                               coduniadicional,
+                               dataalteradescadic,
+                               alteradopordescadic,
+                               codcompl,
+                               nivel,
+                               descricao,
+                               planilha,
+                               descricao_adicional,
+                               ok,
+                               confirmado,
+                               CASE
+                                   WHEN fechamento_shopp IS NULL THEN NULL
+                                   ELSE fechamento_shopp::timestamp
+                               END AS fechamento_shopp,
+                               CASE
+                                   WHEN data_de_expedicao IS NULL THEN NULL
+                                   ELSE data_de_expedicao::timestamp
+                               END AS data_de_expedicao,
+                               baia_local,
+                               ok_revisao_alterada,
+                               id_aprovado
+                        FROM producao.qry_chklist_nao_completado
+                        WHERE agrupamento ILIKE @grupo
+                        ORDER BY planilha;
+                        """;
+                    await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                    var data = await conn.QueryAsync<ChklistNaoCompletadoModel>(sql, new { grupo = $"%{grupo}%" });
                     return new ObservableCollection<ChklistNaoCompletadoModel>(data);
                 }
                 catch (Exception)
@@ -392,12 +628,15 @@ namespace Producao.Views.CheckList
                 try
                 {
                     CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                    using DatabaseContext db = new();
-                    var data = await db.ComplementoAdicionais
-                        .OrderBy(c => c.complementoadicional)
-                        .Where(c => c.coduniadicional.Equals(coduniadicional))
-                        .Where(c => c.inativo != "-1")
-                        .ToListAsync();
+                    const string sql = """
+                        SELECT *
+                        FROM producao.tblcomplementoadicional
+                        WHERE coduniadicional = @coduniadicional
+                          AND COALESCE(inativo, '') <> '-1'
+                        ORDER BY complementoadicional;
+                        """;
+                    await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                    var data = await conn.QueryAsync<TblComplementoAdicionalModel>(sql, new { coduniadicional });
 
                     return new ObservableCollection<TblComplementoAdicionalModel>(data);
                 }
@@ -411,11 +650,48 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    using DatabaseContext db = new();
-                    var data = await db.CheckListGeralComplementos
-                        .OrderBy(c => c.coddetalhescompl)
-                        .Where(c => c.codcompl == codcompl)
-                        .ToListAsync();
+                    const string sql = """
+                        SELECT coddetalhescompl,
+                               codcompladicional,
+                               qtd,
+                               saldoestoque,
+                               data_alteracao,
+                               alterado_por,
+                               codcompl,
+                               confirmado,
+                               complementoadicional,
+                               unidade,
+                               local_producao,
+                               justificativa,
+                               resp_prod,
+                               confirmado_por,
+                               CASE
+                                   WHEN confirmado_data IS NULL THEN NULL
+                                   ELSE confirmado_data::timestamp
+                               END AS confirmado_data,
+                               desabilitado_confirmado_por,
+                               CASE
+                                   WHEN desabilitado_confirmado_data IS NULL THEN NULL
+                                   ELSE desabilitado_confirmado_data::timestamp
+                               END AS desabilitado_confirmado_data,
+                               transf_galpao,
+                               terceiro,
+                               CASE
+                                   WHEN meta_producao IS NULL THEN NULL
+                                   ELSE meta_producao::timestamp
+                               END AS meta_producao,
+                               os,
+                               req,
+                               status_producao,
+                               status_transferencia,
+                               num_os_produto,
+                               qtd_expedida
+                        FROM producao.qrychkgeral_complemento
+                        WHERE codcompl = @codcompl
+                        ORDER BY coddetalhescompl;
+                        """;
+                    await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                    var data = await conn.QueryAsync<QryCheckListGeralComplementoModel>(sql, new { codcompl });
 
                     return new ObservableCollection<QryCheckListGeralComplementoModel>(data);
                 }
@@ -429,9 +705,99 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    using DatabaseContext db = new();
-                    await db.DetalhesComplementos.SingleMergeAsync(detCompl);
-                    await db.SaveChangesAsync();
+                    detCompl.alterado_por = Environment.UserName;
+                    detCompl.data_alteracao = DateTime.Now;
+
+                    await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+
+                    if (!detCompl.coddetalhescompl.HasValue || detCompl.coddetalhescompl.Value == 0)
+                    {
+                        detCompl.inserido_por ??= Environment.UserName;
+                        detCompl.data_inserido ??= DateTime.Now;
+
+                        const string insertSql = """
+                            INSERT INTO producao.tbldetalhescomplemento
+                            (
+                                codcompladicional,
+                                qtd,
+                                data_alteracao,
+                                alterado_por,
+                                codcompl,
+                                confirmado,
+                                local_producao,
+                                justificativa,
+                                resp_prod,
+                                confirmado_por,
+                                confirmado_data,
+                                desabilitado_confirmado_por,
+                                desabilitado_confirmado_data,
+                                transf_galpao,
+                                terceiro,
+                                meta_producao,
+                                num_os_produto,
+                                status_producao,
+                                status_transferencia,
+                                data_inserido,
+                                inserido_por
+                            )
+                            VALUES
+                            (
+                                @codcompladicional,
+                                @qtd,
+                                @data_alteracao,
+                                @alterado_por,
+                                @codcompl,
+                                @confirmado,
+                                @local_producao,
+                                @justificativa,
+                                @resp_prod,
+                                @confirmado_por,
+                                @confirmado_data,
+                                @desabilitado_confirmado_por,
+                                @desabilitado_confirmado_data,
+                                @transf_galpao,
+                                @terceiro,
+                                @meta_producao,
+                                @num_os_produto,
+                                @status_producao,
+                                @status_transferencia,
+                                @data_inserido,
+                                @inserido_por
+                            )
+                            RETURNING coddetalhescompl;
+                            """;
+
+                        detCompl.coddetalhescompl = await conn.ExecuteScalarAsync<long?>(insertSql, detCompl);
+                    }
+                    else
+                    {
+                        const string updateSql = """
+                            UPDATE producao.tbldetalhescomplemento
+                            SET codcompladicional = @codcompladicional,
+                                qtd = @qtd,
+                                data_alteracao = @data_alteracao,
+                                alterado_por = @alterado_por,
+                                codcompl = @codcompl,
+                                confirmado = @confirmado,
+                                local_producao = @local_producao,
+                                justificativa = @justificativa,
+                                resp_prod = @resp_prod,
+                                confirmado_por = @confirmado_por,
+                                confirmado_data = @confirmado_data,
+                                desabilitado_confirmado_por = @desabilitado_confirmado_por,
+                                desabilitado_confirmado_data = @desabilitado_confirmado_data,
+                                transf_galpao = @transf_galpao,
+                                terceiro = @terceiro,
+                                meta_producao = @meta_producao,
+                                num_os_produto = @num_os_produto,
+                                status_producao = @status_producao,
+                                status_transferencia = @status_transferencia
+                            WHERE coddetalhescompl = @coddetalhescompl;
+                            """;
+
+                        await conn.ExecuteAsync(updateSql, detCompl);
+                    }
+
                     return detCompl;
                 }
                 catch (NpgsqlException)

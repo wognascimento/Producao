@@ -27,8 +27,8 @@ namespace Producao.Views.CheckList
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EmitirEtiquetaViewModel vm = (EmitirEtiquetaViewModel)DataContext;
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
-                vm.Itens = await Task.Run(async () => await vm.GetItensAsync(""));
+                vm.Siglas = await vm.GetSiglasAsync();
+                vm.Itens = await vm.GetItensAsync("");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -59,31 +59,6 @@ namespace Producao.Views.CheckList
 
         }
 
-        private void dgCheckList_RecordDeleting(object sender, Syncfusion.UI.Xaml.Grid.RecordDeletingEventArgs e)
-        {
-            /*
-            if (MessageBox.Show("Confirma a exclusão do item?", "Excluir", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    ExpedModel data = (ExpedModel)e.Items[0];
-                    ExpedicaoProdutoViewModel vm = (ExpedicaoProdutoViewModel)DataContext;
-                    await Task.Run((() => vm.DeleteExpedAsync(data)));
-                    e.Cancel = false;
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
-                catch (Exception ex)
-                {
-                    e.Cancel = true;
-                    int num2 = (int)MessageBox.Show(ex.Message);
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
-            }
-            else
-                e.Cancel = true;
-            */
-        }
     }
 
     public class EmitirEtiquetaViewModel : INotifyPropertyChanged

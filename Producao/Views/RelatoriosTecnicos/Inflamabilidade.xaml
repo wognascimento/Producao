@@ -4,9 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.RelatoriosTecnicos" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+             d:DesignHeight="450" d:DesignWidth="800"
+             MinHeight="450"
+             MinWidth="800"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             Loaded="UserControl_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -18,82 +23,54 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <syncfusion:SfTextInputLayout 
+        <telerik:RadComboBox
             Grid.Row="0"
-            InputViewPadding="4"
-            HintFloatMode="Float" 
-            Hint="Shopping" 
-            Width="260" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" HorizontalAlignment="Left" >
-            <syncfusion:SfTextBoxExt 
+            Width="260"
+            HorizontalAlignment="Left"
+            EmptyText="Shopping"
+            IsEditable="True"
+            IsFilteringEnabled="True"
+            OpenDropDownOnFocus="True"
+            ItemsSource="{Binding Siglas}"
+            SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectionChanged="OnSiglaSelectionChanged"/>
 
-                ShowDropDownButton="false"
-                AutoCompleteMode="SuggestAppend"
-                AutoCompleteSource="{Binding Siglas}" 
-                SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectedItemChanged="OnSiglaSelectionChanged" 
-                ShowSuggestionsOnFocus="True" 
-                ShowClearButton="True"/>
-        </syncfusion:SfTextInputLayout>
-
-        <syncfusion:SfTextInputLayout 
+        <telerik:RadComboBox
             Grid.Row="1"
-            InputViewPadding="4"
-            HintFloatMode="Float" 
-            Hint="Responsável" 
-            Width="260" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" HorizontalAlignment="Left" >
-            <syncfusion:SfTextBoxExt 
-                SearchItemPath="nome"
-                ValueMemberPath="nome"
-                ShowDropDownButton="false"
-                AutoCompleteMode="SuggestAppend"
-                AutoCompleteSource="{Binding Responsaveis}" 
-                SelectedItem="{Binding Responsavel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectedItemChanged="OnResponsavelSelectionChanged" 
-                ShowSuggestionsOnFocus="True" ShowClearButton="True"/>
-        </syncfusion:SfTextInputLayout>
+            Width="260"
+            HorizontalAlignment="Left"
+            EmptyText="Responsável"
+            DisplayMemberPath="nome"
+            IsEditable="True"
+            IsFilteringEnabled="True"
+            OpenDropDownOnFocus="True"
+            ItemsSource="{Binding Responsaveis}"
+            SelectedItem="{Binding Responsavel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectionChanged="OnResponsavelSelectionChanged"/>
 
-        <syncfusion:SfTextInputLayout 
+        <telerik:RadWatermarkTextBox
             Grid.Row="2"
-            InputViewPadding="4"
-            HintFloatMode="Float" 
-            Hint="RG" 
-            Width="260" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" HorizontalAlignment="Left" >
-            <syncfusion:SfTextBoxExt
-                SelectedItem="{Binding Responsavel.rg, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                IsEnabled="False"/>
-        </syncfusion:SfTextInputLayout>
+            Width="260"
+            HorizontalAlignment="Left"
+            WatermarkContent="RG"
+            Text="{Binding Responsavel.rg, Mode=OneWay}"
+            IsReadOnly="True"/>
 
-        <syncfusion:SfTextInputLayout 
+        <telerik:RadWatermarkTextBox
             Grid.Row="3"
-            InputViewPadding="4"
-            HintFloatMode="Float" 
-            Hint="CAU/SP" 
-            Width="260" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" HorizontalAlignment="Left" >
-            <syncfusion:SfTextBoxExt 
-                SelectedItem="{Binding Responsavel.cau_sp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                IsEnabled="False"/>
-        </syncfusion:SfTextInputLayout>
+            Width="260"
+            HorizontalAlignment="Left"
+            WatermarkContent="CAU/SP"
+            Text="{Binding Responsavel.cau_sp, Mode=OneWay}"
+            IsReadOnly="True"/>
 
-        <syncfusion:SfTextInputLayout 
+        <telerik:RadWatermarkTextBox
             Grid.Row="4"
-            InputViewPadding="4"
-            HintFloatMode="Float" 
-            Hint="RRT" 
-            Width="260" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" HorizontalAlignment="Left" Margin="0,0,0,8" >
-            <syncfusion:SfTextBoxExt 
-                Text="{Binding Inflamabilidade.rrt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                ShowClearButton="True" LostFocus="SfTextBoxExt_LostFocus"/>
-        </syncfusion:SfTextInputLayout>
+            Width="260"
+            HorizontalAlignment="Left"
+            WatermarkContent="RRT"
+            Text="{Binding Inflamabilidade.rrt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            LostFocus="Rrt_LostFocus"/>
 
         <Grid Grid.Row="5">
             <Grid.ColumnDefinitions>
@@ -103,72 +80,58 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
 
-            <syncfusion:SfTextInputLayout
+            <telerik:RadWatermarkTextBox
                 Grid.Column="0"
-                InputViewPadding="4"
-                HintFloatMode="Float" 
-                Hint="Data Conclusão" 
-                CharCountVisibility="Collapsed" 
-                HelperTextVisibility="Collapsed" Margin="0,0,0,5">
-                <syncfusion:SfTextBoxExt 
-                    SelectedItem="{Binding Inflamabilidade.data_conclusao, Mode=Default, UpdateSourceTrigger=PropertyChanged}" IsEnabled="False"/>
-            </syncfusion:SfTextInputLayout>
+                WatermarkContent="Data Conclusão"
+                Text="{Binding Inflamabilidade.data_conclusao, Mode=OneWay, StringFormat={}{0:dd/MM/yyyy}}"
+                IsReadOnly="True"/>
 
 
-            <syncfusion:SfTextInputLayout
+            <telerik:RadWatermarkTextBox
                 Grid.Column="1"
-                InputViewPadding="4"
-                HintFloatMode="Float" 
-                Hint="Concluido Por" 
-                CharCountVisibility="Collapsed" 
-                HelperTextVisibility="Collapsed"
-                Margin="5,0,0,0" >
-                <syncfusion:SfTextBoxExt 
-                    SelectedItem="{Binding Inflamabilidade.concluido_por, Mode=Default, UpdateSourceTrigger=PropertyChanged}" IsEnabled="False"/>
-            </syncfusion:SfTextInputLayout>
+                WatermarkContent="Concluido Por"
+                Text="{Binding Inflamabilidade.concluido_por, Mode=OneWay}"
+                IsReadOnly="True"/>
 
-            <Button Grid.Column="2" Content="Imprimir" Margin="5,0,0,0" Click="OnImprimirClick"/>
-            <Button Grid.Column="3" Content=" Concluir " Margin="5,0,0,0" Click="OnConcluirClick"/>
+            <telerik:RadButton Grid.Column="2" Content="Imprimir" Click="OnImprimirClick"/>
+            <telerik:RadButton Grid.Column="3" Content="Concluir" Click="OnConcluirClick"/>
 
 
         </Grid>
 
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             Grid.Row="6"
             AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            AllowDraggingColumns="True"
-            ColumnSizer="AutoWithLastColumnFill" 
-            AllowFiltering="True"
-            ShowRowHeader="True" 
+            CanUserResizeColumns="True"
+            CanUserReorderColumns="True"
+            IsFilteringAllowed="True"
+            ShowGroupPanel="False"
             RowHeight="100"
             ItemsSource="{Binding Detalhes}"
             SelectedItem="{Binding Detalhe, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            RowValidating="DetalhesRowValidating" 
-            SelectionUnit="Any" 
+            CellEditEnded="DetalhesCellEditEnded"
             SelectionMode="Single">
-            <syncfusion:SfDataGrid.Columns>
+            <telerik:RadGridView.Columns>
 
-                <syncfusion:GridTextColumn 
-                    MappingName="tipo"
-                    ColumnSizer="SizeToCells"
-                    TextWrapping="Wrap"/>
+                <telerik:GridViewDataColumn 
+                    DataMemberBinding="{Binding tipo}"
+                    Header="tipo"
+                    IsReadOnly="True"/>
 
-                <syncfusion:GridTextColumn 
-                    MappingName="descritivo"
-                    ColumnSizer="SizeToCells"
-                    TextWrapping="Wrap"/>
+                <telerik:GridViewDataColumn 
+                    DataMemberBinding="{Binding descritivo}"
+                    Header="descritivo"
+                    IsReadOnly="True"/>
 
-                <syncfusion:GridComboBoxColumn
-                    MappingName="classificacao"
-                    ItemsSource="{Binding Classificacoes}"
+                <telerik:GridViewComboBoxColumn
+                    Header="classificacao"
+                    DataMemberBinding="{Binding classificacao, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    ItemsSource="{Binding DataContext.Classificacoes, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"
                     DisplayMemberPath="classificacao"
-                    SelectedValuePath="id" 
-                    ColumnSizer="SizeToHeader" 
-                    AllowEditing="True"/>
+                    SelectedValueMemberPath="id"/>
 
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
     </Grid>
 </UserControl>

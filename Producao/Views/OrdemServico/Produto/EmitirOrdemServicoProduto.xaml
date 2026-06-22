@@ -1,13 +1,16 @@
-﻿<UserControl x:Class="Producao.Views.OrdemServico.Produto.EmitirOrdemServicoProduto"
+<UserControl x:Class="Producao.Views.OrdemServico.Produto.EmitirOrdemServicoProduto"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
-             xmlns:local="clr-namespace:Producao.Views.OrdemServico.Produto" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+             xmlns:local="clr-namespace:Producao.Views.OrdemServico.Produto"
              xmlns:vewModel="clr-namespace:Producao"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" Loaded="OnLoaded" Unloaded="UserControl_Unloaded">
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             Loaded="OnLoaded"
+             Unloaded="UserControl_Unloaded">
 
     <UserControl.Resources>
         <vewModel:ConverterNumber x:Key="ConverterNumber"/>
@@ -15,96 +18,43 @@
     </UserControl.Resources>
 
     <Grid>
-
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             x:Name="OsEmAberta"
-            AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            ColumnSizer="AutoWithLastColumnFill"
-            ShowRowHeader="True" 
-            ItemsSource="{Binding OSsAberta}" 
-            SelectedItem="{Binding OsAberta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-            FontSize="10" 
-            FontFamily="Arial" 
-            AllowFiltering="True">
-            <syncfusion:SfDataGrid.Columns>
+            AutoGenerateColumns="False"
+            CanUserResizeColumns="True"
+            ShowGroupPanel="False"
+            IsFilteringAllowed="True"
+            RowIndicatorVisibility="Visible"
+            ItemsSource="{Binding OSsAberta}"
+            SelectedItem="{Binding OsAberta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            FontSize="10"
+            FontFamily="Arial">
 
-                <syncfusion:GridDateTimeColumn 
-                    HeaderText="DATA EMISSÃO" 
-                    MappingName="data_emissao"
-                    ColumnSizer="SizeToCells"/>
-
-                <syncfusion:GridTextColumn 
-                    HeaderText="RESPONSÁVEL" 
-                    MappingName="responsavel_emissao"
-                    ColumnSizer="SizeToCells"/>
-
-                <syncfusion:GridTextColumn 
-                    HeaderText="TIPO" 
-                    MappingName="tipo"
-                    ColumnSizer="SizeToCells"/>
-
-                <syncfusion:GridTextColumn 
-                    HeaderText="PLANILHA" 
-                    MappingName="planilha"
-                    ColumnSizer="SizeToCells"/>
-
-                <syncfusion:GridTextColumn 
-                    HeaderText="DESCRIÇÃO" 
-                    MappingName="descricao_completa"
-                    ColumnSizer="AutoLastColumnFill"/>
-
-                <syncfusion:GridNumericColumn 
-                    HeaderText="QTDE" 
-                    MappingName="SizeToCells"
-                    DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"
-                    ColumnSizer="SizeToCells"/>
-
-                <syncfusion:GridNumericColumn 
-                    HeaderText="NUM O.S" 
-                    MappingName="num_os_produto"
-                    DisplayBinding="{Binding num_os_produto, Converter={StaticResource ConverterNumber}}"
-                    ColumnSizer="SizeToCells"/>
-
-                <syncfusion:GridNumericColumn 
-                    HeaderText="CAMINHO" 
-                    MappingName="num_caminho"
-                    DisplayBinding="{Binding num_caminho, Converter={StaticResource ConverterNumber}}"
-                    ColumnSizer="SizeToCells"/>
-
-                <syncfusion:GridTextColumn 
-                    HeaderText="DISTRIBUIÇÃO" 
-                    MappingName="distribuir_os"
-                    ColumnSizer="SizeToCells"/>
-
-                <syncfusion:GridTextColumn 
-                    HeaderText="CLIENTE" 
-                    MappingName="cliente"
-                    ColumnSizer="SizeToCells"/>
-
-            </syncfusion:SfDataGrid.Columns>
-
-            <syncfusion:SfDataGrid.HeaderContextMenu>
+            <telerik:RadGridView.ContextMenu>
                 <ContextMenu Style="{x:Null}">
-                    <MenuItem 
-                        Command="{Binding Source={x:Static Member=local:ContextMenuCommands.EmitirTodas}}" 
-                        CommandParameter="{Binding}"
-                        Header="Emitir todas" />
+                    <MenuItem
+                        Command="{Binding Source={x:Static Member=local:ContextMenuCommands.EmitirTodas}}"
+                        CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                        Header="Emitir todas"/>
+                    <MenuItem
+                        Command="{Binding Source={x:Static Member=local:ContextMenuCommands.Cancelar}}"
+                        CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                        Header="Cancelar"/>
                 </ContextMenu>
-            </syncfusion:SfDataGrid.HeaderContextMenu>
-            
-            
+            </telerik:RadGridView.ContextMenu>
 
-            <syncfusion:SfDataGrid.RecordContextMenu>
-                <ContextMenu Style="{x:Null}">
-                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommands.Cancelar}}"
-                              CommandParameter="{Binding}"
-                              Header="Cancelar"/>
-                </ContextMenu>
-            </syncfusion:SfDataGrid.RecordContextMenu>
-
-        </syncfusion:SfDataGrid>
-
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="DATA EMISSÃO" DataMemberBinding="{Binding data_emissao, StringFormat={}{0:dd/MM/yyyy}}"/>
+                <telerik:GridViewDataColumn Header="RESPONSÁVEL" DataMemberBinding="{Binding responsavel_emissao}"/>
+                <telerik:GridViewDataColumn Header="TIPO" DataMemberBinding="{Binding tipo}"/>
+                <telerik:GridViewDataColumn Header="PLANILHA" DataMemberBinding="{Binding planilha}"/>
+                <telerik:GridViewDataColumn Header="DESCRIÇÃO" DataMemberBinding="{Binding descricao_completa}" Width="*"/>
+                <telerik:GridViewDataColumn Header="QTDE" DataMemberBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="NUM O.S" DataMemberBinding="{Binding num_os_produto, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="CAMINHO" DataMemberBinding="{Binding num_caminho, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="DISTRIBUIÇÃO" DataMemberBinding="{Binding distribuir_os}"/>
+                <telerik:GridViewDataColumn Header="CLIENTE" DataMemberBinding="{Binding cliente}"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
     </Grid>
-    
 </UserControl>

@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.OrdemServico.Requisicao" 
              xmlns:vewModel="clr-namespace:Producao"
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Initialized="UserControl_Initialized">
 
@@ -18,34 +18,24 @@
 
     <Grid>
 
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             x:Name="itens" 
             AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            AllowDraggingColumns="True"
-            AllowFiltering="True"
-            ColumnSizer="SizeToHeader"
-            ShowRowHeader="True" 
+            CanUserResizeColumns="True"
+            CanUserReorderColumns="True"
+            IsFilteringAllowed="True"
+            ShowGroupPanel="False"
             ItemsSource="{Binding Itens}">
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn 
-                    MappingName="num_os_servico"
-                    DisplayBinding="{Binding num_os_servico, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridNumericColumn 
-                    MappingName="num_requisicao"
-                    DisplayBinding="{Binding num_requisicao, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridNumericColumn 
-                    MappingName="id_modelo"
-                    DisplayBinding="{Binding id_modelo, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridTextColumn MappingName="planilha"/>
-                <syncfusion:GridTextColumn MappingName="descricao_completa"/>
-                <syncfusion:GridTextColumn MappingName="unidade"/>
-                <syncfusion:GridNumericColumn
-                    MappingName="quantidade"
-                    DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"
-                    ColumnSizer="SizeToHeader"/>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="num_os_servico" DataMemberBinding="{Binding num_os_servico, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="num_requisicao" DataMemberBinding="{Binding num_requisicao, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="id_modelo" DataMemberBinding="{Binding id_modelo, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="planilha" DataMemberBinding="{Binding planilha}"/>
+                <telerik:GridViewDataColumn Header="descricao_completa" DataMemberBinding="{Binding descricao_completa}"/>
+                <telerik:GridViewDataColumn Header="unidade" DataMemberBinding="{Binding unidade}"/>
+                <telerik:GridViewDataColumn Header="quantidade" DataMemberBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
     </Grid>
     

@@ -4,9 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.RelatoriosTecnicos" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+             d:DesignHeight="450" d:DesignWidth="800"
+             MinHeight="450"
+             MinWidth="800"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             Loaded="UserControl_Loaded">
     
     <Grid>
         <Grid.ColumnDefinitions>
@@ -19,67 +24,58 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <syncfusion:SfTextInputLayout 
+        <telerik:RadComboBox
             Grid.Row="0"
-            InputViewPadding="4"
-            HintFloatMode="Float" 
-            Hint="Shopping" 
             Width="260" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" HorizontalAlignment="Left" Margin="0,10,0,10" >
-            <syncfusion:SfTextBoxExt 
-                ShowDropDownButton="false"
-                AutoCompleteMode="SuggestAppend"
-                AutoCompleteSource="{Binding Siglas}" 
-                SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectedItemChanged="OnSiglaSelectionChanged" 
-                ShowSuggestionsOnFocus="True" ShowClearButton="True"/>
-        </syncfusion:SfTextInputLayout>
+            HorizontalAlignment="Left"
+            EmptyText="Shopping"
+            IsEditable="True"
+            IsFilteringEnabled="True"
+            OpenDropDownOnFocus="True"
+            ItemsSource="{Binding Siglas}"
+            SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectionChanged="OnSiglaSelectionChanged"/>
 
-        <Button Grid.Column="1" Padding="10,10,10,10" Width="100" HorizontalAlignment="Left" Content="Imprimir" Click="OnPrintClick"/>
+        <telerik:RadButton Grid.Column="1" HorizontalAlignment="Left" Content="Imprimir" Click="OnPrintClick"/>
 
 
 
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             Grid.Row="1"
             Grid.ColumnSpan="2"
             AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            AllowDraggingColumns="True"
-            ColumnSizer="AutoWithLastColumnFill" 
-            AllowFiltering="True"
-            ShowRowHeader="True" 
+            CanUserResizeColumns="True"
+            CanUserReorderColumns="True"
+            IsFilteringAllowed="True"
+            ShowGroupPanel="False"
             RowHeight="150"
             ItemsSource="{Binding Detalhes}"
-            SelectedItem="{Binding Detalhe, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            RowValidating="DetalhesRowValidating" 
-            SelectionUnit="Any" 
+            CellEditEnded="DetalhesCellEditEnded"
             SelectionMode="Single">
-            <syncfusion:SfDataGrid.Columns>
+            <telerik:RadGridView.Columns>
 
-                <syncfusion:GridTextColumn 
-                    MappingName="familia"
-                    ColumnSizer="SizeToHeader"
-                    TextWrapping="Wrap"/>
+                <telerik:GridViewDataColumn 
+                    DataMemberBinding="{Binding familia}"
+                    Header="familia"
+                    IsReadOnly="True"/>
 
-                <syncfusion:GridTextColumn 
-                    MappingName="descricaocomercial"
-                    ColumnSizer="SizeToCells"
-                    TextWrapping="Wrap"/>
+                <telerik:GridViewDataColumn 
+                    DataMemberBinding="{Binding descricaocomercial}"
+                    Header="descricaocomercial"
+                    IsReadOnly="True"/>
 
-                <syncfusion:GridTextColumn 
-                    MappingName="dimensao"
-                    TextWrapping="Wrap" 
-                    ColumnSizer="SizeToCells"/>
+                <telerik:GridViewDataColumn 
+                    DataMemberBinding="{Binding dimensao}"
+                    Header="dimensao"
+                    IsReadOnly="True"/>
 
-                <syncfusion:GridTextColumn 
-                    MappingName="relatorio_estabilidade"
-                    TextWrapping="Wrap" 
-                    ColumnSizer="AutoWithLastColumnFill"
-                    AllowEditing="True" VerticalAlignment="Stretch"/>
+                <telerik:GridViewDataColumn 
+                    DataMemberBinding="{Binding relatorio_estabilidade, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Header="relatorio_estabilidade"
+                    Width="*"/>
 
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
 
     </Grid>

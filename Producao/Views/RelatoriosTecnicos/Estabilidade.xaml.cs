@@ -1,15 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-using Syncfusion.XlsIO;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Documents.Common.Model;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Documents.Spreadsheet.FormatProviders.OpenXml.Xlsx;
+using Telerik.Windows.Documents.Spreadsheet.Model;
 
 namespace Producao.Views.RelatoriosTecnicos
 {
@@ -42,13 +46,23 @@ namespace Producao.Views.RelatoriosTecnicos
             }
         }
 
-        private async void OnSiglaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSiglaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EstabilidadeViewModel vm = (EstabilidadeViewModel)DataContext;
+                if (sender is RadComboBox combo)
+                    vm.Sigla = combo.SelectedItem as string;
+
+                if (vm.Sigla == null)
+                {
+                    vm.Detalhes = [];
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                    return;
+                }
+
                 vm.Detalhes = await Task.Run(() => vm.GetItensAsync(vm.Sigla));
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -59,13 +73,21 @@ namespace Producao.Views.RelatoriosTecnicos
             }
         }
 
-        private async void DetalhesRowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private async void DetalhesCellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
             try
             {
+                if (e.Cell.Column.UniqueName != "relatorio_estabilidade")
+                    return;
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EstabilidadeViewModel vm = (EstabilidadeViewModel)DataContext;
-                await Task.Run(() => vm.SaveEstabilidadeAsync((EstabilidadeItem)e.RowData));
+                var grid = sender as RadGridView;
+                var item = grid?.Items.CurrentEditItem as EstabilidadeItem ?? e.Cell.DataContext as EstabilidadeItem;
+
+                if (item != null)
+                    await Task.Run(() => vm.SaveEstabilidadeAsync(item));
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -81,102 +103,65 @@ namespace Producao.Views.RelatoriosTecnicos
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-                application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\RELATORIO_ESTABILIDADE_MODELO.xlsx");
-                IWorksheet worksheet = workbook.Worksheets[0];
-
                 EstabilidadeViewModel vm = (EstabilidadeViewModel)DataContext;
 
                 vm.Cliente = await Task.Run(() => vm.GetClienteAsync(vm.Sigla));
 
-                worksheet.Range["B3"].Text = vm.Cliente.nome;
-                worksheet.Range["G3"].Text = vm.Cliente.cidade;
-                worksheet.Range["J3"].Text = vm.Cliente.est;
+                var provider = new XlsxFormatProvider();
+                Workbook workbook;
+                using (var input = File.OpenRead(BaseSettings.ResolveModeloPath("RELATORIO_ESTABILIDADE_MODELO.xlsx")))
+                {
+                    workbook = provider.Import(input);
+                }
+
+                var worksheet = workbook.Worksheets[0];
+                worksheet.WorksheetPageSetup.FitToPages = false;
+                worksheet.WorksheetPageSetup.CenterHorizontally = true;
+                worksheet.WorksheetPageSetup.ScaleFactor = new Size(0.97, 0.97);
+                var border = new CellBorder(CellBorderStyle.Thin, ThemableColor.FromColor(System.Windows.Media.Colors.Black));
+                var allBorders = new CellBorders(
+                    border,
+                    border,
+                    border,
+                    border,
+                    border,
+                    border,
+                    CellBorder.Default,
+                    CellBorder.Default);
+
+                SetText(worksheet, 2, 1, vm.Cliente?.nome);
+                SetText(worksheet, 2, 6, vm.Cliente?.cidade);
+                SetText(worksheet, 2, 9, vm.Cliente?.est);
 
                 var itens = vm.Detalhes.Where(d => d.relatorio_estabilidade?.Length >0).ToList();
 
-                int startRow = 14;
+                int startRow = 13;
                 int numberOfRowsToInsert = 4;
 
                 foreach (var item in itens)
                 {
-                    worksheet.InsertRow(startRow, numberOfRowsToInsert);
+                    InsertRows(worksheet, startRow, numberOfRowsToInsert);
 
-                    worksheet.Range[$"A{startRow}:A{startRow+1}"].Merge();
-                    worksheet.Range[$"A{startRow}"].Text = "Produto: ";
-                    worksheet.Range[$"A{startRow}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                    worksheet.Range[$"A{startRow}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                    worksheet.Range[$"A{startRow}"].WrapText = true;
-
-                    worksheet.Range[$"A{startRow}:A{startRow+1}"].CellStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"A{startRow}:A{startRow+1}"].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"A{startRow}:A{startRow+1}"].CellStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"A{startRow}:A{startRow+1}"].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-
-                    worksheet.Range[$"B{startRow}:K{startRow+1}"].Merge();
-                    worksheet.Range[$"B{startRow}"].Text = $"{item.descricaocomercial} {item.dimensao}";
-                    worksheet.Range[$"B{startRow}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                    worksheet.Range[$"B{startRow}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                    worksheet.Range[$"B{startRow}"].CellStyle.Font.Size = 10;
-                    worksheet.Range[$"B{startRow}"].WrapText = true;
-
-                    worksheet.Range[$"B{startRow}:K{startRow+1}"].CellStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"B{startRow}:K{startRow+1}"].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"B{startRow}:K{startRow+1}"].CellStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"B{startRow}:K{startRow+1}"].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-
+                    MergeAndSetText(worksheet, startRow, 0, startRow + 1, 0, "Produto: ", allBorders, 11);
+                    MergeAndSetText(worksheet, startRow, 1, startRow + 1, 10, $"{item.descricaocomercial} {item.dimensao}", allBorders, 10);
                     startRow += 2;
 
-                    worksheet.Range[$"A{startRow}:A{startRow}"].Merge();
-                    worksheet.Range[$"A{startRow}"].Text = "Local: ";
-                    worksheet.Range[$"A{startRow}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                    worksheet.Range[$"A{startRow}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                    worksheet.Range[$"A{startRow}"].WrapText = true;
-
-                    worksheet.Range[$"A{startRow}:A{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"A{startRow}:A{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"A{startRow}:A{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"A{startRow}:A{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-
-                    worksheet.Range[$"B{startRow}:K{startRow}"].Merge();
-                    worksheet.Range[$"B{startRow}"].Text = $"{item.local} {item.detalhe_local}";
-                    worksheet.Range[$"B{startRow}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                    worksheet.Range[$"B{startRow}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                    worksheet.Range[$"B{startRow}"].CellStyle.Font.Size = 10;
-                    worksheet.Range[$"B{startRow}"].WrapText = true;
-
-                    worksheet.Range[$"B{startRow}:K{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"B{startRow}:K{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"B{startRow}:K{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"B{startRow}:K{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-
+                    MergeAndSetText(worksheet, startRow, 0, startRow, 0, "Local: ", allBorders, 11);
+                    MergeAndSetText(worksheet, startRow, 1, startRow, 10, $"{item.local} {item.detalhe_local}", allBorders, 10);
                     startRow++;
 
-                    worksheet.Range[$"A{startRow}:K{startRow}"].Merge();
-                    worksheet.Range[$"A{startRow}"].Text = $"{item.relatorio_estabilidade}";
-                    worksheet.Range[$"A{startRow}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                    worksheet.Range[$"A{startRow}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                    worksheet.Range[$"A{startRow}"].CellStyle.Font.Size = 10;
-                    worksheet.Range[$"A{startRow}"].RowHeight = 100;
-                    if (item.relatorio_estabilidade.Length < 136)
-                        worksheet.Range[$"A{startRow}"].AutofitRows();
-                    worksheet.Range[$"A{startRow}"].WrapText = true;
-
-                    worksheet.Range[$"A{startRow}:K{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"A{startRow}:K{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"A{startRow}:K{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    worksheet.Range[$"A{startRow}:K{startRow}"].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-
+                    MergeAndSetText(worksheet, startRow, 0, startRow, 10, item.relatorio_estabilidade, allBorders, 10);
+                    worksheet.Rows[startRow].SetHeight(item.relatorio_estabilidade.Length < 136 ? RowHeight.AutoFit : new RowHeight(100, true));
                     startRow++;
-
-                    //break;
                 }
 
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Estabilidade-{vm.Sigla}.xlsx");
+                var caminhoArquivo = BaseSettings.ResolveImpressosPath($"Estabilidade-{vm.Sigla}.xlsx");
+                using (var output = File.Open(caminhoArquivo, FileMode.Create))
+                {
+                    provider.Export(workbook, output, TimeSpan.FromSeconds(30));
+                }
 
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Estabilidade-{vm.Sigla}.xlsx")
+                Process.Start(new ProcessStartInfo(caminhoArquivo)
                 {
                     UseShellExecute = true
                 });
@@ -188,6 +173,37 @@ namespace Producao.Views.RelatoriosTecnicos
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private static void InsertRows(Worksheet worksheet, int rowIndex, int count)
+        {
+            for (var i = 0; i < count; i++)
+                worksheet.Rows[rowIndex].Insert();
+        }
+
+        private static void MergeAndSetText(
+            Worksheet worksheet,
+            int fromRow,
+            int fromColumn,
+            int toRow,
+            int toColumn,
+            string? value,
+            CellBorders borders,
+            double fontSize)
+        {
+            var range = worksheet.Cells[fromRow, fromColumn, toRow, toColumn];
+            range.Merge();
+            range.SetValueAsText(value ?? string.Empty);
+            range.SetBorders(borders);
+            range.SetIsWrapped(true);
+            range.SetFontSize(fontSize);
+            range.SetHorizontalAlignment(RadHorizontalAlignment.Left);
+            range.SetVerticalAlignment(RadVerticalAlignment.Center);
+        }
+
+        private static void SetText(Worksheet worksheet, int row, int column, string? value)
+        {
+            worksheet.Cells[row, column].SetValueAsText(value ?? string.Empty);
         }
     }
 

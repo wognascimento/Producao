@@ -3,11 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              xmlns:local="clr-namespace:Producao.Views.CadastroProduto"
              mc:Ignorable="d" 
              xmlns:vewModel="clr-namespace:Producao"
-             d:DesignHeight="450" d:DesignWidth="800" Loaded="OnLoaded" Unloaded="UserControl_Unloaded">
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="OnLoaded" Unloaded="UserControl_Unloaded"
+             Language="pt-BR">
 
     <UserControl.Resources>
         <vewModel:ConverterNumber x:Key="ConverterNumber"/>
@@ -22,86 +23,81 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <syncfusion:SfTextInputLayout 
-                    InputViewPadding="4"
-                    HintFloatMode="Float" 
-                    Hint="PLANILHA" 
-                    CharCountVisibility="Collapsed" 
-                    HelperTextVisibility="Collapsed" Margin="5">
-
-            <syncfusion:SfTextBoxExt
+        <StackPanel Margin="5">
+            <TextBlock Margin="4,0,4,2" Text="PLANILHA"/>
+            <telerik:RadComboBox
                 x:Name="cbPlanilha"
-                SearchItemPath="planilha"
-                ValueMemberPath="planilha"
-                ShowDropDownButton="False"
-                ShowClearButton="True"
-                AutoCompleteMode="SuggestAppend"
-
-                AutoCompleteSource="{Binding Planilhas}" 
+                IsEditable="True"
+                IsFilteringEnabled="True"
+                OpenDropDownOnFocus="True"
+                StaysOpenOnEdit="True"
+                ItemsSource="{Binding Planilhas}"
+                DisplayMemberPath="planilha"
+                SelectedValuePath="planilha"
                 SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectedItemChanged="OnPlanilhaSelectionChanged" 
-                ShowSuggestionsOnFocus="True"/>
-        </syncfusion:SfTextInputLayout>
+                SelectionChanged="OnPlanilhaSelectionChanged"/>
+        </StackPanel>
 
 
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             x:Name="produtos"
             Grid.Row="1"
-            AddNewRowPosition="Bottom"
-            ShowRowHeader="True"
+            NewRowPosition="Bottom"
+            CanUserInsertRows="True"
             AutoGenerateColumns="False"
-            ColumnSizer="AutoWithLastColumnFill"
+            ShowGroupPanel="False"
+            GroupRenderMode="Flat"
             ItemsSource="{Binding Produtos}"
             SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            CurrentCellDropDownSelectionChanged="OnCurrentCellDropDownSelectionChanged" 
-            CurrentCellValueChanged="OnCurrentCellValueChanged" 
             FontSize="10" 
             RowValidated="OnRowValidated" 
             RowValidating="OnRowValidating" 
-            AddNewRowInitiating="OnAddNewRowInitiating" AllowFiltering="True" CurrentCellEndEdit="OnCurrentCellEndEdit" AllowEditing="True" >
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn
-                        HeaderText="CÓDIGO" 
-                        MappingName="codigo"
-                        DisplayBinding="{Binding codigo, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridComboBoxColumn
-                        HeaderText="CLASSE COMPRA" 
-                        MappingName="classe_solict_compra"
+            AddingNewDataItem="OnAddingNewDataItem"
+            IsFilteringAllowed="True">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn
+                        Header="CÓDIGO"
+                        UniqueName="codigo"
+                        IsReadOnly="True"
+                        DataMemberBinding="{Binding codigo, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewComboBoxColumn
+                        Header="CLASSE COMPRA"
+                        UniqueName="classe_solict_compra"
+                        DataMemberBinding="{Binding classe_solict_compra}"
                         ItemsSource="{Binding ClasseSolicitCompras}"
                         DisplayMemberPath="classe_solicit_compra"
-                        SelectedValuePath="classe_solicit_compra"/>
+                        SelectedValueMemberPath="classe_solicit_compra"/>
 
-                <syncfusion:GridComboBoxColumn
-                        HeaderText="FAMILIA COMPRAS" 
-                        MappingName="familia"
+                <telerik:GridViewComboBoxColumn
+                        Header="FAMILIA COMPRAS"
+                        UniqueName="familia"
+                        DataMemberBinding="{Binding familia}"
                         ItemsSource="{Binding FamiliaProds}"
                         DisplayMemberPath="nomefamilia"
-                        SelectedValuePath="nomefamilia"/>
+                        SelectedValueMemberPath="nomefamilia"/>
 
-                <syncfusion:GridTextColumn
-                        HeaderText="DESCRIÇÃO" 
-                        MappingName="descricao"/>
-                <syncfusion:GridCheckBoxColumn
-                        AllowEditing="True"
-                        HeaderText="INATIVO" 
-                        MappingName="inativo"
-                        DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
-                        ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}" />
-                <syncfusion:GridTemplateColumn 
-                        HeaderText=""
-                        MappingName="codigo" ColumnSizer="SizeToCells">
-                    <syncfusion:GridTemplateColumn.CellTemplate>
+                <telerik:GridViewDataColumn
+                        Header="DESCRIÇÃO"
+                        UniqueName="descricao"
+                        DataMemberBinding="{Binding descricao}"/>
+                <telerik:GridViewCheckBoxColumn
+                        Header="INATIVO"
+                        UniqueName="inativo"
+                        DataMemberBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"/>
+                <telerik:GridViewDataColumn
+                        Header=""
+                        UniqueName="adicional">
+                    <telerik:GridViewDataColumn.CellTemplate>
                         <DataTemplate>
-                            <Button 
+                            <telerik:RadButton 
                                     Content="Adicional" 
-                                    syncfusion:FocusManagerHelper.FocusedElement="True"
-                                    Command="{Binding Path=DataContext.RowDataCommand,ElementName=produtos}" 
-                                    CommandParameter="{Binding ElementName=produtos}"/>
+                                    Command="{Binding DataContext.RowDataCommand, RelativeSource={RelativeSource AncestorType={x:Type telerik:RadGridView}}}" 
+                                    CommandParameter="{Binding}"/>
                         </DataTemplate>
-                    </syncfusion:GridTemplateColumn.CellTemplate>
-                </syncfusion:GridTemplateColumn>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+                    </telerik:GridViewDataColumn.CellTemplate>
+                </telerik:GridViewDataColumn>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
     </Grid>
     

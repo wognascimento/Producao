@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.Views.OrdemServico.Requisicao;
-using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -11,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
 
 namespace Producao
 {
@@ -427,20 +427,17 @@ namespace Producao
                 this.SetoresProducao = await Task.Run(GetSetoresAsync);
                 var window = new Window();
                 var stackPanel = new StackPanel { Orientation = Orientation.Vertical };
-                SfMultiColumnDropDownControl sfMultiColumn = new SfMultiColumnDropDownControl();
-                sfMultiColumn.Height= 38;
-                sfMultiColumn.AllowAutoComplete = true;
-                sfMultiColumn.IsDropDownOpen = true;
-                sfMultiColumn.AutoGenerateColumns = false;
-                sfMultiColumn.GridColumnSizer = GridLengthUnitType.AutoLastColumnFill;
-                sfMultiColumn.SearchCondition = SearchCondition.Contains; //"Contains";
-                sfMultiColumn.DisplayMember = "setor";
-                sfMultiColumn.ValueMember = "codigo_setor";
-                sfMultiColumn.Columns.Add(new GridTextColumn() { MappingName = "setor" });
-                sfMultiColumn.Columns.Add(new GridTextColumn() { MappingName = "localizacao" });
-                sfMultiColumn.Columns.Add(new GridTextColumn() { MappingName = "galpao" });
-                sfMultiColumn.ItemsSource = SetoresProducao;
-                stackPanel.Children.Add(sfMultiColumn);
+                var comboSetor = new RadComboBox
+                {
+                    Height = 38,
+                    IsEditable = true,
+                    IsFilteringEnabled = true,
+                    OpenDropDownOnFocus = true,
+                    DisplayMemberPath = "setor",
+                    SelectedValuePath = "codigo_setor",
+                    ItemsSource = SetoresProducao
+                };
+                stackPanel.Children.Add(comboSetor);
                 Button btn = new Button();
                 btn.Content = "OK";
                 btn.Click += async (s, e) =>
@@ -448,7 +445,13 @@ namespace Producao
                     try
                     {
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                        SetorProducao = (SetorProducaoModel)sfMultiColumn.SelectedItem;
+                        SetorProducao = comboSetor.SelectedItem as SetorProducaoModel;
+                        if (SetorProducao == null)
+                        {
+                            MessageBox.Show("Selecione um setor.");
+                            Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                            return;
+                        }
                         var produtoServico = await Task.Run(() => CriateOsChklistAsync(SetorProducao)); 
                         var tGlobal = await Task.Run(() => GetTGlobalAsync(produtoServico.num_os_servico)); 
                         window.Close();

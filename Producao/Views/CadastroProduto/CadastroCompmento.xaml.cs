@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.UI.Xaml.Grid;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.CadastroProduto
 {
@@ -15,7 +17,7 @@ namespace Producao.Views.CadastroProduto
     /// </summary>
     public partial class CadastroCompmento : Window
     {
-        TabelaDescAdicionalModel produtoAdicional;
+        private readonly TabelaDescAdicionalModel produtoAdicional;
 
         public CadastroCompmento(TabelaDescAdicionalModel produtoAdicional)
         {
@@ -30,283 +32,305 @@ namespace Producao.Views.CadastroProduto
             {
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                CadastroCompmentoViewModel vm = (CadastroCompmentoViewModel)DataContext;
-                vm.Unidades = await Task.Run(vm.GetUnidadesAsync);
-                vm.ComplementoAdicionais = await Task.Run(() => vm.GetComplementoAdicionaisAsync(produtoAdicional.coduniadicional));
-                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+
+                var vm = (CadastroCompmentoViewModel)DataContext;
+                vm.Unidades = await vm.GetUnidadesAsync();
+                vm.ComplementoAdicionais = await vm.GetComplementoAdicionaisAsync(produtoAdicional.coduniadicional);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+            finally
+            {
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
 
-        private void OnAddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
+        private void OnAddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
-            CadastroCompmentoViewModel vm = (CadastroCompmentoViewModel)DataContext;
-            ((TblComplementoAdicionalModel)e.NewObject).coduniadicional = produtoAdicional.coduniadicional;
-        }
-
-        private void OnCurrentCellDropDownSelectionChanged(object sender, CurrentCellDropDownSelectionChangedEventArgs e)
-        {
-
-        }
-
-        private async void OnCurrentCellValueChanged(object sender, CurrentCellValueChangedEventArgs e)
-        {
-            CadastroCompmentoViewModel vm = (CadastroCompmentoViewModel)DataContext;
-            SfDataGrid? grid = sender as SfDataGrid;
-            int columnindex = grid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
-            var column = grid.Columns[columnindex];
-            //if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "inativo")
-            if (column.GetType() == typeof(GridCheckBoxColumn))
+            e.NewObject = new TblComplementoAdicionalModel
             {
-                var rowIndex = grid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-                var record = grid.View.Records[rowIndex].Data as TblComplementoAdicionalModel;
-                try
-                {
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    await Task.Run(() => vm.SaveAsync(record));
-                    grid.View.Refresh();
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
-            }
+                coduniadicional = produtoAdicional.coduniadicional,
+                inativo = "0",
+                prodcontrolado = "0"
+            };
         }
 
-        private async void OnRowValidated(object sender, RowValidatedEventArgs e)
+        private async void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-            var sfdatagrid = sender as SfDataGrid;
-            CadastroCompmentoViewModel vm = (CadastroCompmentoViewModel)DataContext;
+            if (e.Row is GridViewNewRow || e.Row?.Item is not TblComplementoAdicionalModel data)
+                return;
+
+            var vm = (CadastroCompmentoViewModel)DataContext;
+            var isInsert = data.codcompladicional is null or 0;
+
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                TblComplementoAdicionalModel data = (TblComplementoAdicionalModel)e.RowData;
-                //data.codigoproduto
-                //data.descricao_adicional
-                //data.cadastradopor = data.codigoproduto == null ? Environment.UserName : data.cadastradopor;
-                //data.cadastradoem = data.codigoproduto == null ? DateTime.Now : data.cadastradoem;
-                //data.alteradopor = data.codigoproduto == null ? null : Environment.UserName;
-                //data.alteradoem = data.codigoproduto == null ? null : DateTime.Now;
-                //data.revisao
-                //data.obsproducaoobrigatoria
-                //data.obsmontagem
-                //data.unidade = produto
-                //data.inativo = data.inativo == null ? "0" : "-1";
 
-                var comple = vm.ComplementoAdicionais.Where(x => x.coduniadicional == produtoAdicional.coduniadicional).LastOrDefault();
+                var last = vm.ComplementoAdicionais
+                    .Where(x => x.codcompladicional != data.codcompladicional && x.coduniadicional == produtoAdicional.coduniadicional)
+                    .LastOrDefault();
 
+                data.coduniadicional = produtoAdicional.coduniadicional;
+                data.estoque_inicial ??= 0;
+                data.estoque_inicial_processado ??= 0;
+                data.peso ??= last?.peso ?? 0;
+                data.cadastradopor = isInsert ? Environment.UserName : data.cadastradopor;
+                data.cadastradoem = isInsert ? DateTime.Now : data.cadastradoem;
+                data.alterado_por = isInsert ? null : Environment.UserName;
+                data.alterado_em = isInsert ? null : DateTime.Now;
+                data.pesobruto ??= last?.pesobruto ?? 0;
+                data.origemcusto ??= last?.origemcusto;
+                data.contabil ??= last?.contabil;
+                data.produto_novo ??= DateTime.Now.Year.ToString();
+                data.contabil_pldc ??= last?.contabil_pldc;
+                data.inativo = string.IsNullOrWhiteSpace(data.inativo) ? "0" : data.inativo;
+                data.prodcontrolado = string.IsNullOrWhiteSpace(data.prodcontrolado) ? "0" : data.prodcontrolado;
+                data.preco_shopping ??= last?.preco_shopping;
+                data.saldo_estoque ??= 0;
 
-                //codcompladicional
-                //coduniadicional = 
-                //complementoadicional
-                //status
-                data.estoque_inicial = 0;
-                //desc_process
-                data.estoque_inicial_processado = 0;
-                //altura
-                //largura
-                //profundidade
-                //data.vida_util = comple == null ? 0 : comple.vida_util;
-                //diametro
-                data.peso = comple == null ? 0 : comple.peso;
-                //unidade
-                data.cadastradopor = data.codcompladicional == null ? Environment.UserName : comple.cadastradopor;
-                data.cadastradoem = data.codcompladicional == null ? DateTime.Now : comple.cadastradoem;
-                data.alterado_por = data.codcompladicional == null ? null : Environment.UserName;
-                data.alterado_em = data.codcompladicional == null ? null : DateTime.Now;
-                //custo_real
-               //data.prodcontrolado = comple == null ? "0" : comple.prodcontrolado;
-                //volume
-                //area
-                //data.precolocacao = comple == null ? null : comple.precolocacao;
-                //descricaofiscal = ultimo ou null
-                //descricaoespanhol
-                //estoque_min
-                //v_unit
-                //v_unit_dolar
-                //ncm
-                //tipo
-                //custoestimado
-                //indicecorrecao
-                //nf
-                data.pesobruto = comple == null ? 0 : comple.pesobruto;
-                //codfornecedor
-                //foralinhafornecedor
-                data.origemcusto = comple == null ? null : comple.origemcusto;
-                //datafichatecnica
-                //respfichatenica
-                //datainiciofichatecnica
-                //respcusto
-                //datacusto
-                data.contabil = comple == null ? null : comple.contabil;
-                data.produto_novo = DateTime.Now.Year.ToString();
-                //acompanhamento
-                //responsavel_acompanha
-                //concluido_acompanha
-                //obs_acompanhamento
-                //importado
-                data.contabil_pldc = comple == null ? null : comple.contabil_pldc;
-                //narrativa
-                //alx
-                //data.inativo = data.inativo == null ? "0" : "-1";
-                data.inativo = data.inativo == null ? "0" : data.inativo;
-                //qtd_etiqueta
-                //fracao
-                //dividir_qtd_volume
-                //conta_aplica_contabil
-                //centro_custo_contabil
-                //especial
-                //foto
-                //custodescadicional_custo
-                //custodescadicional_codcompladicional
-                //tamanho_construcao
-                //diverso
-                //dificuldade
-                //saldo_patrimonial_ano_anterior
-                //saldo_disponivel_ano_anterior
-                //custo_despesa
-                //link_foto
-                data.preco_shopping = comple == null ? null : comple.preco_shopping;
-                //exportado_folhamatic
-                data.saldo_estoque = 0;
-    
-
-
-                data = await Task.Run(() => vm.SaveAsync(data));
-                var record = sfdatagrid.View.CurrentAddItem as ProdutoModel;
-                sfdatagrid.View.Refresh();
-
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                var saved = await vm.SaveAsync(data);
+                data.codcompladicional = saved.codcompladicional;
+                adicionais.Items.Refresh();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                var toRemove = vm.ComplementoAdicionais.Where(x => x.codcompladicional == null).ToList();
+                var toRemove = vm.ComplementoAdicionais.Where(x => x.codcompladicional is null or 0).ToList();
                 foreach (var item in toRemove)
                     vm.ComplementoAdicionais.Remove(item);
+            }
+            finally
+            {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
 
-        private void OnRowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-            TblComplementoAdicionalModel rowData = (TblComplementoAdicionalModel)e.RowData;
+            if (e.Row is GridViewNewRow || e.Row?.Item is not TblComplementoAdicionalModel rowData)
+                return;
+
             if (rowData.coduniadicional == null)
+                AddValidation(e, nameof(TblComplementoAdicionalModel.codcompladicional), "Descrição adicional não selecionada");
+
+            if (string.IsNullOrWhiteSpace(rowData.complementoadicional))
+                AddValidation(e, nameof(TblComplementoAdicionalModel.complementoadicional), "Informe o COMPLEMENTO ADICIONAL");
+
+            if (string.IsNullOrWhiteSpace(rowData.descricaofiscal))
+                AddValidation(e, nameof(TblComplementoAdicionalModel.descricaofiscal), "Informe a DESCRIÇÃO FISCAL");
+
+            if (string.IsNullOrWhiteSpace(rowData.unidade))
+                AddValidation(e, nameof(TblComplementoAdicionalModel.unidade), "Informe a UNIDADE");
+        }
+
+        private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
+        {
+            e.ValidationResults.Add(new GridViewCellValidationResult
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("codcompladicional", "descrição adicional não selecionado");
-                e.ErrorMessages.Add("complementoadicional","Informe o COMPLEMENTO ADICIONAL");
-                e.ErrorMessages.Add("descricaofiscal", "Informe a DESCRIÇÃO FISCAL");
-                e.ErrorMessages.Add("unidade","Informe a UNIDADE");
-            }
-            else if (rowData.complementoadicional == null)
-            {
-                e.IsValid = false;
-                e.ErrorMessages.Add("complementoadicional", "Informe o COMPLEMENTO ADICIONAL");
-            }
-            else if (rowData.descricaofiscal == null)
-            {
-                e.IsValid = false;
-                e.ErrorMessages.Add("descricaofiscal", "Informe a DESCRIÇÃO FISCAL");
-            }
-            else if (rowData.unidade == null)
-            {
-                e.IsValid = false;
-                e.ErrorMessages.Add("unidade", "Informe a UNIDADE");
-            }
+                PropertyName = propertyName,
+                ErrorMessage = message
+            });
         }
     }
 
     public class CadastroCompmentoViewModel : INotifyPropertyChanged
     {
+        private readonly DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public event PropertyChangedEventHandler PropertyChanged;
+
         public void RaisePropertyChanged(string propName)
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
         private TblComplementoAdicionalModel _complementoAdicional;
         public TblComplementoAdicionalModel ComplementoAdicional
         {
             get { return _complementoAdicional; }
-            set { _complementoAdicional = value; RaisePropertyChanged("ComplementoAdicional"); }
+            set { _complementoAdicional = value; RaisePropertyChanged(nameof(ComplementoAdicional)); }
         }
 
         private ObservableCollection<TblComplementoAdicionalModel> _complementoAdicionais;
         public ObservableCollection<TblComplementoAdicionalModel> ComplementoAdicionais
         {
             get { return _complementoAdicionais; }
-            set { _complementoAdicionais = value; RaisePropertyChanged("ComplementoAdicionais"); }
+            set { _complementoAdicionais = value; RaisePropertyChanged(nameof(ComplementoAdicionais)); }
         }
 
         private UnidadeModel _unidade;
         public UnidadeModel Unidade
         {
             get { return _unidade; }
-            set { _unidade = value; RaisePropertyChanged("Unidade"); }
+            set { _unidade = value; RaisePropertyChanged(nameof(Unidade)); }
         }
 
         private ObservableCollection<UnidadeModel> _unidades;
         public ObservableCollection<UnidadeModel> Unidades
         {
             get { return _unidades; }
-            set { _unidades = value; RaisePropertyChanged("Unidades"); }
+            set { _unidades = value; RaisePropertyChanged(nameof(Unidades)); }
+        }
+
+        private NpgsqlConnection CreateConnection()
+        {
+            return new NpgsqlConnection(BaseSettings.ConnectionString);
         }
 
         public async Task<ObservableCollection<TblComplementoAdicionalModel>> GetComplementoAdicionaisAsync(long? coduniadicional)
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.acompanhamento)
-                    .Where(c => c.coduniadicional == coduniadicional)
-                    .ToListAsync();
-                return new ObservableCollection<TblComplementoAdicionalModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            using var conn = CreateConnection();
+            var data = await conn.QueryAsync<TblComplementoAdicionalModel>(
+                """
+                SELECT *
+                FROM producao.tblcomplementoadicional
+                WHERE coduniadicional = @coduniadicional
+                ORDER BY acompanhamento;
+                """,
+                new { coduniadicional });
+
+            return new ObservableCollection<TblComplementoAdicionalModel>(data);
         }
 
         public async Task<ObservableCollection<UnidadeModel>> GetUnidadesAsync()
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.Unidades
-                    .OrderBy(c => c.unidade)
-                    .ToListAsync();
-                return new ObservableCollection<UnidadeModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            using var conn = CreateConnection();
+            var data = await conn.QueryAsync<UnidadeModel>(
+                """
+                SELECT *
+                FROM producao.unidades
+                ORDER BY unidade;
+                """);
+
+            return new ObservableCollection<UnidadeModel>(data);
         }
 
         public async Task<TblComplementoAdicionalModel> SaveAsync(TblComplementoAdicionalModel complemento)
         {
-            try
+            using var conn = CreateConnection();
+
+            if (complemento.codcompladicional is null or 0)
             {
-                using DatabaseContext db = new();
-                await db.ComplementoAdicionais.SingleMergeAsync(complemento);
-                await db.SaveChangesAsync();
-                return complemento;
+                complemento.codcompladicional = await conn.ExecuteScalarAsync<long>(
+                    """
+                    INSERT INTO producao.tblcomplementoadicional
+                        (complementoadicional, status, estoque_inicial, desc_process,
+                         estoque_inicial_processado, altura, largura, profundidade, vida_util,
+                         diametro, peso, unidade, cadastradopor, cadastradoem, custo_real,
+                         prodcontrolado, volume, area, precolocacao, descricaofiscal,
+                         descricaoespanhol, estoque_min, v_unit, v_unit_dolar, ncm, tipo,
+                         custoestimado, indicecorrecao, nf, pesobruto, coduniadicional,
+                         codfornecedor, foralinhafornecedor, origemcusto, datafichatecnica,
+                         respfichatenica, datainiciofichatecnica, respcusto, datacusto,
+                         contabil, produto_novo, acompanhamento, responsavel_acompanha,
+                         concluido_acompanha, obs_acompanhamento, importado, contabil_pldc,
+                         narrativa, alx, inativo, qtd_etiqueta, fracao, dividir_qtd_volume,
+                         conta_aplica_contabil, centro_custo_contabil, especial, foto,
+                         tamanho_construcao, diverso, dificuldade, saldo_patrimonial_ano_anterior,
+                         saldo_disponivel_ano_anterior, custo_despesa, link_foto, preco_shopping,
+                         exportado_folhamatic, saldo_estoque)
+                    VALUES
+                        (@complementoadicional, @status, @estoque_inicial, @desc_process,
+                         @estoque_inicial_processado, @altura, @largura, @profundidade, @vida_util,
+                         @diametro, @peso, @unidade, @cadastradopor, @cadastradoem, @custo_real,
+                         @prodcontrolado, @volume, @area, @precolocacao, @descricaofiscal,
+                         @descricaoespanhol, @estoque_min, @v_unit, @v_unit_dolar, @ncm, @tipo,
+                         @custoestimado, @indicecorrecao, @nf, @pesobruto, @coduniadicional,
+                         @codfornecedor, @foralinhafornecedor, @origemcusto, @datafichatecnica,
+                         @respfichatenica, @datainiciofichatecnica, @respcusto, @datacusto,
+                         @contabil, @produto_novo, @acompanhamento, @responsavel_acompanha,
+                         @concluido_acompanha, @obs_acompanhamento, @importado, @contabil_pldc,
+                         @narrativa, @alx, @inativo, @qtd_etiqueta, @fracao, @dividir_qtd_volume,
+                         @conta_aplica_contabil, @centro_custo_contabil, @especial, @foto,
+                         @tamanho_construcao, @diverso, @dificuldade, @saldo_patrimonial_ano_anterior,
+                         @saldo_disponivel_ano_anterior, @custo_despesa, @link_foto, @preco_shopping,
+                         @exportado_folhamatic, @saldo_estoque)
+                    RETURNING codcompladicional;
+                    """,
+                    complemento);
             }
-            catch (Exception)
+            else
             {
-                throw;
+                await conn.ExecuteAsync(
+                    """
+                    UPDATE producao.tblcomplementoadicional
+                    SET complementoadicional = @complementoadicional,
+                        status = @status,
+                        estoque_inicial = @estoque_inicial,
+                        desc_process = @desc_process,
+                        estoque_inicial_processado = @estoque_inicial_processado,
+                        altura = @altura,
+                        largura = @largura,
+                        profundidade = @profundidade,
+                        vida_util = @vida_util,
+                        diametro = @diametro,
+                        peso = @peso,
+                        unidade = @unidade,
+                        alterado_por = @alterado_por,
+                        alterado_em = @alterado_em,
+                        custo_real = @custo_real,
+                        prodcontrolado = @prodcontrolado,
+                        volume = @volume,
+                        area = @area,
+                        precolocacao = @precolocacao,
+                        descricaofiscal = @descricaofiscal,
+                        descricaoespanhol = @descricaoespanhol,
+                        estoque_min = @estoque_min,
+                        v_unit = @v_unit,
+                        v_unit_dolar = @v_unit_dolar,
+                        ncm = @ncm,
+                        tipo = @tipo,
+                        custoestimado = @custoestimado,
+                        indicecorrecao = @indicecorrecao,
+                        nf = @nf,
+                        pesobruto = @pesobruto,
+                        coduniadicional = @coduniadicional,
+                        codfornecedor = @codfornecedor,
+                        foralinhafornecedor = @foralinhafornecedor,
+                        origemcusto = @origemcusto,
+                        datafichatecnica = @datafichatecnica,
+                        respfichatenica = @respfichatenica,
+                        datainiciofichatecnica = @datainiciofichatecnica,
+                        respcusto = @respcusto,
+                        datacusto = @datacusto,
+                        contabil = @contabil,
+                        produto_novo = @produto_novo,
+                        acompanhamento = @acompanhamento,
+                        responsavel_acompanha = @responsavel_acompanha,
+                        concluido_acompanha = @concluido_acompanha,
+                        obs_acompanhamento = @obs_acompanhamento,
+                        importado = @importado,
+                        contabil_pldc = @contabil_pldc,
+                        narrativa = @narrativa,
+                        alx = @alx,
+                        inativo = @inativo,
+                        qtd_etiqueta = @qtd_etiqueta,
+                        fracao = @fracao,
+                        dividir_qtd_volume = @dividir_qtd_volume,
+                        conta_aplica_contabil = @conta_aplica_contabil,
+                        centro_custo_contabil = @centro_custo_contabil,
+                        especial = @especial,
+                        foto = @foto,
+                        tamanho_construcao = @tamanho_construcao,
+                        diverso = @diverso,
+                        dificuldade = @dificuldade,
+                        saldo_patrimonial_ano_anterior = @saldo_patrimonial_ano_anterior,
+                        saldo_disponivel_ano_anterior = @saldo_disponivel_ano_anterior,
+                        custo_despesa = @custo_despesa,
+                        link_foto = @link_foto,
+                        preco_shopping = @preco_shopping,
+                        exportado_folhamatic = @exportado_folhamatic,
+                        saldo_estoque = @saldo_estoque
+                    WHERE codcompladicional = @codcompladicional;
+                    """,
+                    complemento);
             }
+
+            return complemento;
         }
     }
 }

@@ -1,0 +1,44 @@
+<UserControl x:Class="Producao.Views.Controlado.ThermalPrinterSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+             mc:Ignorable="d"
+             d:DesignHeight="220"
+             d:DesignWidth="420"
+             Loaded="UserControl_Loaded">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="90"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="IP ou nome da impressora" Margin="0,0,0,4"/>
+        <TextBlock Grid.Row="0" Grid.Column="1" Text="Porta" Margin="12,0,0,4"/>
+
+        <telerik:RadWatermarkTextBox x:Name="IpAddressTextBox"
+                                     Grid.Row="1"
+                                     Grid.Column="0"
+                                     WatermarkContent="192.168.0.113"
+                                     Height="30"/>
+
+        <telerik:RadWatermarkTextBox x:Name="PortTextBox"
+                                     Grid.Row="1"
+                                     Grid.Column="1"
+                                     WatermarkContent="9100"
+                                     Height="30"
+                                     Margin="12,0,0,0"/>
+
+        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,18,0,0">
+            <telerik:RadButton Content="Salvar" Width="90" Click="OnSaveClick"/>
+            <telerik:RadButton Content="Testar conexão" Width="130" Margin="8,0,0,0" Click="OnTestConnectionClick"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

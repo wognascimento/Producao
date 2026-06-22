@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Utility;
-using Syncfusion.XlsIO;
+using Producao.Views.CentralModelos.Compat;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -12,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.OrdemServico.Servicos
 {
@@ -33,7 +33,7 @@ namespace Producao.Views.OrdemServico.Servicos
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 EmissaoServicoEmitidasViewModel vm = (EmissaoServicoEmitidasViewModel)DataContext;
-                vm.OrdemServicos = await Task.Run(vm.GetallAsync);
+                vm.OrdemServicos = await vm.GetallAsync();
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -44,34 +44,32 @@ namespace Producao.Views.OrdemServico.Servicos
             }
         }
 
-        private async void itens_CurrentCellValueChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValueChangedEventArgs e)
+        private async void itens_RowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
         {
-            SfDataGrid grid = (SfDataGrid)sender;
-            int columnindex = grid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
-            var column = grid.Columns[columnindex];
-            if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "cancelar")
+            if (e.EditAction != GridViewEditAction.Commit)
             {
-                try
+                return;
+            }
+
+            try
+            {
+                var record = e.Row.Item as TblServicoModel;
+                if (record is null)
                 {
-                    var rowIndex = grid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-                    if (rowIndex == 0)
-                    {
-                        var record = (TblServicoModel)grid.View.Records[rowIndex].Data;
-                        record.cancelado_por = Environment.UserName;
-                        record.data_cancelamento = DateTime.Now;
-                        var value = record.cancelar;
-                        Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                        EmissaoServicoEmitidasViewModel vm = (EmissaoServicoEmitidasViewModel)DataContext;
-                        TblServicoModel expedModel = await Task.Run(() => vm.GravarAsync(record));
-                        Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                    return;
                 }
 
+                record.cancelado_por = Environment.UserName;
+                record.data_cancelamento = DateTime.Now;
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                EmissaoServicoEmitidasViewModel vm = (EmissaoServicoEmitidasViewModel)DataContext;
+                await vm.GravarAsync(record);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
 
@@ -137,22 +135,29 @@ namespace Producao.Views.OrdemServico.Servicos
 
         static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
-        static BaseCommand? cancelarOS;
-        public static BaseCommand CancelarOS
+        static ICommand? cancelarOS;
+        public static ICommand CancelarOS
         {
             get
             {
-                cancelarOS ??= new BaseCommand(OnCancelarOSClicked);
+                cancelarOS ??= new RelayCommand(OnCancelarOSClicked);
                 return cancelarOS;
             }
         }
 
         private static async void OnCancelarOSClicked(object obj)
         {
-            var record = ((GridRecordContextMenuInfo)obj).Record as TblServicoModel;
-            var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
+            var grid = obj as RadGridView;
+            if (grid is null)
+            {
+                return;
+            }
+
             var OS = grid.SelectedItem as TblServicoModel;
-            EmissaoServicoEmitidasViewModel vm = (EmissaoServicoEmitidasViewModel)grid.DataContext;
+            if (OS is null)
+            {
+                return;
+            }
 
             try
             {
@@ -161,7 +166,7 @@ namespace Producao.Views.OrdemServico.Servicos
                 using ExcelEngine excelEngine = new ExcelEngine();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("ORDEM_SERVICO_SERVICO_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["A1"].Text = $"ORDEM DE SERVIÇO {OS.data_emissao.Value.Year} ";
                 worksheet.Range["F5"].Text = OS.num_os.ToString();
@@ -176,10 +181,10 @@ namespace Producao.Views.OrdemServico.Servicos
                 worksheet.Range["C26"].Text = OS.data_conclusao.Value.ToString();
                 worksheet.Range["C28"].Text = OS.emitido_por;
 
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_SERVICO_MODELO.xlsx");
+                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"ORDEM_SERVICO_SERVICO_MODELO.xlsx"));
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_SERVICO_MODELO.xlsx")
+                Process.Start(new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"ORDEM_SERVICO_SERVICO_MODELO.xlsx"))
                 {
                     UseShellExecute = true
                 });

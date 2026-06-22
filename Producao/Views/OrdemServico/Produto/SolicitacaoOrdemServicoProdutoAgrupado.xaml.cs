@@ -1,6 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Producao.Views.PopUp;
-using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.OrdemServico.Produto
 {
@@ -21,7 +22,6 @@ namespace Producao.Views.OrdemServico.Produto
         public SolicitacaoOrdemServicoProdutoAgrupado()
         {
             InitializeComponent();
-            //this.FirstLevelNestedGrid.GridCopyPaste = new CustomPasteCaminhoOrdemServicoProducao(dgClientes);
             DataContext = new SolicitacaoOrdemServicoProdutoAgrupadoViewModel();
         }
 
@@ -37,9 +37,9 @@ namespace Producao.Views.OrdemServico.Produto
                 SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
                 vm.ProdutoOSs = [];
                 vm.ObsOSs = [];
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
-                vm.Setores = await Task.Run(vm.GetSetorsAsync);
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
+                vm.Planilhas = await vm.GetPlanilhasAsync();
+                vm.Setores = await vm.GetSetorsAsync();
+                vm.Siglas = await vm.GetSiglasAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -59,7 +59,7 @@ namespace Producao.Views.OrdemServico.Produto
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                     string text = ((TextBox)sender).Text;
-                    vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(long.Parse(text)));
+                    vm.Descricao = await vm.GetDescricaoAsync(long.Parse(text));
                     if (vm.Descricao == null)
                     {
                         MessageBox.Show("Produto não encontrado", "Busca de produto");
@@ -87,12 +87,17 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private async void OnSelectedPlanilha(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
-                vm.Planilha = (RelplanModel)e.NewValue;
+                vm.Planilha = e.AddedItems.Count > 0 ? e.AddedItems[0] as RelplanModel : null;
+                if (vm.Planilha is null)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.Produtos = [];
@@ -107,7 +112,7 @@ namespace Producao.Views.OrdemServico.Produto
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(vm.Planilha?.planilha));
+                vm.Produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricao.Focus();
             }
@@ -118,12 +123,17 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private async void OnSelectedDescricao(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
-                vm.Produto = (ProdutoModel)e.NewValue;
+                vm.Produto = e.AddedItems.Count > 0 ? e.AddedItems[0] as ProdutoModel : null;
+                if (vm.Produto is null)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.DescAdicionais = [];
@@ -134,7 +144,7 @@ namespace Producao.Views.OrdemServico.Produto
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(vm.Produto?.codigo));
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Produto?.codigo);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricaoAdicional.Focus();
             }
@@ -145,19 +155,24 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private async void OnSelectedDescricaoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
-                vm.DescAdicional = (TabelaDescAdicionalModel)e.NewValue;
+                vm.DescAdicional = e.AddedItems.Count > 0 ? e.AddedItems[0] as TabelaDescAdicionalModel : null;
+                if (vm.DescAdicional is null)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(vm.DescAdicional?.coduniadicional));
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.DescAdicional?.coduniadicional);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtComplementoAdicional.Focus();
             }
@@ -168,15 +183,20 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private async void OnSelectedComplementoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Compledicional = (TblComplementoAdicionalModel)e.NewValue;
+                vm.Compledicional = e.AddedItems.Count > 0 ? e.AddedItems[0] as TblComplementoAdicionalModel : null;
+                if (vm.Compledicional is null)
+                {
+                    return;
+                }
+
                 tbCodproduto.Text = vm.Compledicional?.codcompladicional.ToString();
-                vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync((long)vm.Compledicional.codcompladicional));
+                vm.Descricao = await vm.GetDescricaoAsync((long)vm.Compledicional.codcompladicional);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -212,45 +232,50 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private void dgClientes_AddNewRowInitiating(object sender, Syncfusion.UI.Xaml.Grid.AddNewRowInitiatingEventArgs e)
+        private void dgClientes_AddNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
             SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
-            ((ProdutoOsModel)e.NewObject).tipo = cmbTipoOs.SelectedValue.ToString();
-            ((ProdutoOsModel)e.NewObject).planilha = vm.Descricao?.planilha;
-            ((ProdutoOsModel)e.NewObject).cod_produto = vm.Descricao?.codigo;
-            ((ProdutoOsModel)e.NewObject).cod_desc_adicional = vm.Descricao?.coduniadicional;
-            ((ProdutoOsModel)e.NewObject).cod_compl_adicional = vm.Descricao?.codcompladicional;
-            ((ProdutoOsModel)e.NewObject).data_emissao = DateTime.Now;
-            ((ProdutoOsModel)e.NewObject).responsavel_emissao = Environment.UserName;
-            ((ProdutoOsModel)e.NewObject).solicitado_por = Environment.UserName;
+            e.NewObject = new ProdutoOsModel
+            {
+                tipo = cmbTipoOs.SelectedValue?.ToString(),
+                planilha = vm.Descricao?.planilha,
+                cod_produto = vm.Descricao?.codigo,
+                cod_desc_adicional = vm.Descricao?.coduniadicional,
+                cod_compl_adicional = vm.Descricao?.codcompladicional,
+                data_emissao = DateTime.Now,
+                responsavel_emissao = Environment.UserName,
+                solicitado_por = Environment.UserName
+            };
         }
 
-        private void FirstLevelNestedGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
+        private void FirstLevelNestedGrid_AddNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
-            SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
-            ((ObsOsModel)e.NewObject).num_os_produto = vm.ProdutoOs.num_os_produto;
-            ((ObsOsModel)e.NewObject).cliente = vm.ProdutoOs.cliente;
-            ((ObsOsModel)e.NewObject).cod_compl_adicional = vm.ProdutoOs.cod_compl_adicional;
-            ((ObsOsModel)e.NewObject).distribuir_os = "No setor";
-            ((ObsOsModel)e.NewObject).solicitado_por = Environment.UserName;
-            ((ObsOsModel)e.NewObject).solicitado_data = DateTime.Now;
-            ((ObsOsModel)e.NewObject).cancelar = false;
-            ((ObsOsModel)e.NewObject).pt = false;
+            var parent = (sender as RadGridView)?.DataContext as ProdutoOsModel;
+            e.NewObject = new ObsOsModel
+            {
+                num_os_produto = parent?.num_os_produto,
+                cliente = parent?.cliente,
+                cod_compl_adicional = parent?.cod_compl_adicional,
+                distribuir_os = "No setor",
+                solicitado_por = Environment.UserName,
+                solicitado_data = DateTime.Now,
+                cancelar = false,
+                pt = false
+            };
         }
 
-        private async void dgClientes_RowValidated(object sender, RowValidatedEventArgs e)
+        private async void dgClientes_RowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-            var sfdatagrid = sender as SfDataGrid;
             ProdutoOsModel? primeiroCliente;
             SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                ProdutoOsModel data = (ProdutoOsModel)e.RowData;
-                var ProdutoOs = await Task.Run(() => vm.SaveProdutoOsAsync(data));
+                ProdutoOsModel data = (ProdutoOsModel)e.Row.Item;
+                var ProdutoOs = await vm.SaveProdutoOsAsync(data);
 
-                primeiroCliente = sfdatagrid.View.Records[0].Data as ProdutoOsModel;
-                foreach (var item in primeiroCliente.Observacoes)
+                primeiroCliente = vm.ProdutoOSs.FirstOrDefault();
+                foreach (var item in primeiroCliente?.Observacoes ?? [])
                 {
                     ObsOsModel obsOs = new()
                     {
@@ -267,8 +292,8 @@ namespace Producao.Views.OrdemServico.Produto
                         orientacao_caminho = item.orientacao_caminho,
                         pt = item.pt,
                     };
-                    obsOs = await Task.Run(() => vm.SaveObsOsAsync(obsOs));
-                    ((ProdutoOsModel)e.RowData).Observacoes.Add(obsOs);
+                    obsOs = await vm.SaveObsOsAsync(obsOs);
+                    ((ProdutoOsModel)e.Row.Item).Observacoes.Add(obsOs);
                 }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -282,51 +307,48 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private void dgClientes_RowValidating(object sender, RowValidatingEventArgs e)
+        private void dgClientes_RowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-            ProdutoOsModel rowData = (ProdutoOsModel)e.RowData;
-            var sfdatagrid = sender as SfDataGrid;
+            if (e.EditOperationType == GridViewEditOperationType.None || e.Row.Item is not ProdutoOsModel rowData)
+            {
+                return;
+            }
+
             ProdutoOsModel? primeiroCliente;
 
             if (rowData.cliente == "")
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("cliente", "Informe o cliente da O.S.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informe o cliente da O.S.", PropertyName = "cliente" });
             }
             else if (!rowData.quantidade.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("quantidade", "Informe a quantidade da O.S.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informe a quantidade da O.S.", PropertyName = "quantidade" });
             }
-            else if (sfdatagrid.View.Records.Count > 0)
+            else if (dgClientes.Items.Count > 0)
             {
-                primeiroCliente = sfdatagrid.View.Records[0].Data as ProdutoOsModel;
-                if (primeiroCliente.Observacoes.Count == 0)
+                primeiroCliente = ((SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext).ProdutoOSs.FirstOrDefault();
+                if (primeiroCliente?.Observacoes.Count == 0)
                 {
-                    //MessageBox.Show("Preencha todos os caminhos no primeiro cliente,\n para que seja copiado para os demais.", "Primeiro caminho em branco");
-                    //var toRemove = vm.ProdutoOSs.Where(x => x.num_os_produto == null).ToList();
-                    //foreach (var item in toRemove)
-                    //vm.ProdutoOSs.Remove(item);
-                    //return;
                     e.IsValid = false;
-                    e.ErrorMessages.Add("cliente", "Preencha todos os caminhos no primeiro cliente");
-                    e.ErrorMessages.Add("quantidade", "Preencha todos os caminhos no primeiro cliente");
+                    e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Preencha todos os caminhos no primeiro cliente", PropertyName = "cliente" });
+                    e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Preencha todos os caminhos no primeiro cliente", PropertyName = "quantidade" });
                 }
             }
 
         }
 
-        private async void FirstLevelNestedGrid_RowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void FirstLevelNestedGrid_RowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-            var sfdatagrid = sender as SfDataGrid;
             SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
             try
             {
                 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                ObsOsModel data = (ObsOsModel)e.RowData;
+                ObsOsModel data = (ObsOsModel)e.Row.Item;
                 data.setor_caminho = vm.Setores.Where(x => x.codigo_setor == data.codigo_setor).Select(setor => setor.setor).FirstOrDefault();
-                vm.ObsOs = await Task.Run(() => vm.SaveObsOsAsync(data));
+                vm.ObsOs = await vm.SaveObsOsAsync(data);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -339,80 +361,40 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private void FirstLevelNestedGrid_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void FirstLevelNestedGrid_RowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-            ObsOsModel rowData = (ObsOsModel)e.RowData;
+            if (e.EditOperationType == GridViewEditOperationType.None || e.Row.Item is not ObsOsModel rowData)
+            {
+                return;
+            }
+
             if (!rowData.num_os_produto.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("num_caminho", "Não foi criado O.S para incluir o(s) caminho(s).");
-                e.ErrorMessages.Add("codigo_setor", "Não foi criado O.S para incluir o(s) caminho(s).");
-                e.ErrorMessages.Add("orientacao_caminho", "Não foi criado O.S para incluir o(s) caminho(s).");
-                e.ErrorMessages.Add("distribuir_os", "Não foi criado O.S para incluir o(s) caminho(s).");
-                e.ErrorMessages.Add("cliente", "Não foi criado O.S para incluir o(s) caminho(s).");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Não foi criado O.S para incluir o(s) caminho(s).", PropertyName = string.Empty });
             }
             else if (!rowData.num_caminho.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("num_caminho", "Informe a ordem do caminho da O.S.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informe a ordem do caminho da O.S.", PropertyName = "num_caminho" });
             }
             else if (!rowData.codigo_setor.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("codigo_setor", "Seleciona o Setor da O.S.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Seleciona o Setor da O.S.", PropertyName = "codigo_setor" });
             }
             else if (rowData.orientacao_caminho == "")
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("orientacao_caminho", "Informe uma orientação para o Setor.");
-            }
-            else if (rowData.orientacao_caminho == "")
-            {
-                e.IsValid = false;
-                e.ErrorMessages.Add("distribuir_os", "Informe como será distribuida a O.S.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informe uma orientação para o Setor.", PropertyName = "orientacao_caminho" });
             }
             else if (rowData.cliente == "")
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("cliente", "Informe o cliente da O.S.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informe o cliente da O.S.", PropertyName = "cliente" });
             }
         }
 
-        private void FirstLevelNestedGrid_CurrentCellDropDownSelectionChanged(object sender, CurrentCellDropDownSelectionChangedEventArgs e)
-        {
-            /*
-            int rowIndex = FirstLevelNestedGrid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-            ObsOsModel record;
-
-            if (rowIndex == -1)
-                record = (ObsOsModel)FirstLevelNestedGrid.View.CurrentAddItem;
-            //record = new();
-            else
-                record = (ObsOsModel)(FirstLevelNestedGrid.View.Records[rowIndex] as RecordEntry).Data;
-
-            if (e.RowColumnIndex.ColumnIndex == 2)
-            {
-                record.setor_caminho = ((SetorModel)e.SelectedItem).setor;
-            }
-            */
-        }
-
-        private async void FirstLevelNestedGrid_RecordDeleting(object sender, RecordDeletingEventArgs args)
-        {
-            var item = args.Items[0] as ObsOsModel; //[0] = {Producao.ObsOsModel}
-            SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
-            try
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                await Task.Run(() => vm.DeleteObsOsAsync(item));
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-        }
     }
 
     class SolicitacaoOrdemServicoProdutoAgrupadoViewModel : INotifyPropertyChanged

@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.Controlado" 
-             xmlns:Syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
              xmlns:app="clr-namespace:Producao"
              d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
@@ -17,112 +17,41 @@
     
     <Grid>
 
-        <Syncfusion:SfDataGrid 
+        <telerik:RadGridView 
             AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            AllowDraggingColumns="True"
-            ColumnSizer="AutoWithLastColumnFill"
-            ShowRowHeader="True" 
+            CanUserResizeColumns="True"
+            CanUserReorderColumns="True"
+            ShowGroupPanel="False"
             ItemsSource="{Binding Produtos}"
             SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-            AllowFiltering="True" 
-            CanUseViewFilter="True" 
-            RowValidated="SfDataGrid_RowValidated"
-            SelectionUnit="Row"
+            IsFilteringAllowed="True" 
+            RowValidated="RadGridView_RowValidated"
             SelectionMode="Extended"
-            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat"> 
+            ClipboardCopyMode="Cells,Header"> 
 
-            <Syncfusion:SfDataGrid.Columns>
+            <telerik:RadGridView.Columns>
 
-                <Syncfusion:GridTextColumn 
-                    MappingName="sigla"
-                    ColumnSizer="SizeToCells"/>
+                <telerik:GridViewDataColumn Header="sigla" DataMemberBinding="{Binding sigla}"/>
 
-                <Syncfusion:GridNumericColumn
-                    MappingName="codcompladicional" 
-                    DisplayBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
+                <telerik:GridViewDataColumn Header="codcompladicional" DataMemberBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}"/>
 
+                <telerik:GridViewDataColumn Header="planilha" DataMemberBinding="{Binding planilha}"/>
+                <telerik:GridViewDataColumn Header="descricao" DataMemberBinding="{Binding descricao}"/>
+                <telerik:GridViewDataColumn Header="unidade" DataMemberBinding="{Binding unidade}"/>
+                <telerik:GridViewDataColumn Header="expedido" DataMemberBinding="{Binding expedido, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="solucao_manutencao" DataMemberBinding="{Binding solucao_manutencao, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="qrcode" DataMemberBinding="{Binding qrcode, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="recebida" DataMemberBinding="{Binding recebida, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="devolvida" DataMemberBinding="{Binding devolvida, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="retorno" DataMemberBinding="{Binding retorno, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="cobranca" DataMemberBinding="{Binding cobranca, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="custo" DataMemberBinding="{Binding custo, StringFormat={}{0:C2}}"/>
+                <telerik:GridViewDataColumn Header="custo_total" DataMemberBinding="{Binding custo_total, StringFormat={}{0:C2}}"/>
+                <telerik:GridViewDataColumn Header="justificativa" DataMemberBinding="{Binding justificativa}"/>
 
-                <Syncfusion:GridTextColumn 
-                    MappingName="planilha"
-                    ColumnSizer="SizeToCells"/>
+            </telerik:RadGridView.Columns>
 
-                <Syncfusion:GridTextColumn 
-                    MappingName="descricao"
-                    ColumnSizer="SizeToCells"/>
-
-                <Syncfusion:GridTextColumn 
-                    MappingName="unidade"
-                    ColumnSizer="SizeToCells"/>
-
-                <Syncfusion:GridNumericColumn
-                    MappingName="expedido"
-                    NumberGroupSizes="3"
-                    DisplayBinding="{Binding expedido, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
-
-                <Syncfusion:GridNumericColumn
-                    MappingName="solucao_manutencao" 
-                    NumberGroupSizes="3"
-                    DisplayBinding="{Binding solucao_manutencao, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
-
-                <Syncfusion:GridNumericColumn
-                    MappingName="qrcode" 
-                    NumberGroupSizes="3"
-                    DisplayBinding="{Binding qrcode, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
-
-                <Syncfusion:GridNumericColumn
-                    MappingName="recebida" 
-                    NumberGroupSizes="3"
-                    DisplayBinding="{Binding recebida, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
-
-                <Syncfusion:GridNumericColumn
-                    MappingName="devolvida" 
-                    NumberGroupSizes="3"
-                    DisplayBinding="{Binding devolvida, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
-
-                <Syncfusion:GridNumericColumn
-                    MappingName="retorno" 
-                    NumberGroupSizes="3"
-                    DisplayBinding="{Binding retorno, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" 
-                    AllowEditing="True" />
-
-                <Syncfusion:GridNumericColumn
-                    MappingName="cobranca" 
-                    NumberGroupSizes="3"
-                    DisplayBinding="{Binding cobranca, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader" />
-
-                <Syncfusion:GridCurrencyColumn
-                    MappingName="custo" 
-                    CurrencyGroupSizes="3"
-                    ColumnSizer="SizeToHeader" />
-
-                <Syncfusion:GridCurrencyColumn
-                    MappingName="custo_total" 
-                    CurrencyGroupSizes="3"
-                    ColumnSizer="SizeToHeader" />
-                <!--
-                <Syncfusion:GridCheckBoxColumn
-                    AllowEditing="True"
-                    MappingName="cancelar_cobraca"
-                    DisplayBinding="{Binding cancelar_cobraca, Converter={StaticResource ConverterBoolen}}"
-                    ValueBinding="{Binding cancelar_cobraca, Converter={StaticResource ConverterBoolen}}" />
-                -->
-                <Syncfusion:GridTextColumn 
-                    MappingName="justificativa"
-                    ColumnSizer="SizeToHeader"/>
-
-                
-            </Syncfusion:SfDataGrid.Columns>
-
-        </Syncfusion:SfDataGrid>
+        </telerik:RadGridView>
 
     </Grid>
     

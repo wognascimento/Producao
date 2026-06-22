@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.OrdemServico.Servicos"
-             xmlns:app="clr-namespace:Producao" xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:app="clr-namespace:Producao"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Loaded="UserControl_Loaded" 
@@ -19,33 +20,32 @@
 
     <Grid>
 
-        <syncfusion:SfDataGrid
-            ShowRowHeader="True"
+        <telerik:RadGridView
             AutoGenerateColumns="False"
-            AllowFiltering="True"
-            ColumnSizer="SizeToHeader"
+            IsFilteringAllowed="True"
+            ShowGroupPanel="False"
+            GroupRenderMode="Flat"
             ItemsSource="{Binding Itens}"
-            AllowResizingHiddenColumns="True" 
-            AllowResizingColumns="True"
-            RowValidated="SfDataGrid_RowValidated" >
+            CanUserResizeColumns="True"
+            RowEditEnded="RadGridView_RowEditEnded" >
 
-            <syncfusion:SfDataGrid.RecordContextMenu>
+            <telerik:RadGridView.ContextMenu>
                 <ContextMenu Style="{x:Null}">
 
                     <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsBaixaOrdemServico.CancelarOS}}"
-                          CommandParameter="{Binding}"
+                          CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                           Header="Cancelar"/>
 
                 </ContextMenu>
-            </syncfusion:SfDataGrid.RecordContextMenu>
+            </telerik:RadGridView.ContextMenu>
 
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridTextColumn  MappingName="num_os" DisplayBinding="{Binding num_os, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridDateTimeColumn  MappingName="data_conclusao" ColumnSizer="SizeToHeader" AllowEditing="True"/>
-                <syncfusion:GridDateTimeColumn  MappingName="data_conclusao_efetiva" ColumnSizer="SizeToHeader" AllowEditing="True"/>
-                <syncfusion:GridTextColumn  MappingName="situacao" ColumnSizer="SizeToHeader"/>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="num_os" DataMemberBinding="{Binding num_os, Converter={StaticResource ConverterNumber}}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="data_conclusao" DataMemberBinding="{Binding data_conclusao, StringFormat={}{0:dd/MM/yyyy}}"/>
+                <telerik:GridViewDataColumn Header="data_conclusao_efetiva" DataMemberBinding="{Binding data_conclusao_efetiva, StringFormat={}{0:dd/MM/yyyy}}"/>
+                <telerik:GridViewDataColumn Header="situacao" DataMemberBinding="{Binding situacao}" IsReadOnly="True"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
     </Grid>
 

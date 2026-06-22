@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -37,8 +37,8 @@ namespace Producao.Views.OrdemServico.Requisicao
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                     string text = ((TextBox)sender).Text;
                     RequisicaoMaterialEmitirViewModel vm = (RequisicaoMaterialEmitirViewModel)DataContext;
-                    //vm.ProdutoServico = await Task.Run(() => vm.GetProdutoServicoAsync(long.Parse(text)));
-                    vm.TGlobal = await Task.Run(() => vm.GetGlobalAsync(long.Parse(text)));
+                    //vm.ProdutoServico = await vm.GetProdutoServicoAsync(long.Parse(text));
+                    vm.TGlobal = await vm.GetGlobalAsync(long.Parse(text));
                     if (vm.TGlobal == null) //descricao_setor = "TODOS - TODOS"
                     {
                         MessageBox.Show("Número de serviço não encontrado", "Busca de número de serviço");
@@ -63,8 +63,8 @@ namespace Producao.Views.OrdemServico.Requisicao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 RequisicaoMaterialEmitirViewModel vm = (RequisicaoMaterialEmitirViewModel)DataContext;
-                //var requisicao = await Task.Run(() => vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.ProdutoServico.num_os_servico, data = DateTime.Now, alterado_por = Environment.UserName}));
-                var requisicao = await Task.Run(() => vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.TGlobal.num_os, data = DateTime.Now, alterado_por = Environment.UserName}));
+                //var requisicao = await vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.ProdutoServico.num_os_servico, data = DateTime.Now, alterado_por = Environment.UserName});
+                var requisicao = await vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.TGlobal.num_os, data = DateTime.Now, alterado_por = Environment.UserName});
                 //RequisicaoMaterial detailsWindow = new RequisicaoMaterial(vm.ProdutoServico); //ProdutoServico
                 RequisicaoMaterial detailsWindow = new RequisicaoMaterial(vm.TGlobal); //ProdutoServico
                 detailsWindow.Owner = Window.GetWindow((DependencyObject)sender);  //(Window)obj;

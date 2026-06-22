@@ -1,20 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Grid.Converter;
-using Syncfusion.UI.Xaml.Utility;
+using ClosedXML.Excel;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views;
 
@@ -38,8 +38,8 @@ public partial class ViewCheckListRevisao : UserControl
         {
             ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
             ViewModel vm = (ViewModel)DataContext;
-            await Task.Run(vm.GetDados);
-            await Task.Run(vm.GetRevisores);
+            await vm.GetDados();
+            await vm.GetRevisores();
             //itens.Columns["ok"].FilterPredicates.Add(new FilterPredicate() { FilterType = FilterType.Equals, FilterValue = "0    " });
             ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
         }
@@ -49,86 +49,48 @@ public partial class ViewCheckListRevisao : UserControl
         }
     }
 
-    private async void itens_CurrentCellEndEdit(object sender, CurrentCellEndEditEventArgs args)
-    {
-        /*
-        ViewModel vm = (ViewModel)DataContext;
-
-        var recordIndex = this.itens.ResolveToRecordIndex(args.RowColumnIndex.RowIndex);
-        var columnIndex = this.itens.ResolveToGridVisibleColumnIndex(args.RowColumnIndex.ColumnIndex);
-        var mappingName = this.itens.Columns[columnIndex].MappingName;
-        var record = (this.itens.View.Records.GetItemAt(recordIndex) as ControleMemorialModel);
-        var cellValue = this.itens.View.GetPropertyAccessProvider().GetValue(record, mappingName);
-
-        if (mappingName == "altera_ok")
-        {
-            record.confirma_alteracao_por = Environment.UserName;
-            record.confirma_alteracao_data = DateTime.Now;
-        }
-        else if(mappingName == "motivo_alt_pos_revisao")
-        {
-            record.ok_revisao_alterada = "-1";
-            record.data_alt_revisao = DateTime.Now;
-            record.revisao_alt_por = Environment.UserName;
-        }
-        else if (mappingName == "ok")
-        {
-            record.revisado_por = Environment.UserName;
-            record.data_revisado_por = DateTime.Now;
-            record.ok_revisao_alterada = "-1";
-        }
-        try
-        {
-            await Task.Run(async () => await vm.AtualizarControleAsync(record));
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message);
-        }
-        */
-    }
-
     private void UserControl_Unloaded(object sender, RoutedEventArgs e)
     {
         //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
     }
 
-    private async void itens_CurrentCellValueChanged(object sender, CurrentCellValueChangedEventArgs e)
+    private async void itens_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
     {
         ViewModel vm = (ViewModel)DataContext;
-        SfDataGrid? grid = sender as SfDataGrid;
-        int columnindex = grid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
-        var column = grid.Columns[columnindex];
-        var rowIndex = grid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-        var record = grid.View.Records[rowIndex].Data as ControleMemorialModel;
+        var grid = sender as RadGridView;
+        var columnName = e.Cell?.Column?.UniqueName;
+        var record = e.Cell?.DataContext as ControleMemorialModel;
 
-        if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "altera_ok")
+        if (record is null || string.IsNullOrWhiteSpace(columnName))
+        {
+            return;
+        }
+
+        if (columnName == "altera_ok")
         {
             record.confirma_alteracao_por = Environment.UserName;
             record.confirma_alteracao_data = DateTime.Now.Date;
-            //var value = record.inativo;
         }
         
-        if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "motivo_alt_pos_revisao")
+        if (columnName == "motivo_alt_pos_revisao")
         {
             record.ok_revisao_alterada = "-1";
             record.data_alt_revisao = DateTime.Now.Date;
             record.revisao_alt_por = Environment.UserName;
-            //var value = record.inativo;
         }
         
-        if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "ok")
+        if (columnName == "ok")
         {
             record.revisado_por = Environment.UserName;
             record.data_revisado_por = DateTime.Now.Date;
             record.ok_revisao_alterada = "-1";
-            //var value = record.inativo;
         }
 
         try
         {
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-            await Task.Run(() => vm.AtualizarControleAsync(record));
+            await vm.AtualizarControleAsync(record);
+            grid?.Items.Refresh();
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
@@ -138,14 +100,19 @@ public partial class ViewCheckListRevisao : UserControl
         }
     }
 
-    private async void itens_RowValidating(object sender, RowValidatingEventArgs e)
+    private async void itens_RowValidated(object sender, GridViewRowValidatedEventArgs e)
     {
         try
         {
             ViewModel vm = (ViewModel)DataContext;
-            var record = e.RowData as ControleMemorialModel; 
+            var record = e.Row?.Item as ControleMemorialModel;
+            if (record is null)
+            {
+                return;
+            }
+
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-            await Task.Run(() => vm.AtualizarControleAsync(record));
+            await vm.AtualizarControleAsync(record);
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
@@ -155,22 +122,56 @@ public partial class ViewCheckListRevisao : UserControl
         }
     }
 
-    private void itens_PasteGridCellContent(object sender, GridCopyPasteCellEventArgs e)
+    private void OnExportarExcelClick(object sender, RoutedEventArgs e)
     {
-        var sfdatagrid = sender as SfDataGrid;
-        if (e.Column.MappingName == "resp_revisao")
+        try
         {
-            sfdatagrid.SelectionController.CurrentCellManager.BeginEdit();
-            (e.RowData as ControleMemorialModel).resp_revisao = (string?)e.ClipBoardValue;
-            sfdatagrid.SelectionController.CurrentCellManager.EndEdit();
+            var path = DataBaseSettings.Instance.ResolveImpressosPath("REVISÃO_CHECKLIST.xlsx");
+            ExportarExcel(itens, path);
+            Process.Start(new ProcessStartInfo(path)
+            {
+                UseShellExecute = true
+            });
         }
-        else if(e.Column.MappingName == "prazo_revisao")
+        catch (Exception ex)
         {
-            sfdatagrid.SelectionController.CurrentCellManager.BeginEdit();
-            (e.RowData as ControleMemorialModel).prazo_revisao = Convert.ToDateTime(e.ClipBoardValue); 
-            sfdatagrid.SelectionController.CurrentCellManager.EndEdit();
+            MessageBox.Show(ex.Message);
         }
-        sfdatagrid.View.Refresh();
+    }
+
+    private static void ExportarExcel(RadGridView grid, string path)
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Revisão");
+        var columns = grid.Columns
+            .Cast<Telerik.Windows.Controls.GridViewColumn>()
+            .Where(column => column.IsVisible && !string.IsNullOrWhiteSpace(column.UniqueName))
+            .ToList();
+
+        for (var columnIndex = 0; columnIndex < columns.Count; columnIndex++)
+        {
+            worksheet.Cell(1, columnIndex + 1).Value = columns[columnIndex].Header?.ToString() ?? columns[columnIndex].UniqueName;
+            worksheet.Cell(1, columnIndex + 1).Style.Font.Bold = true;
+        }
+
+        var rows = grid.Items.OfType<ControleMemorialModel>().ToList();
+        for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++)
+        {
+            for (var columnIndex = 0; columnIndex < columns.Count; columnIndex++)
+            {
+                var property = typeof(ControleMemorialModel).GetProperty(columns[columnIndex].UniqueName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+                var value = property?.GetValue(rows[rowIndex]);
+                worksheet.Cell(rowIndex + 2, columnIndex + 1).Value = value switch
+                {
+                    null => string.Empty,
+                    DateTime date => date,
+                    _ => value.ToString()
+                };
+            }
+        }
+
+        worksheet.Columns().AdjustToContents();
+        workbook.SaveAs(path);
     }
 }
 
@@ -258,7 +259,9 @@ public class PrazoColorConverter : IValueConverter
         if (data == null)
             return DependencyProperty.UnsetValue;
 
-        return data.ok.Trim().Contains('0') && data?.prazo_revisao < DateTime.Now
+        return data.ok.Trim().Contains('0')
+               && data.prazo_revisao.HasValue
+               && data.prazo_revisao.Value.Date < DateTime.Today
             ? new SolidColorBrush(Colors.Red)
             : DependencyProperty.UnsetValue;
     }
@@ -307,45 +310,4 @@ public class SiglaColorConverter : IValueConverter
     }
 }
 
-public static class ContextMenuCommandsViewCheckListRevisao
-{
-
-    static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
-
-    static BaseCommand? exportarExcel;
-    public static BaseCommand ExportarExcel
-    {
-        get { exportarExcel ??= new BaseCommand(OnExportarExcel); return exportarExcel; }
-    }
-    private static void OnExportarExcel(object? obj)
-    {
-        try
-        {
-            var options = new ExcelExportingOptions
-            {
-                AllowOutlining = true
-            };
-            if (obj is GridColumnContextMenuInfo grid)
-            {
-                //var record = ((GridColumnContextMenuInfo)obj).Record as ControladoEtiquetaModel;
-                //var grid = ((GridColumnContextMenuInfo)obj).DataGrid;
-                var excelEngine = grid.DataGrid.ExportToExcel(grid.DataGrid.View, options);
-                var workBook = excelEngine.Excel.Workbooks[0];
-                workBook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REVISÃO_CHECKLIST.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REVISÃO_CHECKLIST.xlsx")
-                {
-                    UseShellExecute = true
-                });
-
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message);
-        }
-    }
-
-
-
-}
 

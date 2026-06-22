@@ -1,231 +1,203 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Grid.Helpers;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
 
-namespace Producao.Views
+namespace Producao.Views;
+
+public partial class ViewAprovado : UserControl
 {
-    /// <summary>
-    /// Interação lógica para ViewAprovado.xam
-    /// </summary>
-    public partial class ViewAprovado : UserControl
+    public ObservableCollection<AprovadoModel> AprovadosList { get; set; }
+
+    static ViewAprovado()
     {
-        public ObservableCollection<AprovadoModel> AprovadosList{ get; set; }
+        SqlMapper.AddTypeHandler(new DateOnlyToDateTimeHandler());
+    }
 
-        public ViewAprovado()
+    public ViewAprovado()
+    {
+        InitializeComponent();
+        DataContext = new ViewAprovadoViewModel();
+    }
+
+    private async void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        try
         {
-            InitializeComponent();
-            this.DataContext = new ViewAprovadoViewModel();
+            var vm = (ViewAprovadoViewModel)DataContext;
+            Mouse.OverrideCursor = Cursors.Wait;
+            vm.Aprovados = await vm.GetAprovados();
         }
-
-        private async void UserControl_Loaded(object sender, RoutedEventArgs e)
+        catch (Exception ex)
         {
-            try
-            {
-                ViewAprovadoViewModel vm = (ViewAprovadoViewModel)DataContext;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Aprovados = await Task.Run(vm.GetAprovados);
-                //AprovadosList = await Task.Run(async () => await new AprovadoViewModel().GetAprovados());
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-            catch (Exception ex)
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
-            }
+            MessageBox.Show(ex.Message);
         }
-
-        private async void UserControl_Initialized(object sender, EventArgs e)
+        finally
         {
-            
-        }
-
-        private void OnCurrentCellEndEdit(object sender, CurrentCellEndEditEventArgs e)
-        {
-            
-        }
-
-        private async void OnCurrentCellValueChanged(object sender, CurrentCellValueChangedEventArgs e)
-        {
-            /*
-            SfDataGrid grid = sender as SfDataGrid;
-            int columnindex = grid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
-            var column = grid.Columns[columnindex];
-            if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "IsDelivered")
-            {
-                var rowIndex = grid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-                var record = grid.View.Records[rowIndex].Data as OrderInfo;
-
-                var value = record.IsDelivered;
-            }
-            */
-
-            var dataGrid = sender as SfDataGrid;
-
-            var provider = dataGrid.View.GetPropertyAccessProvider();
-
-            //here get the information of the changed row by using RowIndex
-            AprovadoModel record = dataGrid.GetRecordAtRowIndex(e.RowColumnIndex.RowIndex) as AprovadoModel;
-
-            //if (record == null)
-            //    return;
-
-            //here get the column by using column Index
-            var column = dataGrid.Columns[dataGrid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex)];
-
-            //here get the changed cell value
-            //var cellValue = provider.GetValue(record, column.MappingName);
-
-            //MessageBox.Show("Changed data in a row : " + cellValue);
-
-            var dataRow = this.itens.RowGenerator.Items.FirstOrDefault(item => item.RowIndex == e.RowColumnIndex.RowIndex);
-            
-            /*
-            if (column.MappingName.Equals("OkPlantaPca"))
-            {
-                record.PlantaPca = Environment.UserName;
-                record.LiberacaoPlantaPca = DateTime.Now;
-
-                ((AprovadoModel)dataRow.RowData).PlantaPca = Environment.UserName;
-                ((AprovadoModel)dataRow.RowData).LiberacaoPlantaPca = DateTime.Now;
-
-                dataGrid.View.Refresh();
-                await new AprovadoViewModel().SaveAsync(record);
-            }
-            else if (column.MappingName.Equals("OkPlantaBase"))
-            {
-                record.PlantaBase = Environment.UserName;
-                record.LiberacaoPlantaBase = DateTime.Now;
-
-                dataGrid.View.Refresh();
-                await new AprovadoViewModel().SaveAsync(record);
-            }
-            else if (column.MappingName.Equals("OkPlantaMall"))
-            {
-                record.PlantaMall = Environment.UserName;
-                record.ConclusaoPlantaMall = DateTime.Now;
-
-                dataGrid.View.Refresh();
-                await new AprovadoViewModel().SaveAsync(record);
-            }
-            else if (column.MappingName.Equals("OkPlantaFachada"))
-            {
-                record.PlantaFachada = Environment.UserName;
-                record.ConclusaoPlantaFachada = DateTime.Now;
-
-                dataGrid.View.Refresh();
-                await new AprovadoViewModel().SaveAsync(record);
-            }
-            */
-            try
-            {
-                //dataGrid.View.Refresh();
-                
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            
-
-            //MessageBox.Show("Changed data in a row : ");
-
-        }
-
-        private async void itens_RowValidated(object sender, RowValidatedEventArgs e)
-        {
-            try
-            {
-                var sfdatagrid = sender as SfDataGrid;
-                ViewAprovadoViewModel vm = (ViewAprovadoViewModel)DataContext;
-
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                AprovadoModel record = (AprovadoModel)sfdatagrid?.View.CurrentEditItem;
-                await Task.Run(() => vm.SaveAsync(record));
-
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-            catch (Exception ex)
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
+            Mouse.OverrideCursor = null;
         }
     }
 
-    public class ViewAprovadoViewModel : INotifyPropertyChanged
+    private async void itens_RowValidated(object sender, GridViewRowValidatedEventArgs e)
     {
-        private AprovadoModel _aprovado;
-        public AprovadoModel Aprovado
-        {
-            get { return _aprovado; }
-            set { _aprovado = value; RaisePropertyChanged("Aprovado"); }
-        }
-        private ObservableCollection<AprovadoModel> _aprovados;
-        public ObservableCollection<AprovadoModel> Aprovados
-        {
-            get { return _aprovados; }
-            set { _aprovados = value; RaisePropertyChanged("Aprovados"); }
-        }
+        if (e.Row.Item is not AprovadoModel record)
+            return;
 
-        private ObservableCollection<string> _respPlantaPca = ["ANA LOPES", "AMANDA LIMA", "CARLA MATTEUCCI", "CARLA ROSIN", "DANIELLE BRAGA", "ELDER SILVA", "JACK MELLOR", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS",  "NÃO TEM", ""];
-        public ObservableCollection<string> RespPlantaPca { get { return _respPlantaPca; } set { _respPlantaPca = value; RaisePropertyChanged("RespPlantaPca"); } }
-        
-        private ObservableCollection<string> _respPlantaBase = ["AMANDA LIMA", "CARLA ROSIN", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
-        public ObservableCollection<string> RespPlantaBase { get { return _respPlantaBase; } set { _respPlantaBase = value; RaisePropertyChanged("RespPlantaBase"); } }
-        
-        private ObservableCollection<string> _respPlantaMall = ["AMANDA LIMA", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
-        public ObservableCollection<string> RespPlantaMall { get { return _respPlantaMall; } set { _respPlantaMall = value; RaisePropertyChanged("RespPlantaMall"); } }
-        
-        private ObservableCollection<string> _respPlantaFachada = ["AMANDA LIMA", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
-        public ObservableCollection<string> RespPlantaFachada { get { return _respPlantaFachada; } set { _respPlantaFachada = value; RaisePropertyChanged("RespPlantaFachada"); } }
-
-        public async Task<ObservableCollection<AprovadoModel>> GetAprovados()
+        try
         {
-            try
+            var vm = (ViewAprovadoViewModel)DataContext;
+            Mouse.OverrideCursor = Cursors.Wait;
+            await vm.SaveAsync(record);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+        }
+    }
+
+    private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+    }
+}
+
+public class ViewAprovadoViewModel : INotifyPropertyChanged
+{
+    private AprovadoModel _aprovado;
+    public AprovadoModel Aprovado
+    {
+        get { return _aprovado; }
+        set { _aprovado = value; RaisePropertyChanged(nameof(Aprovado)); }
+    }
+
+    private ObservableCollection<AprovadoModel> _aprovados;
+    public ObservableCollection<AprovadoModel> Aprovados
+    {
+        get { return _aprovados; }
+        set { _aprovados = value; RaisePropertyChanged(nameof(Aprovados)); }
+    }
+
+    private ObservableCollection<string> _respPlantaPca = ["ANA LOPES", "AMANDA LIMA", "CARLA MATTEUCCI", "CARLA ROSIN", "DANIELLE BRAGA", "ELDER SILVA", "JACK MELLOR", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
+    public ObservableCollection<string> RespPlantaPca { get { return _respPlantaPca; } set { _respPlantaPca = value; RaisePropertyChanged(nameof(RespPlantaPca)); } }
+
+    private ObservableCollection<string> _respPlantaBase = ["AMANDA LIMA", "CARLA ROSIN", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
+    public ObservableCollection<string> RespPlantaBase { get { return _respPlantaBase; } set { _respPlantaBase = value; RaisePropertyChanged(nameof(RespPlantaBase)); } }
+
+    private ObservableCollection<string> _respPlantaMall = ["AMANDA LIMA", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
+    public ObservableCollection<string> RespPlantaMall { get { return _respPlantaMall; } set { _respPlantaMall = value; RaisePropertyChanged(nameof(RespPlantaMall)); } }
+
+    private ObservableCollection<string> _respPlantaFachada = ["AMANDA LIMA", "DANIELLE BRAGA", "MARIANA JESUS", "RENATA CELANTE", "RENATA LINS", "NÃO TEM", ""];
+    public ObservableCollection<string> RespPlantaFachada { get { return _respPlantaFachada; } set { _respPlantaFachada = value; RaisePropertyChanged(nameof(RespPlantaFachada)); } }
+
+    public async Task<ObservableCollection<AprovadoModel>> GetAprovados()
+    {
+        var baseSettings = DataBaseSettings.Instance;
+        await using var db = new NpgsqlConnection(baseSettings.ConnectionString);
+        var data = await db.QueryAsync<AprovadoModel>(
+            @"SELECT *
+                  FROM producao.qry_aprovados
+                  ORDER BY ordem;");
+
+        return new ObservableCollection<AprovadoModel>(data);
+    }
+
+    public async Task SaveAsync(AprovadoModel aprovado)
+    {
+        if (aprovado?.id_aprovado is null)
+            return;
+
+        var baseSettings = DataBaseSettings.Instance;
+        await using var db = new NpgsqlConnection(baseSettings.ConnectionString);
+        await db.ExecuteAsync(
+            @"UPDATE producao.t_aprovados SET
+                    ordem = @ordem,
+                    ordem_sigla_serv = @ordem_sigla_serv,
+                    nivel = @nivel,
+                    projeto_novo = @projeto_novo,
+                    obs_especial = @obs_especial,
+                    memo_resp = @memo_resp,
+                    memo_data = @memo_data,
+                    cronog_data = @cronog_data,
+                    cronog_resp = @cronog_resp,
+                    rel_inflamabilidade = @rel_inflamabilidade,
+                    data_rel_inflamabilidade = @data_rel_inflamabilidade,
+                    meta_rel_inflamabilidade = @meta_rel_inflamabilidade,
+                    pa = @pa,
+                    acabamento_construcao = @acabamento_construcao,
+                    acabamento_fibra = @acabamento_fibra,
+                    acabamento_moveis = @acabamento_moveis,
+                    laco = @laco,
+                    cor_predominante = @cor_predominante,
+                    iluminacao = @mlamp_led,
+                    obs_iluminacao = @obs_iluminacao,
+                    resp_memo_visual = @resp_memo_visual,
+                    data_memo_visual = @data_memo_visual,
+                    data_reuniao_conceito = @data_reuniao_conceito,
+                    resp_estruturas = @resp_estruturas,
+                    alteradopor = @alteradoPor,
+                    dataaltera = now()
+                  WHERE id_aprovado = @id_aprovado;",
+            new
             {
-                using DatabaseContext db = new();
-                var data = await db.Aprovados.OrderBy(c => c.ordem).ToListAsync();
-                return new ObservableCollection<AprovadoModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+                aprovado.id_aprovado,
+                aprovado.ordem,
+                aprovado.ordem_sigla_serv,
+                aprovado.nivel,
+                aprovado.projeto_novo,
+                aprovado.obs_especial,
+                aprovado.memo_resp,
+                aprovado.memo_data,
+                aprovado.cronog_data,
+                aprovado.cronog_resp,
+                aprovado.rel_inflamabilidade,
+                aprovado.data_rel_inflamabilidade,
+                aprovado.meta_rel_inflamabilidade,
+                aprovado.pa,
+                aprovado.acabamento_construcao,
+                aprovado.acabamento_fibra,
+                aprovado.acabamento_moveis,
+                aprovado.laco,
+                aprovado.cor_predominante,
+                aprovado.mlamp_led,
+                aprovado.obs_iluminacao,
+                aprovado.resp_memo_visual,
+                aprovado.data_memo_visual,
+                aprovado.data_reuniao_conceito,
+                aprovado.resp_estruturas,
+                alteradoPor = baseSettings.Username
+            });
+    }
 
-        public async Task SaveAsync(AprovadoModel aprovado)
+    public event PropertyChangedEventHandler PropertyChanged;
+    public void RaisePropertyChanged(string propName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+    }
+}
+
+public class DateOnlyToDateTimeHandler : SqlMapper.TypeHandler<DateTime>
+{
+    public override DateTime Parse(object value)
+    {
+        return value switch
         {
-            try
-            {
-                using DatabaseContext db = new();
-                AprovadoModel found = await db.Aprovados.FindAsync(aprovado.id_aprovado);
-                db.Entry(found).CurrentValues.SetValues(aprovado);
-                await db.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+            DateOnly dateOnly => dateOnly.ToDateTime(TimeOnly.MinValue),
+            DateTime dateTime => dateTime,
+            _ => Convert.ToDateTime(value)
+        };
+    }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void RaisePropertyChanged(string propName)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-        }
-
+    public override void SetValue(System.Data.IDbDataParameter parameter, DateTime value)
+    {
+        parameter.Value = value;
     }
 }

@@ -1,7 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Producao.Views.OrdemServico.Produto;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Utility;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.OrdemServico.Servicos
 {
@@ -29,7 +29,7 @@ namespace Producao.Views.OrdemServico.Servicos
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 BaixaOrdemServicoViewModel vm = (BaixaOrdemServicoViewModel)DataContext;
-                vm.Itens = await Task.Run(vm.GetItensAsync);
+                vm.Itens = await vm.GetItensAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -45,14 +45,19 @@ namespace Producao.Views.OrdemServico.Servicos
         }
 
 
-        private async void SfDataGrid_RowValidated(object sender, RowValidatedEventArgs e)
+        private async void RadGridView_RowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
         {
+            if (e.EditAction != GridViewEditAction.Commit)
+            {
+                return;
+            }
+
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 BaixaOrdemServicoViewModel vm = (BaixaOrdemServicoViewModel)DataContext;
-                TblServicoModel data = (TblServicoModel)e.RowData;
-                await Task.Run(() => vm.BaixaAsync(data));
+                TblServicoModel data = (TblServicoModel)e.Row.Item;
+                await vm.BaixaAsync(data);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -137,28 +142,37 @@ namespace Producao.Views.OrdemServico.Servicos
 
     public static class ContextMenuCommandsBaixaOrdemServico
     {
-        static BaseCommand? cancelarOS;
-        public static BaseCommand CancelarOS
+        static ICommand? cancelarOS;
+        public static ICommand CancelarOS
         {
             get
             {
-                cancelarOS ??= new BaseCommand(OnCancelarOSClicked);
+                cancelarOS ??= new RelayCommand(OnCancelarOSClicked);
                 return cancelarOS;
             }
         }
 
         private static async void OnCancelarOSClicked(object obj)
         {
-            var record = ((GridRecordContextMenuInfo)obj).Record as TblServicoModel;
-            var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
+            var grid = obj as RadGridView;
+            if (grid is null)
+            {
+                return;
+            }
+
             var item = grid.SelectedItem as TblServicoModel;
+            if (item is null)
+            {
+                return;
+            }
+
             BaixaOrdemServicoViewModel vm = (BaixaOrdemServicoViewModel)grid.DataContext;
 
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 item.cancelar = "-1";
-                await Task.Run(() => vm.CancelarAsync(item));
+                await vm.CancelarAsync(item);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)

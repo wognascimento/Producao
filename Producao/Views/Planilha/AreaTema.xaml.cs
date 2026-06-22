@@ -1,10 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Win32;
+using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-using Syncfusion.Data;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Grid.Helpers;
-using Syncfusion.Windows.Shared;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -13,7 +8,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Telerik.Windows.Persistence.Core;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.Planilha
 {
@@ -36,7 +32,6 @@ namespace Producao.Views.Planilha
                 AreaTemaViewModel vm = (AreaTemaViewModel)DataContext;
                 vm.Siglas = await vm.GetSiglasAsync();
                 vm.AreaTemas = await vm.GeAreaTemasAsync();
-                //vm.Locais = ["Praça principal", "Trono", "Presépio", "Mini-Cenário", "Oficina", "Fachada"];
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -46,15 +41,19 @@ namespace Producao.Views.Planilha
             }
         }
 
-        private async void OnRowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void OnRowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
         {
-            var registro = e.RowData as TblAreaTemaModel;
+            var registro = e.EditedItem as TblAreaTemaModel;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 AreaTemaViewModel vm = (AreaTemaViewModel)DataContext;
-                TblAreaTemaModel data = (TblAreaTemaModel)e.RowData;
-                data = await vm.SaveAsync(data);
+                if (registro is null)
+                {
+                    return;
+                }
+
+                await vm.SaveAsync(registro);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (DbUpdateException ex)
@@ -62,111 +61,49 @@ namespace Producao.Views.Planilha
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 MessageBox.Show(ex.InnerException?.Message);
 
-                if (gridAreaTema.IsAddNewIndex(e.RowIndex))
-                    gridAreaTema.View.Remove(registro);
+                if (registro is not null && registro.codareatema == 0)
+                    ((AreaTemaViewModel)DataContext).AreaTemas.Remove(registro);
                 else
-                    gridAreaTema.View.Refresh();
+                    gridAreaTema.Rebind();
             }
             catch (Exception ex)
             {
-                
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 MessageBox.Show(ex.Message);
 
-                if (gridAreaTema.IsAddNewIndex(e.RowIndex))
-                    gridAreaTema.View.Remove(registro);
+                if (registro is not null && registro.codareatema == 0)
+                    ((AreaTemaViewModel)DataContext).AreaTemas.Remove(registro);
                 else
-                    gridAreaTema.View.Refresh();
+                    gridAreaTema.Rebind();
             }
         }
 
-        private void OnRowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-
         }
 
-        private void gridAreaTema_CurrentCellDropDownSelectionChanged(object sender, CurrentCellDropDownSelectionChangedEventArgs e)
+        private void gridAreaTema_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
-            
-            var sfdatagrid = sender as SfDataGrid;
-            var viewModel = (AreaTemaViewModel)sfdatagrid.DataContext;
-            //int rowIndex = sfdatagrid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-            /*
-            TblAreaTemaModel record;
-
-            if (rowIndex == -1)
-                record = (TblAreaTemaModel)sfdatagrid.View.CurrentAddItem;
-            else
-                record = (TblAreaTemaModel)(sfdatagrid.View.Records[rowIndex] as RecordEntry).Data;
-
-
-            if (sfdatagrid.CurrentColumn.MappingName == "sigla")
-                record.tema = ((AprovadoModel)e.SelectedItem).Tema;
-
-            sfdatagrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
-            */
-
-            if (gridAreaTema.CurrentColumn.MappingName == "sigla")
+            if (e.Cell?.DataContext is not TblAreaTemaModel registro)
             {
-                var rowIndex = gridAreaTema.SelectionController.CurrentCellManager.CurrentRowColumnIndex.RowIndex;
-
-                // Obtém a ViewModel (ajuste conforme seu DataContext)
-                var listaFuncionarios = (ObservableCollection<TblAreaTemaModel>)gridAreaTema.ItemsSource;
-
-                TblAreaTemaModel? registro = null;
-
-                // Verifica se é uma linha nova sendo editada
-                if (gridAreaTema.IsAddNewIndex(rowIndex))
-                {
-                    // Se for uma nova linha, obtemos o objeto que está sendo editado
-                    registro = gridAreaTema.View.CurrentAddItem as TblAreaTemaModel;
-                }
-                else if (rowIndex > 0 && rowIndex <= listaFuncionarios.Count)
-                {
-                    // Se for uma linha existente, acessamos pelo ItemsSource
-                    registro = listaFuncionarios[rowIndex - 1];
-                }
-
-                if (registro != null)
-                {
-                    // Obtém o nome selecionado no ComboBox
-                    string? nomeSelecionado = ((AprovadoModel)e.SelectedItem).sigla_serv;
-
-                    // Busca o setor correspondente ao funcionário selecionado
-                    var funcionario = ((AreaTemaViewModel)this.DataContext).Siglas.FirstOrDefault(f => f.sigla_serv == nomeSelecionado);
-
-                    if (funcionario != null)
-                    {
-                        registro.tema = funcionario.tema;
-                        //sfdatagrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
-                        gridAreaTema.UpdateDataRow(rowIndex);
-                    }
-                }
+                return;
             }
-        }
 
-        private void OnCurrentCellValueChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValueChangedEventArgs e)
-        {
-
-        }
-
-        private void gridAreaTema_CurrentCellEndEdit(object sender, CurrentCellEndEditEventArgs e)
-        {
-            var sfDataGrid = e.OriginalSender as SfDataGrid;
-            var dataGrid = sender as SfDataGrid;
-            var datarow = sfDataGrid.RowGenerator.Items.FirstOrDefault(dr => dr.RowIndex == e.RowColumnIndex.RowIndex);
-            var dodos = datarow.RowData as TblAreaTemaModel;
-            if (datarow.RowData is TblAreaTemaModel currentItem)
+            if (e.Cell.Column.UniqueName == "sigla")
             {
-                // Atualizar a coluna CenografiaPlanta com base em ConstrucaoTotal
-                if (sfDataGrid.CurrentColumn.MappingName == "construcao_total")
+                var funcionario = ((AreaTemaViewModel)DataContext).Siglas.FirstOrDefault(f => f.sigla_serv == registro.sigla);
+                if (funcionario != null)
                 {
-                    var calculo = dodos.area_total_planta - dodos.trilha_planta - dodos.pa - dodos.construcao_total;
-                    currentItem.cenografia_planta = calculo;
-                    sfDataGrid.UpdateDataRow(e.RowColumnIndex.RowIndex);
-                    sfDataGrid.View.CommitEdit();
+                    registro.tema = funcionario.tema;
                 }
             }
+
+            if (e.Cell.Column.UniqueName == "construcao_total")
+            {
+                registro.cenografia_planta = registro.area_total_planta - registro.trilha_planta - registro.pa - registro.construcao_total;
+            }
+
+            gridAreaTema.Rebind();
         }
     }
 
@@ -241,7 +178,6 @@ namespace Producao.Views.Planilha
             }
         }
 
-
         public async Task<ObservableCollection<TblAreaTemaModel>> GeAreaTemasAsync()
         {
             try
@@ -262,8 +198,6 @@ namespace Producao.Views.Planilha
             try
             {
                 using DatabaseContext db = new();
-                //await db.AreaTemas.AddAsync(areaTema);
-                //await db.SaveChangesAsync();
 
                 db.Entry(areaTema).State = areaTema.codareatema == 0 ?
                                    EntityState.Added :
@@ -278,7 +212,5 @@ namespace Producao.Views.Planilha
                 throw;
             }
         }
-
-
     }
 }

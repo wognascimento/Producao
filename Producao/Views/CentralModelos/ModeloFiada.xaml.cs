@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.Windows.Shared;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,12 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.CentralModelos
 {
-    /// <summary>
-    /// Lógica interna para ModeloFiada.xaml
-    /// </summary>
     public partial class ModeloFiada : Window
     {
         private QryModeloModel? modelo;
@@ -21,87 +19,110 @@ namespace Producao.Views.CentralModelos
         {
             InitializeComponent();
             this.modelo = modelo;
-            this.DataContext = new ModeloFiadaViewModel();
+            DataContext = new ModeloFiadaViewModel();
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             ModeloFiadaViewModel vm = (ModeloFiadaViewModel)DataContext;
-            vm.Modelo = this.modelo;
+            vm.Modelo = modelo;
             vm.Modelos = new ObservableCollection<string> { "MOD. 01", "MOD. 02", "MOD. 03", "MOD. 04", "MOD. 05", "MOD. 06", "MOD. 07", "MOD. 08", "MOD. 09", "MOD. 10" };
 
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.ModeloFiada = await Task.Run(() => vm.GetModelosFiadaAsync(modelo));
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+                vm.ModeloFiada = await vm.GetModelosFiadaAsync(modelo);
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
             catch (Exception ex)
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
                 MessageBox.Show(ex.Message);
             }
         }
 
-        private void SfDataGrid_AddNewRowInitiating(object sender, Syncfusion.UI.Xaml.Grid.AddNewRowInitiatingEventArgs e)
+        private void OnAddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
-            ModeloFiadaViewModel vm = (ModeloFiadaViewModel)DataContext;
+            if (modelo == null)
+            {
+                return;
+            }
+
             ((ModeloFiadaModel)e.NewObject).id_modelo = modelo.id_modelo;
         }
 
-        private void SfDataGrid_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-            ModeloFiadaModel rowData = (ModeloFiadaModel)e.RowData;
+            if (e.Row?.Item is not ModeloFiadaModel rowData)
+            {
+                return;
+            }
+
             if (rowData.id_modelo == null)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("modelofiada", "Modelo não selecionado, Fecha e abre a Janela");
-                e.ErrorMessages.Add("qtdmodelofiada", "Modelo não selecionado, Fecha e abre a Janela");
+                AddValidation(e, nameof(ModeloFiadaModel.modelofiada), "Modelo não selecionado. Feche e abra a janela novamente.");
             }
-            else if (rowData.modelofiada == null)
+            else if (string.IsNullOrWhiteSpace(rowData.modelofiada))
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("modelofiada", "Seleciona o MODELO da fiada.");
+                AddValidation(e, nameof(ModeloFiadaModel.modelofiada), "Selecione o modelo da fiada.");
             }
             else if (rowData.qtdmodelofiada == null)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("qtdmodelofiada", "Informa a QUANTIDADE enfeites do MODELO");
+                AddValidation(e, nameof(ModeloFiadaModel.qtdmodelofiada), "Informe a quantidade de enfeites do modelo.");
             }
         }
 
-        private async void SfDataGrid_RowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void OnRowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
         {
+            if (e.EditedItem is not ModeloFiadaModel data)
+            {
+                return;
+            }
+
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
                 ModeloFiadaViewModel vm = (ModeloFiadaViewModel)DataContext;
-                ModeloFiadaModel data = (ModeloFiadaModel)e.RowData;
-                data = await Task.Run(() => vm.SaveModelosFiadaAsync(data));
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                await vm.SaveModelosFiadaAsync(data);
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
             catch (Exception ex)
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
                 MessageBox.Show(ex.Message);
             }
         }
 
-        private async void IntegerTextBox_LostFocus(object sender, RoutedEventArgs e)
+        private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
         {
+            e.ValidationResults.Add(new GridViewCellValidationResult
+            {
+                PropertyName = propertyName,
+                ErrorMessage = message
+            });
+        }
+
+        private async void QtdFiada_ValueChanged(object sender, RadRangeBaseValueChangedEventArgs e)
+        {
+            if (!IsLoaded || modelo?.id_modelo == null)
+            {
+                return;
+            }
+
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                var field = sender as IntegerTextBox;
-                var valor = Convert.ToInt32(field.Value);
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+                var valor = e.NewValue.HasValue ? Convert.ToInt32(e.NewValue.Value) : (int?)null;
                 ModeloFiadaViewModel vm = (ModeloFiadaViewModel)DataContext;
-                var dados = await Task.Run(() => vm.AddModeloAsync(modelo.id_modelo, valor));
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                await vm.AddModeloAsync(modelo.id_modelo, valor);
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
             catch (Exception ex)
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
                 MessageBox.Show(ex.Message);
             }
         }
@@ -110,63 +131,49 @@ namespace Producao.Views.CentralModelos
     public class ModeloFiadaViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+
         public void RaisePropertyChanged(string propName)
         {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
         private ObservableCollection<string>? modelos;
         public ObservableCollection<string> Modelos
         {
-            get { return modelos; }
-            set { modelos = value; RaisePropertyChanged("Modelos"); }
+            get => modelos;
+            set { modelos = value; RaisePropertyChanged(nameof(Modelos)); }
         }
 
         private ObservableCollection<ModeloFiadaModel>? modeloFiada;
         public ObservableCollection<ModeloFiadaModel> ModeloFiada
         {
-            get { return modeloFiada; }
-            set { modeloFiada = value; RaisePropertyChanged("ModeloFiada"); }
+            get => modeloFiada;
+            set { modeloFiada = value; RaisePropertyChanged(nameof(ModeloFiada)); }
         }
 
         private QryModeloModel? modelo;
         public QryModeloModel Modelo
         {
-            get { return modelo; }
-            set { modelo = value; RaisePropertyChanged("Modelo"); }
+            get => modelo;
+            set { modelo = value; RaisePropertyChanged(nameof(Modelo)); }
         }
 
         public async Task<ObservableCollection<ModeloFiadaModel>> GetModelosFiadaAsync(QryModeloModel? modelo)
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.ModelosFiada
-                    .OrderBy(c => c.modelofiada)
-                    .Where(c => c.id_modelo == modelo.id_modelo)
-                    .ToListAsync();
-                return new ObservableCollection<ModeloFiadaModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            using DatabaseContext db = new();
+            var data = await db.ModelosFiada
+                .OrderBy(c => c.modelofiada)
+                .Where(c => c.id_modelo == modelo.id_modelo)
+                .ToListAsync();
+            return new ObservableCollection<ModeloFiadaModel>(data);
         }
 
         public async Task<ModeloFiadaModel> SaveModelosFiadaAsync(ModeloFiadaModel modelo)
         {
-            try
-            {
-                using DatabaseContext db = new();
-                await db.ModelosFiada.SingleMergeAsync(modelo);
-                await db.SaveChangesAsync();
-                return modelo;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            using DatabaseContext db = new();
+            await db.ModelosFiada.SingleMergeAsync(modelo);
+            await db.SaveChangesAsync();
+            return modelo;
         }
 
         public async Task<ModeloModel> AddModeloAsync(long? id_modelo, int? qtd_fiada_cascata)
@@ -174,9 +181,10 @@ namespace Producao.Views.CentralModelos
             using DatabaseContext db = new();
             var strategy = db.Database.CreateExecutionStrategy();
             ModeloModel modelo = new();
-            await strategy.ExecuteAsync(async () => 
+
+            await strategy.ExecuteAsync(async () =>
             {
-                var transaction = db.Database.BeginTransaction();
+                using var transaction = db.Database.BeginTransaction();
                 try
                 {
                     modelo = await db.Modelos.FindAsync(id_modelo);
@@ -185,7 +193,7 @@ namespace Producao.Views.CentralModelos
                     await db.SaveChangesAsync();
                     transaction.Commit();
                 }
-                catch (Exception)
+                catch
                 {
                     transaction.Rollback();
                     throw;
@@ -194,7 +202,5 @@ namespace Producao.Views.CentralModelos
 
             return modelo;
         }
-
-
     }
 }

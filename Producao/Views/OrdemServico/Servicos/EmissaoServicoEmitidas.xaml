@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.OrdemServico.Servicos" 
              xmlns:vewModel="clr-namespace:Producao"
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Initialized="UserControl_Initialized" Unloaded="UserControl_Unloaded">
 
@@ -16,59 +16,49 @@
 
     <Grid>
 
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             x:Name="itens" 
             Grid.Row="10"
             Grid.Column="0"
             Grid.ColumnSpan="3"
             AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            AllowDraggingColumns="True"
-            AllowFiltering="True"
-            SelectionUnit="Row"
+            CanUserResizeColumns="True"
+            CanUserReorderColumns="True"
+            IsFilteringAllowed="True"
+            ShowGroupPanel="False"
+            GroupRenderMode="Flat"
             SelectionMode="Extended"
-            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat"
-            ColumnSizer="SizeToHeader"
-            ShowRowHeader="True" 
             ItemsSource="{Binding OrdemServicos}"
             SelectedItem="{Binding OrdemServico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-            CurrentCellValueChanged="itens_CurrentCellValueChanged">
+            RowEditEnded="itens_RowEditEnded">
 
 
-            <syncfusion:SfDataGrid.RecordContextMenu>
+            <telerik:RadGridView.ContextMenu>
                 <ContextMenu Style="{x:Null}">
 
                     <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsEmissaoServicoEmitidas.CancelarOS}}"
-                          CommandParameter="{Binding}"
+                          CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                           Header="Imprimir"/>
 
                 </ContextMenu>
-            </syncfusion:SfDataGrid.RecordContextMenu>
+            </telerik:RadGridView.ContextMenu>
 
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn
-                    MappingName="num_os"
-                    DisplayBinding="{Binding num_os, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridTextColumn MappingName="tipo"/>
-                <syncfusion:GridTextColumn MappingName="descricao_setor"/>
-                <syncfusion:GridTextColumn MappingName="descricao_servico"/>
-                <syncfusion:GridTextColumn MappingName="planilha"/>
-                <syncfusion:GridTextColumn MappingName="orientacao"/>
-                <syncfusion:GridNumericColumn
-                    MappingName="quantidade"
-                    DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridDateTimeColumn MappingName="data_emissao"/>
-                <syncfusion:GridDateTimeColumn MappingName="data_conclusao"/>
-                <syncfusion:GridTextColumn MappingName="cliente"/>
-                <syncfusion:GridCheckBoxColumn 
-                    MappingName="cancelar"
-                    AllowEditing="True"
-                    DisplayBinding="{Binding cancelar, Converter={StaticResource ConverterBoolen}}"
-                    ValueBinding="{Binding cancelar, Converter={StaticResource ConverterBoolen}}"/>
-                <syncfusion:GridTextColumn MappingName="emitido_por"/>
-                <syncfusion:GridDateTimeColumn MappingName="emitido_por_data" ColumnSizer="SizeToHeader"/>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="num_os" DataMemberBinding="{Binding num_os, Converter={StaticResource ConverterNumber}}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="tipo" DataMemberBinding="{Binding tipo}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="descricao_setor" DataMemberBinding="{Binding descricao_setor}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="descricao_servico" DataMemberBinding="{Binding descricao_servico}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="planilha" DataMemberBinding="{Binding planilha}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="orientacao" DataMemberBinding="{Binding orientacao}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="quantidade" DataMemberBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="data_emissao" DataMemberBinding="{Binding data_emissao, StringFormat={}{0:dd/MM/yyyy}}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="data_conclusao" DataMemberBinding="{Binding data_conclusao, StringFormat={}{0:dd/MM/yyyy}}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="cliente" DataMemberBinding="{Binding cliente}" IsReadOnly="True"/>
+                <telerik:GridViewCheckBoxColumn Header="cancelar" DataMemberBinding="{Binding cancelar, Converter={StaticResource ConverterBoolen}}"/>
+                <telerik:GridViewDataColumn Header="emitido_por" DataMemberBinding="{Binding emitido_por}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="emitido_por_data" DataMemberBinding="{Binding emitido_por_data, StringFormat={}{0:dd/MM/yyyy}}" IsReadOnly="True"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
     </Grid>
     

@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-using Syncfusion.Data.Extensions;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Utility;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -14,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.Controlado
 {
@@ -34,7 +32,7 @@ namespace Producao.Views.Controlado
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ImprimirEtiquetaViewModel vm = (ImprimirEtiquetaViewModel)DataContext;
-                vm.Produtos = await Task.Run(vm.GetProdutosAsync);
+                vm.Produtos = await vm.GetProdutosAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -42,6 +40,178 @@ namespace Producao.Views.Controlado
                 MessageBox.Show(ex.Message);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+        }
+
+        private async void OnImprimirEtiquetaClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ImprimirEtiquetaViewModel vm || ProdutosGrid.SelectedItem is not ControladoEtiquetaModel record)
+            {
+                return;
+            }
+
+            if (record.etiquetas == 0 || record.impressas == record.etiquetas)
+            {
+                MostrarAlertaEtiqueta("Não existe etiqueas para este produto.");
+                return;
+            }
+
+            var printer = ThermalPrinterConfiguration.Load();
+            TcpClient? client = new();
+            try
+            {
+                await client.ConnectAsync(printer.IpAddress, printer.Port);
+                await using var writer = new StreamWriter(client.GetStream());
+
+                RadWindow.Prompt(new DialogParameters
+                {
+                    Content = "Informa a quantidade de etiquetas:",
+                    Header = "Imprimir Etiqueta(s)",
+                    OkButtonContent = "IMPRIMIR",
+                    DefaultPromptResultValue = "1",
+                    Closed = async (_, args) =>
+                    {
+                        if (string.IsNullOrWhiteSpace(args.PromptResult) || !int.TryParse(args.PromptResult, out var quantidade))
+                        {
+                            MessageBox.Show("Por favor, insira um número válido.");
+                            return;
+                        }
+
+                        if (quantidade > record.etiquetas)
+                        {
+                            MostrarAlertaEtiqueta("Está informando uma quantidade maior do que as etiquetas disponíveis.");
+                            return;
+                        }
+
+                        for (var i = 0; i < quantidade; i++)
+                        {
+                            var etiqueta = await vm.GetImprimirAsync(record.codcompladicional);
+                            EscreverEtiqueta(writer, etiqueta);
+
+                            using DatabaseContext db = new();
+                            await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
+                            record.impressas += 1;
+                        }
+
+                        await writer.FlushAsync();
+                        ProdutosGrid.Items.Refresh();
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void OnAdicionarEtiquetaClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ImprimirEtiquetaViewModel vm || ProdutosGrid.SelectedItem is not ControladoEtiquetaModel record)
+            {
+                return;
+            }
+
+            RadWindow.Prompt(new DialogParameters
+            {
+                Content = "Informa a quantidade de etiquetas:",
+                Header = "Adicionar Etiqueta(s)",
+                OkButtonContent = "ADICIONAR",
+                Closed = async (_, args) =>
+                {
+                    if (string.IsNullOrWhiteSpace(args.PromptResult) || !args.PromptResult.All(char.IsDigit))
+                    {
+                        RadWindow.Alert("Informa número para adicionar etiqueta.");
+                        return;
+                    }
+
+                    var limit = int.Parse(args.PromptResult);
+                    var saldo = (int)((record.saldo_estoque ?? 0) - (record.etiquetas ?? 0));
+                    if (saldo < 1 || limit > saldo)
+                    {
+                        RadWindow.Alert(new DialogParameters
+                        {
+                            Content = "Não é possivel adicionar quantidade maior que o saldo de estoque.",
+                            Header = "Adicionar Etiqueta(s)"
+                        });
+                        return;
+                    }
+
+                    try
+                    {
+                        Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                        vm.Livres = await vm.GetLivresAsync(limit);
+                        foreach (var item in vm.Livres)
+                        {
+                            await vm.AddEtiquetaAsync(new ControladoZebraModel
+                            {
+                                codcompladicional = record.codcompladicional,
+                                codigo = item.codigo
+                            });
+                        }
+
+                        record.etiquetas += limit;
+                        ProdutosGrid.Items.Refresh();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                    finally
+                    {
+                        Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                    }
+                }
+            });
+        }
+
+        private void OnRemoverEtiquetaClick(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void OnImpressasEtiquetaClick(object sender, RoutedEventArgs e)
+        {
+            if (ProdutosGrid.SelectedItem is not ControladoEtiquetaModel item)
+            {
+                return;
+            }
+
+            var radWindow = new Impressas(item.codcompladicional)
+            {
+                Width = 400,
+                Height = 300,
+                ResizeMode = ResizeMode.NoResize,
+                CanMove = false
+            };
+            StyleManager.SetTheme(radWindow, new Windows8Theme());
+            radWindow.ShowDialog();
+        }
+
+        private static void MostrarAlertaEtiqueta(string mensagem)
+        {
+            var alert = new RadDesktopAlert
+            {
+                Header = "NOTIFICAÇÃO IMPRESSÃO ETIQUETA",
+                Content = mensagem,
+                ShowDuration = 3000
+            };
+
+            var manager = new RadDesktopAlertManager();
+            StyleManager.SetTheme(alert, new Windows8Theme());
+            manager.ShowAlert(alert);
+        }
+
+        private static void EscreverEtiqueta(StreamWriter writer, QryImpressaoModel etiqueta)
+        {
+            writer.WriteLine(@"^XA");
+            writer.WriteLine(@"^PW184");
+            writer.WriteLine(@"^CI28");
+            writer.WriteLine($@"^FT24,313^BQN,2,6");
+            writer.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
+            writer.WriteLine($@"^FT160,295^AAB,9,5^FH\^FDPRODUTO^FS");
+            writer.WriteLine($@"^FT175,295^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
+            writer.WriteLine($@"^FT160,229^AAB,9,5^FH\^FDETIQUETA^FS");
+            writer.WriteLine($@"^FT175,229^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
+            writer.WriteLine($@"^FT141,160^A0B,15^FB121,8,0,C^FH\^FD{etiqueta.descricao_completa?.Replace("ÚNICO", "")}^FS");
+            writer.WriteLine(@"^PQ1,0,1,Y^XZ");
         }
     }
 
@@ -136,243 +306,6 @@ namespace Producao.Views.Controlado
                 throw;
             }
         }
-
-    }
-
-    public static class ContextMenuCommandsImprimirEtiqueta
-    {
-        static BaseCommand? imprimir;
-        public static BaseCommand Imprimir
-        {
-            get { imprimir ??= new BaseCommand(OnImprimir); return imprimir; }
-        }
-        private static async void OnImprimir(object obj)
-        {
-            var record = ((GridRecordContextMenuInfo)obj).Record as ControladoEtiquetaModel;
-            var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
-            var item = grid.SelectedItem as ControladoEtiquetaModel;
-            ImprimirEtiquetaViewModel vm = (ImprimirEtiquetaViewModel)grid.DataContext;
-
-            if (record.etiquetas == 0 || record.impressas == record.etiquetas) 
-            {
-                var alert = new RadDesktopAlert
-                {
-                    Header = "NOTIFICAÇÃO IMPRESSÃO ETIQUETA",
-                    Content = "Não existe etiqueas para este produto.",
-                    ShowDuration = 3000
-                };
-                RadDesktopAlertManager manager = new();
-                StyleManager.SetTheme(alert, new Windows8Theme());
-                manager.ShowAlert(alert);
-
-                return;
-            }
-
-            string IPAdress = "192.168.0.113";
-            int Port = 9100;
-            StreamWriter? SWriter;
-            TcpClient? Client = new();
-            try
-            {
-                await Client.ConnectAsync(IPAdress, Port);
-                SWriter = new(Client.GetStream());
-                //SWriter = new(@"C:\TEMP\ETIQUETA.TXT");
-
-                RadWindow.Prompt(new DialogParameters()
-                {
-                    Content = "Informa a quantidade de etiquetas:",
-                    Header = "Imprimir Etiqueta(s)",
-                    OkButtonContent = "IMPRIMIR",
-                    DefaultPromptResultValue = "1",
-
-                    Closed = async (sender, e) =>
-                    {
-                        if (!string.IsNullOrWhiteSpace(e.PromptResult) && int.TryParse(e.PromptResult, out int quantidade))
-                        {
-                            //int saldo = (int)((record.etiquetas ?? 0) - (record.impressas ?? 0));
-
-                            if (quantidade > record.etiquetas)
-                            {
-                                var alert = new RadDesktopAlert
-                                {
-                                    Header = "NOTIFICAÇÃO IMPRESSÃO ETIQUETA",
-                                    Content = "Está informando uma quantidade maior do que as etiquetas disponíveis.",
-                                    ShowDuration = 3000
-                                };
-                                RadDesktopAlertManager manager = new();
-                                StyleManager.SetTheme(alert, new Windows8Theme());
-                                manager.ShowAlert(alert);
-                                return;
-                            }
-                            for (int i = 0; i < quantidade; i++)
-                            {
-                                var etiqueta = await vm.GetImprimirAsync(record.codcompladicional);
-
-                                SWriter.WriteLine($@"^XA");
-                                SWriter.WriteLine($@"^PW184");
-                                SWriter.WriteLine($@"^CI28");
-                                //SWriter.WriteLine($@"^FT24,313^BQN,2,6");
-                                //SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
-                                //SWriter.WriteLine($@"^FT124,159^AAB,9,5^FH\^FDPRODUTO^FS");
-                                //SWriter.WriteLine($@"^FT139,159^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
-                                //SWriter.WriteLine($@"^FT124,93^AAB,9,5^FH\^FDETIQUETA^FS");
-                                //SWriter.WriteLine($@"^FT139,93^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
-                                //SWriter.WriteLine($@"^FT105,160^AAB,9,5^FB121,6,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
-                                //SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
-                                SWriter.WriteLine($@"^FT24,313^BQN,2,6");
-                                SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
-                                SWriter.WriteLine($@"^FT160,295^AAB,9,5^FH\^FDPRODUTO^FS");
-                                SWriter.WriteLine($@"^FT175,295^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
-                                SWriter.WriteLine($@"^FT160,229^AAB,9,5^FH\^FDETIQUETA^FS");
-                                SWriter.WriteLine($@"^FT175,229^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
-                                SWriter.WriteLine($@"^FT141,160^A0B,15^FB121,8,0,C^FH\^FD{etiqueta.descricao_completa?.Replace("ÚNICO", "")}^FS");
-                                SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
-
-                                using DatabaseContext db = new();
-                                await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
-                                record.impressas += 1;
-                                grid.View.Refresh();
-                            }
-                            await SWriter.FlushAsync();
-                            await SWriter.DisposeAsync();
-                            SWriter.Close();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Por favor, insira um número válido.");
-                        }
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        static BaseCommand? adicionar;
-        public static BaseCommand Adicionar
-        {
-            get { adicionar ??= new BaseCommand(OnAdicionar); return adicionar; }
-        }
-        private static async void OnAdicionar(object obj)
-        {
-            var record = ((GridRecordContextMenuInfo)obj).Record as ControladoEtiquetaModel;
-            var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
-            //var item = grid.SelectedItem as ControladoEtiquetaModel;
-            ImprimirEtiquetaViewModel vm = (ImprimirEtiquetaViewModel)grid.DataContext;
-
-            RadWindow.Prompt(new DialogParameters()
-            {
-                Content = "Informa a quantidade de etiquetas:",
-                Header = "Adicionar Etiqueta(s)",
-                OkButtonContent = "ADICIONAR",
-                Closed = async (object sender, WindowClosedEventArgs e) =>
-                {
-                    if (e.PromptResult != null)
-                    {
-                        //bool ehValido = Regex.IsMatch(e.PromptResult, @"^\d");
-                        if (e.PromptResult.All(char.IsDigit)) 
-                        {
-                            int limit = int.Parse(e.PromptResult);
-                            int saldo = (int)((record.saldo_estoque ?? 0) - (record.etiquetas ?? 0));
-                            if (saldo < 1 || limit > saldo)
-                            {
-                                RadWindow.Alert(new DialogParameters()
-                                {
-                                    Content = "Não é possivel adicionar quantidade maior que o saldo de estoque.",
-                                    Header = "Adicionar Etiqueta(s)"
-                                });
-                                return;
-                            }
-
-                            try
-                            {
-                                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                                vm.Livres = await Task.Run(() => vm.GetLivresAsync(limit));
-                                foreach (var item in vm.Livres)
-                                {
-                                    await Task.Run(() => vm.AddEtiquetaAsync(new ControladoZebraModel { codcompladicional = record.codcompladicional, codigo = item.codigo }));
-
-                                }
-
-                                var filteredResult = grid.View.Records.Select(recordentry => recordentry.Data).ToList();
-
-                                //vm.Produtos = await Task.Run(vm.GetProdutosAsync);
-                                int i = filteredResult.IndexOf(record);
-                                record.etiquetas += limit;
-                                //record.impressas += limit;
-                                filteredResult[i] = record;
-
-                                grid.View.Refresh();
-
-                                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message);
-                                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                            }
-                        }
-                        else
-                        {
-                            RadWindow.Alert("Informa número para adicionar etiqueta.");
-                        }
-                    }
-                }
-            });
-        }
-
-        static BaseCommand? remover;
-        public static BaseCommand Remover
-        {
-            get { remover ??= new BaseCommand(OnRemover); return remover; }
-        }
-        private static async void OnRemover(object obj)
-        {
-            var record = ((GridRecordContextMenuInfo)obj).Record as ControladoEtiquetaModel;
-            var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
-            var item = grid.SelectedItem as ControladoEtiquetaModel;
-            ImprimirEtiquetaViewModel vm = (ImprimirEtiquetaViewModel)grid.DataContext;
-        }
-
-        static BaseCommand? impressas;
-        public static BaseCommand Impressas
-        {
-            get { impressas ??= new BaseCommand(OnImpressas); return impressas; }
-        }
-        private static async void OnImpressas(object obj)
-        {
-            var record = ((GridRecordContextMenuInfo)obj).Record as ControladoEtiquetaModel;
-            var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
-            var item = grid.SelectedItem as ControladoEtiquetaModel;
-            ImprimirEtiquetaViewModel vm = (ImprimirEtiquetaViewModel)grid.DataContext;
-
-            Impressas radWindow = new(item.codcompladicional)
-            {
-                Width = 400,
-                Height = 300,
-                ResizeMode = ResizeMode.NoResize,
-                CanMove = false
-            };
-            StyleManager.SetTheme(radWindow, new Windows8Theme());
-            radWindow.ShowDialog();
-        }
-
-        static BaseCommand? gerar;
-        public static BaseCommand Gerar
-        {
-            get { gerar ??= new BaseCommand(OnGerar); return gerar; }
-        }
-        private static async void OnGerar(object obj)
-        {
-            var record = ((GridRecordContextMenuInfo)obj).Record as ControladoEtiquetaModel;
-            var grid = ((GridRecordContextMenuInfo)obj).DataGrid;
-            var item = grid.SelectedItem as ControladoEtiquetaModel;
-            ImprimirEtiquetaViewModel vm = (ImprimirEtiquetaViewModel)grid.DataContext;
-        }
-
-        
 
     }
 }

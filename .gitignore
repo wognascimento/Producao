@@ -363,3 +363,14 @@ MigrationBackup/
 FodyWeavers.xsd
 Deployment/
 /Producao/Output/Producao.exe
+
+# Deploy/local artifacts
+/publish/
+/artifacts/
+/redist/
+/build-verify/
+/Producao/publish/
+/Producao/artifacts/
+/Producao/redist/
+/Producao/version.json
+/Producao/app.config

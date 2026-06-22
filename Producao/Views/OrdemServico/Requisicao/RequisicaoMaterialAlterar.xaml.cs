@@ -1,13 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.Views.Construcao;
 using Producao.Views.PopUp;
-using Syncfusion.Data;
-using Syncfusion.UI.Xaml.Diagram;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Grid.Helpers;
-using Syncfusion.XlsIO;
-using Syncfusion.XlsIO.Implementation;
+using Producao.Views.CentralModelos.Compat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,6 +13,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.OrdemServico.Requisicao
 {
@@ -57,7 +54,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
+                vm.Planilhas = await vm.GetPlanilhasAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -92,9 +89,9 @@ namespace Producao.Views.OrdemServico.Requisicao
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                     string text = ((TextBox)sender).Text;
                     RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
-                    //vm.Requisicao = await Task.Run(() => vm.GetByRequisicaoAsync(long.Parse(text)));
+                    //vm.Requisicao = await vm.GetByRequisicaoAsync(long.Parse(text));
                     
-                    vm.QryRequisicaoDetalhes = await Task.Run(() => vm.GetRequisicaoDetalhesAsync(long.Parse(text)));
+                    vm.QryRequisicaoDetalhes = await vm.GetRequisicaoDetalhesAsync(long.Parse(text));
                     if (vm.QryRequisicaoDetalhes.Count == 0)
                     {
                         MessageBox.Show("Requisição não encontrado", "Busca de requisição");
@@ -138,11 +135,11 @@ namespace Producao.Views.OrdemServico.Requisicao
                     alterado_por = Environment.UserName
                 };
 
-                var requi = await Task.Run(() => vm.AddProdutoRequisicaoAsync(vm.RequisicaoDetalhe));
-                //await Task.Run(vm.GetRequisicaoDetalhesAsync);
+                var requi = await vm.AddProdutoRequisicaoAsync(vm.RequisicaoDetalhe);
+                //await vm.GetRequisicaoDetalhesAsync();
 
-                //vm.Requisicao = await Task.Run(() => vm.GetRequisicaoAsync(vm.ProdutoServico.num_os_servico));
-                vm.QryRequisicaoDetalhes = await Task.Run(() => vm.GetRequisicaoDetalhesAsync(requi.num_requisicao));
+                //vm.Requisicao = await vm.GetRequisicaoAsync(vm.ProdutoServico.num_os_servico);
+                vm.QryRequisicaoDetalhes = await vm.GetRequisicaoDetalhesAsync(requi.num_requisicao);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 Limpar();
 
@@ -178,11 +175,11 @@ namespace Producao.Views.OrdemServico.Requisicao
                 vm.RequisicaoDetalhe.data = DateTime.Now;
                 vm.RequisicaoDetalhe.alterado_por = Environment.UserName;
 
-                var requi = await Task.Run(() => vm.AddProdutoRequisicaoAsync(vm.RequisicaoDetalhe));
-                //await Task.Run(vm.GetRequisicaoDetalhesAsync);
+                var requi = await vm.AddProdutoRequisicaoAsync(vm.RequisicaoDetalhe);
+                //await vm.GetRequisicaoDetalhesAsync();
 
-                //vm.Requisicao = await Task.Run(() => vm.GetRequisicaoAsync(vm.ProdutoServico.num_os_servico));
-                vm.QryRequisicaoDetalhes = await Task.Run(() => vm.GetRequisicaoDetalhesAsync(requi.num_requisicao));
+                //vm.Requisicao = await vm.GetRequisicaoAsync(vm.ProdutoServico.num_os_servico);
+                vm.QryRequisicaoDetalhes = await vm.GetRequisicaoDetalhesAsync(requi.num_requisicao);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 Limpar();
 
@@ -202,7 +199,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
                 var numreq = long.Parse(tbNumRequisicao.Text);
 
-                //vm.ReqDetalhes = await Task.Run(() => vm.GetByRequisicaoDetalhesAsync(numreq));
+                //vm.ReqDetalhes = await vm.GetByRequisicaoDetalhesAsync(numreq);
 
                 //ReqDetalhesModel requi = (from r in vm.ReqDetalhes select r).FirstOrDefault();
                 QryRequisicaoDetalheModel requi = (from r in vm.QryRequisicaoDetalhes select r).FirstOrDefault();
@@ -210,7 +207,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\REQUISICAO_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("REQUISICAO_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["C2"].Number = Convert.ToDouble(requi?.num_requisicao);
                 worksheet.Range["E2"].DateTime = Convert.ToDateTime(requi?.data);
@@ -277,9 +274,9 @@ namespace Producao.Views.OrdemServico.Requisicao
                     index++;
                 }
                 //workbook.SaveAs($"Impressos/REQUISICAO_{requi.num_requisicao}.xlsx");
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{numreq}.xlsx");
+                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"REQUISICAO_MODELO_{numreq}.xlsx"));
                 Process.Start(
-                new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{numreq}.xlsx")
+                new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"REQUISICAO_MODELO_{numreq}.xlsx"))
                 {
                     Verb = "Print",
                     UseShellExecute = true,
@@ -301,19 +298,19 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             
             dbClick = true;
-            var visualcontainer = this.itens.GetVisualContainer();
-            var rowColumnIndex = visualcontainer.PointToCellRowColumnIndex(e.GetPosition(visualcontainer));
-            var recordindex = this.itens.ResolveToRecordIndex(rowColumnIndex.RowIndex);
-            var recordentry = this.itens.View.GroupDescriptions.Count == 0 ? this.itens.View.Records[recordindex] : this.itens.View.TopLevelGroup.DisplayElements[recordindex];
-            var record = ((RecordEntry)recordentry).Data as QryRequisicaoDetalheModel;
+            var record = itens.SelectedItem as QryRequisicaoDetalheModel;
+            if (record is null)
+            {
+                return;
+            }
             /*
             RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
             vm.Planilha = (from p in vm.Planilhas where p.planilha == record.planilha select p).FirstOrDefault();
-            await Task.Run(async () => await vm.GetProdutosAsync());
+            await vm.GetProdutosAsync();
             vm.Produto = (from p in vm.Produtos where p.codigo == record.codigo select p).FirstOrDefault();
-            await Task.Run(async () => await vm.GetDescAdicionaisAsync());
+            await vm.GetDescAdicionaisAsync();
             vm.DescAdicional = (from d in vm.DescAdicionais where d.coduniadicional == record.coduniadicional select d).FirstOrDefault();
-            await Task.Run(async () => await vm.GetCompleAdicionaisAsync());
+            await vm.GetCompleAdicionaisAsync();
             vm.Compledicional = (from c in vm.CompleAdicionais where c.codcompladicional == record.codcompladicional select c).FirstOrDefault();
 
             txtQuantidade.Text = record.quantidade.ToString();
@@ -325,7 +322,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync((long)record?.codcompladicional));
+                vm.Descricao = await vm.GetDescricaoAsync((long)record?.codcompladicional);
                 tbCodproduto.Text = vm.Descricao.codcompladicional.ToString();
                 txtPlanilha.Text = vm.Descricao.planilha;
                 txtDescricao.Text = vm.Descricao.descricao;
@@ -342,9 +339,9 @@ namespace Producao.Views.OrdemServico.Requisicao
                     quantidade = (float?)record.quantidade
                 };
 
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(vm.Descricao.planilha));
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(vm.Descricao.codigo));
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional));
+                vm.Produtos = await vm.GetProdutosAsync(vm.Descricao.planilha);
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Descricao.codigo);
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional);
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -367,17 +364,17 @@ namespace Producao.Views.OrdemServico.Requisicao
             {
                 try
                 {
-                    var dado = long.Parse(((SfTextBoxExt)sender).Text);
+                    var dado = long.Parse(((TextBox)sender).Text);
                     RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
-                    await Task.Run(async () => await vm.GetDescricaoAsync(dado));
+                    await vm.GetDescricaoAsync(dado);
 
                     dbClick = true;
                     vm.Planilha = (from p in vm.Planilhas where p.planilha == vm.Descricao.planilha select p).FirstOrDefault();
-                    await Task.Run(async () => await vm.GetProdutosAsync());
+                    await vm.GetProdutosAsync();
                     vm.Produto = (from p in vm.Produtos where p.codigo == vm.Descricao.codigo select p).FirstOrDefault();
-                    await Task.Run(async () => await vm.GetDescAdicionaisAsync());
+                    await vm.GetDescAdicionaisAsync();
                     vm.DescAdicional = (from d in vm.DescAdicionais where d.coduniadicional == vm.Descricao.coduniadicional select d).FirstOrDefault();
-                    await Task.Run(async () => await vm.GetCompleAdicionaisAsync());
+                    await vm.GetCompleAdicionaisAsync();
                     vm.Compledicional = (from c in vm.CompleAdicionais where c.codcompladicional == vm.Descricao.codcompladicional select c).FirstOrDefault();
 
                     txtQuantidade.Focus();
@@ -405,7 +402,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                     string text = ((TextBox)sender).Text;
-                    vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(long.Parse(text)));
+                    vm.Descricao = await vm.GetDescricaoAsync(long.Parse(text));
                     if (vm.Descricao == null)
                     {
                         MessageBox.Show("Produto não encontrado", "Busca de produto");
@@ -452,12 +449,17 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
         }
 
-        private async void OnSelectedPlanilha(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
-                RelplanModel? planilha = e.NewValue as RelplanModel;
+                RelplanModel? planilha = e.AddedItems.Count > 0 ? e.AddedItems[0] as RelplanModel : null;
+                if (planilha is null)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.Produtos = new ObservableCollection<ProdutoModel>();
@@ -474,7 +476,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                 txtUnidade.Text = string.Empty;
 
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(planilha?.planilha));
+                vm.Produtos = await vm.GetProdutosAsync(planilha?.planilha);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricao.Focus();
             }
@@ -485,12 +487,17 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
         }
 
-        private async void OnSelectedDescricao(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
-                ProdutoModel? produto = e.NewValue as ProdutoModel;
+                ProdutoModel? produto = e.AddedItems.Count > 0 ? e.AddedItems[0] as ProdutoModel : null;
+                if (produto is null)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
@@ -503,7 +510,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                 txtUnidade.Text = string.Empty;
 
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(produto?.codigo));
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(produto?.codigo);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricaoAdicional.Focus();
             }
@@ -514,12 +521,17 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
         }
 
-        private async void OnSelectedDescricaoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
-                TabelaDescAdicionalModel? adicional = e.NewValue as TabelaDescAdicionalModel;
+                TabelaDescAdicionalModel? adicional = e.AddedItems.Count > 0 ? e.AddedItems[0] as TabelaDescAdicionalModel : null;
+                if (adicional is null)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
@@ -528,7 +540,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                 txtUnidade.Text = string.Empty;
 
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(adicional?.coduniadicional));
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(adicional?.coduniadicional);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtComplementoAdicional.Focus();
             }
@@ -539,10 +551,10 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
         }
 
-        private void OnSelectedComplementoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
         {
             RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
-            TblComplementoAdicionalModel? complemento = e.NewValue as TblComplementoAdicionalModel;
+            TblComplementoAdicionalModel? complemento = e.AddedItems.Count > 0 ? e.AddedItems[0] as TblComplementoAdicionalModel : null;
             vm.Compledicional = complemento;
             tbCodproduto.Text = complemento?.codcompladicional.ToString();
             txtUnidade.Text = complemento?.unidade;
@@ -554,17 +566,20 @@ namespace Producao.Views.OrdemServico.Requisicao
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
         }
 
-        private async void itens_RowValidating(object sender, RowValidatingEventArgs e)
+        private async void itens_RowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
             try
             {
+                if (e.EditOperationType == GridViewEditOperationType.None || e.Row.Item is not QryRequisicaoDetalheModel rowData)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
-                //QryRequisicaoDetalheModel det = (QryRequisicaoDetalheModel)e.RowData;
-                //e.RowData = {Producao.QryRequisicaoDetalheModel}
-                vm.RequisicaoDetalhe  = await Task.Run(() => vm.GetItemRequisicaoAsync(((QryRequisicaoDetalheModel)e.RowData).cod_det_req));
-                vm.RequisicaoDetalhe.volume = ((QryRequisicaoDetalheModel)e.RowData).volume;
-                var requi = await Task.Run(() => vm.AddProdutoRequisicaoAsync(vm.RequisicaoDetalhe));
+                vm.RequisicaoDetalhe  = await vm.GetItemRequisicaoAsync(rowData.cod_det_req);
+                vm.RequisicaoDetalhe.volume = rowData.volume;
+                var requi = await vm.AddProdutoRequisicaoAsync(vm.RequisicaoDetalhe);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -592,7 +607,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             using ExcelEngine excelEngine = new();
             IApplication application = excelEngine.Excel;
             application.DefaultVersion = ExcelVersion.Xlsx;
-            IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ETIQUETA_REQUISICAO_MODELO.xlsx");
+            IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("ETIQUETA_REQUISICAO_MODELO.xlsx"));
             IWorksheet worksheet = workbook.Worksheets[0];
 
             var etiqueta = Enum.Parse(typeof(Etiqueta), "Primeira");
@@ -600,11 +615,11 @@ namespace Producao.Views.OrdemServico.Requisicao
             int _etiqueta = 1;
             int _pagina = 1;
 
-            //vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(vm.Compledicional.codcompladicional));
-            //vm.ChecklistPrduto = await Task.Run(() => vm.GetChecklistPrdutoAsync(vm.Compledicional.codcompladicional));
+            //vm.Descricao = await vm.GetDescricaoAsync(vm.Compledicional.codcompladicional);
+            //vm.ChecklistPrduto = await vm.GetChecklistPrdutoAsync(vm.Compledicional.codcompladicional);
             //foreach (EtiquetaEmitidaModel item in filteredResult)
             //var itens = (from i in vm.ReqDetalhes where i.quantidade > 0 select new { i.quantidade, i.planilha, i.descricao_completa, i.unidade, i.observacao, i.codcompladicional, i.volume }).ToList();
-            var prodChk = await Task.Run(() => vm.GetPrdutoRequisicaoAsync(vm.Requisicao.num_requisicao));
+            var prodChk = await vm.GetPrdutoRequisicaoAsync(vm.Requisicao.num_requisicao);
             for (int i = 0; i < count; i++)
             {
                 try
@@ -641,7 +656,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Segunda");
                                 _etiqueta++;
-                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx"));
                                 break;
                             }
                         case Etiqueta.Segunda:
@@ -673,7 +688,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Terceira");
                                 _etiqueta++;
-                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx"));
                                 break;
                             }
                         case Etiqueta.Terceira:
@@ -705,7 +720,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Quarta");
                                 _etiqueta++;
-                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx"));
                                 break;
                             }
                         case Etiqueta.Quarta:
@@ -737,7 +752,7 @@ namespace Producao.Views.OrdemServico.Requisicao
 
                                 etiqueta = Enum.Parse(typeof(Etiqueta), "Primeira");
                                 _etiqueta = 1;
-                                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx");
+                                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"ETIQUETA_REQUISICAO_MODELO_{_pagina}.xlsx"));
 
                                 worksheet.Range["PRIMEIRA"].Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.None;
                                 worksheet.Range["PRIMEIRA"].Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.None;
@@ -784,7 +799,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                int idx = 1;
                 for (int i = 0; i < paginas; i++)
                 {
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ETIQUETA_REQUISICAO_MODELO_{idx}.xlsx")
+                    Process.Start(new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"ETIQUETA_REQUISICAO_MODELO_{idx}.xlsx"))
                     {
                         Verb = "Print",
                         UseShellExecute = true
@@ -816,7 +831,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 await vm.GravarItensReceitaAsync(vm.Requisicao.num_requisicao);
-                vm.QryRequisicaoDetalhes = await Task.Run(() => vm.GetRequisicaoDetalhesAsync(vm.Requisicao.num_requisicao));
+                vm.QryRequisicaoDetalhes = await vm.GetRequisicaoDetalhesAsync(vm.Requisicao.num_requisicao);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (DbUpdateException ex)

@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-using Producao.Views.kit.solucao;
-using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Telerik.Windows.Controls;
 
 namespace Producao.Views.kit
 {
@@ -40,19 +38,19 @@ namespace Producao.Views.kit
             }
         }
 
-        private void OnRowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
 
         }
 
-        private async void OnRowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
             try
             {
-                var sfdatagrid = sender as SfDataGrid;
                 ControleGeralSolicitacaoViewModel vm = (ControleGeralSolicitacaoViewModel)DataContext;
 
-                ControleSolicaoGeralModel data = (ControleSolicaoGeralModel)e.RowData;
+                if (e.Row.Item is not ControleSolicaoGeralModel data)
+                    return;
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 

@@ -1,578 +1,253 @@
-﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.DataBase.Model.Dto;
 using Producao.Views.PopUp;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
-namespace Producao.Views.Estoque
+namespace Producao.Views.Estoque;
+
+public partial class MovimentacaoEntrada : UserControl
 {
-    /// <summary>
-    /// Interação lógica para MovimentacaoEntrada.xam
-    /// </summary>
-    public partial class MovimentacaoEntrada : UserControl
+    public MovimentacaoEntrada()
     {
-        public MovimentacaoEntrada()
-        {
-            InitializeComponent();
-            DataContext = new MovimentacaoEntradaViewModel();
-        }
+        InitializeComponent();
+        DataContext = new MovimentacaoEntradaViewModel();
+    }
 
-        private async void UserControl_Loaded(object sender, RoutedEventArgs e)
+    private MovimentacaoEntradaViewModel ViewModel => (MovimentacaoEntradaViewModel)DataContext;
+
+    private async void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        await ExecutarAsync(ViewModel.CarregarPlanilhasAsync);
+    }
+
+    private async void OnBuscaProduto(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter)
+            return;
+
+        await ExecutarAsync(async () =>
         {
-            try
+            if (!long.TryParse(tbCodproduto.Text, out var codigo))
+                throw new InvalidOperationException("Informe um codigo de produto valido.");
+
+            ViewModel.Descricao = await ViewModel.GetDescricaoAsync(codigo);
+            if (ViewModel.Descricao is null)
+                throw new InvalidOperationException("Produto nao encontrado.");
+
+            PreencherProduto(ViewModel.Descricao);
+        });
+    }
+
+    private void OnOpenDescricoes(object sender, RoutedEventArgs e)
+    {
+        var window = new BuscaProduto { Owner = Application.Current.MainWindow };
+        if (window.ShowDialog() != true || window.descricao is null)
+            return;
+
+        ViewModel.Descricao = window.descricao;
+        PreencherProduto(window.descricao);
+    }
+
+    private void PreencherProduto(QryDescricao descricao)
+    {
+        tbCodproduto.Text = descricao.codcompladicional?.ToString() ?? string.Empty;
+        txtPlanilha.Text = descricao.planilha ?? string.Empty;
+        txtDescricao.Text = descricao.descricao ?? string.Empty;
+        txtDescricaoAdicional.Text = descricao.descricao_adicional ?? string.Empty;
+        txtComplementoAdicional.Text = descricao.complementoadicional ?? string.Empty;
+        txtQuantidade.Focus();
+    }
+
+    private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
+    {
+        if (txtPlanilha.SelectedItem is not RelplanModel planilha)
+            return;
+
+        await ExecutarAsync(async () =>
+        {
+            ViewModel.Produtos = [];
+            ViewModel.DescAdicionais = [];
+            ViewModel.CompleAdicionais = [];
+            txtDescricao.SelectedItem = null;
+            txtDescricaoAdicional.SelectedItem = null;
+            txtComplementoAdicional.SelectedItem = null;
+
+            await ViewModel.CarregarProdutosAsync(planilha.planilha);
+            await ViewModel.CarregarItensAsync(planilha.planilha);
+            txtDescricao.Focus();
+        });
+    }
+
+    private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
+    {
+        if (txtDescricao.SelectedItem is not ProdutoModel produto)
+            return;
+
+        await ExecutarAsync(async () =>
+        {
+            ViewModel.DescAdicionais = [];
+            ViewModel.CompleAdicionais = [];
+            txtDescricaoAdicional.SelectedItem = null;
+            txtComplementoAdicional.SelectedItem = null;
+            await ViewModel.CarregarDescricoesAdicionaisAsync(produto.codigo);
+            txtDescricaoAdicional.Focus();
+        });
+    }
+
+    private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
+    {
+        if (txtDescricaoAdicional.SelectedItem is not TabelaDescAdicionalModel adicional)
+            return;
+
+        await ExecutarAsync(async () =>
+        {
+            ViewModel.CompleAdicionais = [];
+            txtComplementoAdicional.SelectedItem = null;
+            await ViewModel.CarregarComplementosAsync(adicional.coduniadicional);
+            txtComplementoAdicional.Focus();
+        });
+    }
+
+    private void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
+    {
+        if (txtComplementoAdicional.SelectedItem is not TblComplementoAdicionalModel complemento)
+            return;
+
+        ViewModel.Compledicional = complemento;
+        tbCodproduto.Text = complemento.codcompladicional?.ToString() ?? string.Empty;
+        txtQuantidade.Focus();
+    }
+
+    private async void OnAdicionarClick(object sender, RoutedEventArgs e)
+    {
+        await ExecutarAsync(async () =>
+        {
+            if (!double.TryParse(txtQuantidade.Text, out var quantidade) || quantidade <= 0)
+                throw new InvalidOperationException("Informe uma quantidade valida.");
+            if (!long.TryParse(tbCodproduto.Text, out var produto))
+                throw new InvalidOperationException("Informe um produto valido.");
+            if (procedencias.SelectedItem is not string operacao)
+                throw new InvalidOperationException("Selecione a procedencia.");
+
+            var movimentacao = new EntradaEstoqueModel
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                quantidade = quantidade,
+                procedencia = operacao,
+                entrada_data = DateTime.Now,
+                entrada_por = Environment.UserName,
+                codcompladicional = produto,
+                processado = processamento.IsChecked == true ? "-1" : "0"
+            };
 
-                MovimentacaoEntradaViewModel vm = (MovimentacaoEntradaViewModel)DataContext;
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            if (operacao == "ACERTO ESTOQUE" &&
+                await ViewModel.GetBloqueioAsync(produto) is not null)
+            {
+                throw new InvalidOperationException("PRODUTO BLOQUEADO PARA ACERTO DE ESTOQUE.");
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-        }
 
-        private async void OnBuscaProduto(object sender, KeyEventArgs e)
-        {
-            MovimentacaoEntradaViewModel vm = (MovimentacaoEntradaViewModel)DataContext;
-
-            if (e.Key == Key.Enter)
+            await ViewModel.SaveAsync(movimentacao);
+            if (operacao == "ACERTO ESTOQUE")
             {
-                try
+                await ViewModel.SaveAcertoAsync(new ControleAcertoEstoque
                 {
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-
-                    string text = ((TextBox)sender).Text;
-                    vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(long.Parse(text)));
-                    if (vm.Descricao == null)
-                    {
-                        MessageBox.Show("Produto não encontrado", "Busca de produto");
-                        Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                        return;
-                    }
-                    tbCodproduto.Text = vm.Descricao.codcompladicional.ToString();
-                    txtPlanilha.Text = vm.Descricao.planilha;
-                    txtDescricao.Text = vm.Descricao.descricao;
-                    txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
-                    txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
-                    txtQuantidade.Focus();
-
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
-                catch (FormatException ex)
-                {
-                    MessageBox.Show(ex.Message);
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
+                    cod_movimentacao = movimentacao.codigo_entrada,
+                    processado = movimentacao.processado,
+                    codcompladicional = produto,
+                    quantidade = quantidade,
+                    data = DateTime.Now,
+                    hora = DateTime.Now.TimeOfDay,
+                    operacao = operacao,
+                    processo = "ENTRADA",
+                    incluido_por = Environment.UserName,
+                    incluido_data = DateTime.Now,
+                    bloqueado = "-1"
+                });
             }
-        }
 
-        private void OnOpenDescricoes(object sender, RoutedEventArgs e)
-        {
-            MovimentacaoEntradaViewModel vm = (MovimentacaoEntradaViewModel)DataContext;
-            var window = new BuscaProduto();
-            window.Owner = App.Current.MainWindow;
-            if (window.ShowDialog() == true)
-            {
-                vm.Descricao = window.descricao;
-                tbCodproduto.Text = vm.Descricao.codcompladicional.ToString();
-                txtPlanilha.Text = vm.Descricao.planilha;
-                txtDescricao.Text = vm.Descricao.descricao;
-                txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
-                txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
-                txtQuantidade.Focus();
-            }
-        }
+            var item = await ViewModel.GetItemAsync(movimentacao.codigo_entrada);
+            if (item is not null)
+                ViewModel.Itens.Insert(0, item);
 
-        private async void OnSelectedPlanilha(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            try
-            {
-                MovimentacaoEntradaViewModel vm = (MovimentacaoEntradaViewModel)DataContext;
-                RelplanModel? planilha = e.NewValue as RelplanModel;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-
-                vm.Produtos = new ObservableCollection<ProdutoModel>();
-                txtDescricao.SelectedItem = null;
-                txtDescricao.Text = string.Empty;
-
-                vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
-                txtDescricaoAdicional.SelectedItem = null;
-                txtDescricaoAdicional.Text = string.Empty;
-
-                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                txtComplementoAdicional.SelectedItem = null;
-                txtComplementoAdicional.Text = string.Empty;
-
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(planilha?.planilha));
-
-                vm.Itens = await Task.Run(() => vm.GetItensAsync(planilha?.planilha));
-
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-
-                txtDescricao.Focus();
-            }
-            catch (Exception ex)
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private async void OnSelectedDescricao(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            try
-            {
-                MovimentacaoEntradaViewModel vm = (MovimentacaoEntradaViewModel)DataContext;
-                ProdutoModel? produto = e.NewValue as ProdutoModel;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-
-                vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
-                txtDescricaoAdicional.SelectedItem = null;
-                txtDescricaoAdicional.Text = string.Empty;
-
-                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                txtComplementoAdicional.SelectedItem = null;
-                txtComplementoAdicional.Text = string.Empty;
-
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(produto?.codigo));
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                txtDescricaoAdicional.Focus();
-            }
-            catch (Exception ex)
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private async void OnSelectedDescricaoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            try
-            {
-                MovimentacaoEntradaViewModel vm = (MovimentacaoEntradaViewModel)DataContext;
-                TabelaDescAdicionalModel? adicional = e.NewValue as TabelaDescAdicionalModel;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-
-                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                txtComplementoAdicional.SelectedItem = null;
-                txtComplementoAdicional.Text = string.Empty;
-
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(adicional?.coduniadicional));
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                txtComplementoAdicional.Focus();
-            }
-            catch (Exception ex)
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void OnSelectedComplementoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            MovimentacaoEntradaViewModel vm = (MovimentacaoEntradaViewModel)DataContext;
-            TblComplementoAdicionalModel? complemento = e.NewValue as TblComplementoAdicionalModel;
-            vm.Compledicional = complemento;
-            tbCodproduto.Text = complemento?.codcompladicional.ToString();
+            txtQuantidade.Clear();
             txtQuantidade.Focus();
-        }
-
-        private async void OnAdicionarClick(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                MovimentacaoEntradaViewModel vm = (MovimentacaoEntradaViewModel)DataContext;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-
-                var entrada = new EntradaEstoqueModel
-                {
-                    quantidade = Convert.ToDouble(txtQuantidade.Text),
-                    procedencia = procedencias.SelectedItem.ToString(),
-                    entrada_data = DateTime.Now,
-                    entrada_por = Environment.UserName,
-                    codcompladicional = long.Parse(tbCodproduto.Text),
-                    processado = processamento.IsChecked.Value ? "-1" : "0",
-                };
-
-                
-                if(entrada.procedencia == "ACERTO ESTOQUE")
-                {
-                    var controle = await Task.Run(() => vm.ControleAcertoAsync(entrada.codcompladicional));
-                    if(controle != null)
-                    {
-                        MessageBox.Show("PRODUTO BLOQUEADO PARA ACERTO DE ESTOQUE.");
-                        Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                        return;
-                    }
-                }
-
-                entrada = await Task.Run(() => vm.SaveAsync(entrada));
-                if (entrada.procedencia == "ACERTO ESTOQUE") 
-                {
-                    var acerto = new ControleAcertoEstoque
-                    {
-                        cod_movimentacao = entrada.codigo_entrada,
-                        processado = entrada.processado,
-                        codcompladicional = entrada.codcompladicional,
-                        quantidade = entrada.quantidade,
-                        data = DateTime.Now,
-                        hora = new TimeSpan(),
-                        operacao = entrada.procedencia,
-                        processo = "ENTRADA",
-                        incluido_por = Environment.UserName,
-                        incluido_data = DateTime.Now,
-                        bloqueado = "-1"
-                    };
-                    acerto = await Task.Run(() => vm.SaveAcertoAsync(acerto));
-                }
-                vm.Itens.Add( await Task.Run(() => vm.GetItensAsync(entrada.codigo_entrada)) );
-                //
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-            catch (Exception ex)
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
-        }
-
-        private async void itens_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
-        {
-            try
-            {
-                var registro = e.RowData as EntradaDTO;
-
-                if (registro.procedencia == "ACERTO ESTOQUE")
-                {
-                    MessageBox.Show("Não é possivel alterar procedência 'ACERTO ESTOQUE'.", "Validação de Quantidade", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    e.IsValid = false;
-                    return;
-                }
-
-                using DatabaseContext db = new();
-                var entradaExistente = await db.Entradas.FindAsync(registro.codigo_entrada);
-                var entradaAlterada = entradaExistente;
-                entradaAlterada.quantidade = registro.quantidade;
-                entradaAlterada.entrada_por = Environment.UserName;
-                entradaAlterada.entrada_data = DateTime.Now.Date;
-                db.Entry(entradaExistente).CurrentValues.SetValues(entradaAlterada);
-                await db.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
-            {
-                e.IsValid = false;
-                MessageBox.Show(pgEx.MessageText, @$"Erro: {pgEx.SqlState}");
-            }
-        }
+        });
     }
 
-    class MovimentacaoEntradaViewModel : INotifyPropertyChanged
+    private void itens_RowValidating(object sender, GridViewRowValidatingEventArgs e)
     {
-        private ObservableCollection<RelplanModel> _planilhas;
-        public ObservableCollection<RelplanModel> Planilhas
+        if (e.EditOperationType == GridViewEditOperationType.None ||
+            e.Row.Item is not EntradaDTO item ||
+            item.procedencia != "ACERTO ESTOQUE")
         {
-            get { return _planilhas; }
-            set { _planilhas = value; RaisePropertyChanged("Planilhas"); }
-        }
-        private RelplanModel _planilha;
-        public RelplanModel Planilha
-        {
-            get { return _planilha; }
-            set { _planilha = value; RaisePropertyChanged("Planilha"); }
+            return;
         }
 
-        private ObservableCollection<ProdutoModel> _produtos;
-        public ObservableCollection<ProdutoModel> Produtos
+        e.IsValid = false;
+        e.ValidationResults.Add(new GridViewCellValidationResult
         {
-            get { return _produtos; }
-            set { _produtos = value; RaisePropertyChanged("Produtos"); }
+            ErrorMessage = "Nao e possivel alterar uma movimentacao de ACERTO ESTOQUE.",
+            PropertyName = nameof(item.quantidade)
+        });
+    }
+
+    private async void itens_RowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
+    {
+        if (e.EditAction != GridViewEditAction.Commit || e.EditedItem is not EntradaDTO item)
+            return;
+
+        await ExecutarAsync(async () =>
+        {
+            await ViewModel.UpdateAsync(item);
+            item.entrada_por = Environment.UserName;
+            item.entrada_data = DateTime.Now;
+            itens.Rebind();
+        });
+    }
+
+    private static async Task ExecutarAsync(Func<Task> action)
+    {
+        try
+        {
+            Mouse.OverrideCursor = Cursors.Wait;
+            await action();
         }
-        private ProdutoModel _produto;
-        public ProdutoModel Produto
+        catch (PostgresException ex)
         {
-            get { return _produto; }
-            set { _produto = value; RaisePropertyChanged("Produto"); }
+            MessageBox.Show(ex.MessageText, $"Erro: {ex.SqlState}");
         }
-
-        private ObservableCollection<TabelaDescAdicionalModel> _descAdicionais;
-        public ObservableCollection<TabelaDescAdicionalModel> DescAdicionais
+        catch (Exception ex)
         {
-            get { return _descAdicionais; }
-            set { _descAdicionais = value; RaisePropertyChanged("DescAdicionais"); }
+            MessageBox.Show(ex.Message);
         }
-        private TabelaDescAdicionalModel _descAdicional;
-        public TabelaDescAdicionalModel DescAdicional
+        finally
         {
-            get { return _descAdicional; }
-            set { _descAdicional = value; RaisePropertyChanged("DescAdicional"); }
-        }
-
-        private ObservableCollection<TblComplementoAdicionalModel> _compleAdicionais;
-        public ObservableCollection<TblComplementoAdicionalModel> CompleAdicionais
-        {
-            get { return _compleAdicionais; }
-            set { _compleAdicionais = value; RaisePropertyChanged("CompleAdicionais"); }
-        }
-        private TblComplementoAdicionalModel _compledicional;
-        public TblComplementoAdicionalModel Compledicional
-        {
-            get { return _compledicional; }
-            set { _compledicional = value; RaisePropertyChanged("Compledicional"); }
-        }
-
-        private QryDescricao _descricao;
-        public QryDescricao Descricao
-        {
-            get { return _descricao; }
-            set { _descricao = value; RaisePropertyChanged("Descricao"); }
-        }
-        private ObservableCollection<QryDescricao> _descricoes;
-        public ObservableCollection<QryDescricao> Descricoes
-        {
-            get { return _descricoes; }
-            set { _descricoes = value; RaisePropertyChanged("Descricoes"); }
-        }
-        private ObservableCollection<EntradaDTO> _itens;
-        public ObservableCollection<EntradaDTO> Itens
-        {
-            get { return _itens; }
-            set { _itens = value; RaisePropertyChanged("Itens"); }
-        }
-
-        private ObservableCollection<string> _procedencias = new() { "ACERTO ESTOQUE","ACERTO INCÊNDIO","RETORNO DE CLIENTE","COMPRA","RETORNO INTERNO","PROCESSAMENTO PROD","INVENTÁRIO ROTATIVO", "PRODUTO INTERNO","EMPRÉSTIMO" };
-        public ObservableCollection<string> Procedencias
-        {
-            get { return _procedencias; }
-            set { _procedencias = value; RaisePropertyChanged("Procedencias"); }
-        }
-
-        //List<string> lVoltagem = new List<string> { "", "220V", "110V" };
-
-        public MovimentacaoEntradaViewModel()
-        {
-            Itens = new ObservableCollection<EntradaDTO>();
-        }
-
-
-        public async Task<ObservableCollection<RelplanModel>> GetPlanilhasAsync()
-        {
-            try
-            {
-                using DatabaseContext db = new();
-                return new ObservableCollection<RelplanModel>(await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync());
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<ObservableCollection<ProdutoModel>> GetProdutosAsync(string? planilha)
-        {
-            try
-            {
-                Produtos = new ObservableCollection<ProdutoModel>();
-                using DatabaseContext db = new();
-                var data = await db.Produtos
-                    .OrderBy(c => c.descricao)
-                    .Where(c => c.planilha.Equals(planilha))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
-
-                return new ObservableCollection<ProdutoModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<ObservableCollection<TabelaDescAdicionalModel>> GetDescAdicionaisAsync(long? codigo)
-        {
-            try
-            {
-                DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.DescAdicionais
-                    .OrderBy(c => c.descricao_adicional)
-                    .Where(c => c.codigoproduto.Equals(codigo))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
-                return new ObservableCollection<TabelaDescAdicionalModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<ObservableCollection<TblComplementoAdicionalModel>> GetCompleAdicionaisAsync(long? coduniadicional)
-        {
-            try
-            {
-                CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.complementoadicional)
-                    .Where(c => c.coduniadicional.Equals(coduniadicional))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
-                return new ObservableCollection<TblComplementoAdicionalModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<QryDescricao> GetDescricaoAsync(long codcompladicional)
-        {
-            try
-            {
-                using DatabaseContext db = new();
-                return await db.Descricoes.Where(d => d.inativo.Equals("0") && d.codcompladicional == codcompladicional).FirstOrDefaultAsync();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<EntradaDTO> GetItensAsync(long? codigo_entrada)
-        {
-            try
-            {
-                using DatabaseContext db = new();
-
-                var resultado = db.Entradas
-                    .Join(db.Descricoes, entrada => entrada.codcompladicional, descricao => descricao.codcompladicional, (entrada, descricao) => new { entrada, descricao })
-                    .Where(x => x.entrada.codigo_entrada == codigo_entrada)
-                    .Select(x => new EntradaDTO
-                    {
-                        codigo_entrada = x.entrada.codigo_entrada,
-                        codcompladicional = x.entrada.codcompladicional,
-                        quantidade = x.entrada.quantidade,
-                        procedencia = x.entrada.procedencia,
-                        processado = x.entrada.processado,
-                        entrada_data = x.entrada.entrada_data,
-                        entrada_por = x.entrada.entrada_por,
-                        descricao_completa = x.descricao.descricao_completa,
-                        unidade = x.descricao.unidade
-                    });
-
-                //var resultadoToList = await resultado.ToListAsync();
-
-                return await resultado.FirstOrDefaultAsync();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-
-        public async Task<ObservableCollection<EntradaDTO>> GetItensAsync(string? planilha)
-        {
-            try
-            {
-                using DatabaseContext db = new();
-
-                var resultado = db.Entradas
-                    .Join(db.Descricoes, entrada => entrada.codcompladicional, descricao => descricao.codcompladicional, (entrada, descricao) => new { entrada, descricao })
-                    .Where(x => x.descricao.planilha == planilha)
-                    .Select(x => new EntradaDTO
-                    {
-                        codigo_entrada = x.entrada.codigo_entrada,
-                        codcompladicional = x.entrada.codcompladicional,
-                        quantidade = x.entrada.quantidade,
-                        procedencia = x.entrada.procedencia,
-                        processado = x.entrada.processado,
-                        entrada_data =x.entrada.entrada_data,
-                        entrada_por =x.entrada.entrada_por,
-                        descricao_completa = x.descricao.descricao_completa,
-                        unidade = x.descricao.unidade
-                    });
-
-                var resultadoToList = await resultado.ToListAsync();
-
-                return new ObservableCollection<EntradaDTO>(resultadoToList);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-
-
-        public async Task<EntradaEstoqueModel> SaveAsync(EntradaEstoqueModel entrada)
-        {
-            try
-            {
-                using DatabaseContext db = new();
-                await db.Entradas.SingleMergeAsync(entrada);
-                await db.SaveChangesAsync();
-                return entrada;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<ControleAcertoEstoque> SaveAcertoAsync(ControleAcertoEstoque acerto)
-        {
-            try
-            {
-                using DatabaseContext db = new();
-                await db.ControleAcertoEstoques.SingleMergeAsync(acerto);
-                await db.SaveChangesAsync();
-                return acerto;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<ControleAcertoEstoque> ControleAcertoAsync(long? codcompladicional)
-        {
-            try
-            {
-                using DatabaseContext db = new();
-                var controle = await db.ControleAcertoEstoques.Where(x => x.codcompladicional == codcompladicional && x.bloqueado == "-1").FirstOrDefaultAsync();
-                return controle;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void RaisePropertyChanged(string propName)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            Mouse.OverrideCursor = null;
         }
     }
+
+    private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+    }
+}
+
+internal sealed class MovimentacaoEntradaViewModel : MovimentacaoEstoqueViewModelBase<EntradaDTO>
+{
+    public MovimentacaoEntradaViewModel()
+    {
+        Procedencias = ["ACERTO ESTOQUE", "ACERTO INCENDIO", "RETORNO DE CLIENTE", "COMPRA", "RETORNO INTERNO", "PROCESSAMENTO PROD", "INVENTARIO ROTATIVO", "PRODUTO INTERNO", "EMPRESTIMO"];
+    }
+
+    public async Task CarregarItensAsync(string? planilha) =>
+        Itens = new ObservableCollection<EntradaDTO>(await Service.GetEntradasAsync(planilha));
+
+    public Task<EntradaDTO?> GetItemAsync(long? codigo) => Service.GetEntradaAsync(codigo);
+    public Task SaveAsync(EntradaEstoqueModel item) => Service.SaveEntradaAsync(item);
+    public Task UpdateAsync(EntradaDTO item) => Service.UpdateEntradaAsync(item);
 }

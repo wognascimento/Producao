@@ -1,14 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.UI.Xaml.Grid;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
-using SearchHelperExt = Producao.Views.Utils.SearchHelperExt;
 
 namespace Producao.Views.CadastroProduto
 {
@@ -17,30 +18,14 @@ namespace Producao.Views.CadastroProduto
     /// </summary>
     public partial class LocalizaProduto : UserControl
     {
-        public LocalizaProduto(/*object DataContext*/)
+        public LocalizaProduto()
         {
             InitializeComponent();
-            this.DataContext = new LocalizaProdutoViewModel();
-
-            this.dataGrid.SearchHelper = new SearchHelperExt(this.dataGrid);
-            //this.txtBusca.LostFocus += TextBox_LostFocus;
-            //this.txtBusca.PreviewKeyDown += TextBox_PreviewKeyDown;
-            this.txtBusca.TextChanged += TextBox_TextChanged;
-            
+            DataContext = new LocalizaProdutoViewModel();
+            txtBusca.TextChanged += TextBox_TextChanged;
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            PerformSearch();
-        }
-
-        private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-                PerformSearch();
-        }
-
-        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             PerformSearch();
         }
@@ -51,31 +36,51 @@ namespace Producao.Views.CadastroProduto
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                LocalizaProdutoViewModel vm = (LocalizaProdutoViewModel)DataContext;
-                vm.Descricoes = await Task.Run(vm.GetDescricoesAsync);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-
+                var vm = (LocalizaProdutoViewModel)DataContext;
+                vm.Descricoes = await vm.GetDescricoesAsync();
+                ConfigureFilter();
             }
             catch (Exception ex)
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 MessageBox.Show(ex.Message);
             }
+            finally
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+        }
+
+        private void ConfigureFilter()
+        {
+            var view = CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
+            if (view != null)
+                view.Filter = FilterDescricao;
+        }
+
+        private bool FilterDescricao(object obj)
+        {
+            if (obj is not QryDescricao item)
+                return false;
+
+            var text = txtBusca.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(text))
+                return true;
+
+            return Contains(item.planilha, text)
+                || Contains(item.descricao_completa, text)
+                || Contains(item.unidade, text);
+        }
+
+        private static bool Contains(object value, string text)
+        {
+            return Convert.ToString(value, CultureInfo.CurrentCulture)?.IndexOf(text, StringComparison.CurrentCultureIgnoreCase) >= 0;
         }
 
         private void PerformSearch()
         {
             try
             {
-                if (this.dataGrid.SearchHelper.SearchText.Equals(this.txtBusca.Text))
-                    return;
-
-                var text = txtBusca.Text;
-                //AllowCaseSensitiveSearch  - true -> improves the performance when search numeric fields.
-                this.dataGrid.SearchHelper.AllowCaseSensitiveSearch = false;
-                this.dataGrid.SearchHelper.SearchType = SearchType.Contains;
-                this.dataGrid.SearchHelper.AllowFiltering = true;
-                this.dataGrid.SearchHelper.Search(text);
+                CollectionViewSource.GetDefaultView(dataGrid.ItemsSource)?.Refresh();
             }
             catch (Exception ex)
             {
@@ -85,47 +90,51 @@ namespace Producao.Views.CadastroProduto
 
         private void dataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var myWindow = Window.GetWindow(this);
-            myWindow.Close();
+            Window.GetWindow(this)?.Close();
         }
-
     }
 
     public class LocalizaProdutoViewModel : INotifyPropertyChanged
     {
+        private readonly DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
         public event PropertyChangedEventHandler PropertyChanged;
+
         public void RaisePropertyChanged(string propName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
-        #region Descrição Produção
         private ObservableCollection<QryDescricao> descricoes;
         public ObservableCollection<QryDescricao> Descricoes
         {
             get { return descricoes; }
-            set { descricoes = value; RaisePropertyChanged("Descricoes"); }
+            set { descricoes = value; RaisePropertyChanged(nameof(Descricoes)); }
         }
+
         private QryDescricao descricao;
         public QryDescricao Descricao
         {
             get { return descricao; }
-            set { descricao = value; RaisePropertyChanged("Descricao"); }
+            set { descricao = value; RaisePropertyChanged(nameof(Descricao)); }
         }
-        #endregion
+
+        private NpgsqlConnection CreateConnection()
+        {
+            return new NpgsqlConnection(BaseSettings.ConnectionString);
+        }
 
         public async Task<ObservableCollection<QryDescricao>> GetDescricoesAsync()
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.Descricoes.Where(p => p.inativo != "-1").ToListAsync();
-                return new ObservableCollection<QryDescricao>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            using var conn = CreateConnection();
+            var data = await conn.QueryAsync<QryDescricao>(
+                """
+                SELECT *
+                FROM producao.qry3descricoes
+                WHERE COALESCE(inativo, '') <> '-1';
+                """);
+
+            return new ObservableCollection<QryDescricao>(data);
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-//using Microsoft.Office.Interop.Excel;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.XlsIO;
+using Producao.Views.CentralModelos.Compat;
+using Producao.Views.OrdemServico;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,7 +10,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-//using Excel = Microsoft.Office.Interop.Excel;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 
 namespace Producao.Views.CentralModelos
@@ -42,7 +42,7 @@ namespace Producao.Views.CentralModelos
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.Setores = await Task.Run(vm.GetSetorsAsync);
-                vm.Itens = new ObservableCollection<HistoricoSetorModel>();
+                vm.Itens = [];
                 //vm.Itens = await Task.Run(() => vm.GetSetoresProdutoAsync(modeloControle.codcompladicional));
                 //vm.Itens.Add(new HistoricoSetorModel { selesao = false });
                 //vm.Itens.Add(new HistoricoSetorModel { selesao = false });
@@ -64,31 +64,18 @@ namespace Producao.Views.CentralModelos
             }
         }
 
-        private void dgItens_CurrentCellDropDownSelectionChanged(object sender, CurrentCellDropDownSelectionChangedEventArgs e)
-        {
-            //CurrentAddItem = {Producao.HistoricoSetorModel}
-            var sfdatagrid = sender as SfDataGrid;
-            int rowIndex = sfdatagrid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-            HistoricoSetorModel? record;
-            if (rowIndex == -1)
-                record = sfdatagrid.View.CurrentAddItem as HistoricoSetorModel;
-            else
-                record = sfdatagrid.View.Records[rowIndex].Data as HistoricoSetorModel;
-
-            record.selesao = true;
-            record.setor = ((SetorModel)e.SelectedItem).setor;
-
-        }
-
         private void dgItens_PreviewKeyDown(object sender, KeyEventArgs e)
         {
 
         }
 
-        private void dgItens_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
+        private void dgItens_AddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
-            var data = e.NewObject as HistoricoSetorModel;
-            data.observacao = this.modeloControle.obs;
+            e.NewObject = new HistoricoSetorModel
+            {
+                observacao = this.modeloControle.obs,
+                selesao = true
+            };
         }
 
         private void OnAddSetor(object sender, RoutedEventArgs e)
@@ -121,6 +108,12 @@ namespace Producao.Views.CentralModelos
                 //ModeloSetoresOrdemServicoViewModel vm = (ModeloSetoresOrdemServicoViewModel)DataContext;
 
                 var setor = false;
+                foreach (var item in vm.Itens.Where(i => i.codigo_setor.HasValue))
+                {
+                    item.selesao = true;
+                    item.setor = vm.Setores?.FirstOrDefault(s => s.codigo_setor == item.codigo_setor)?.setor;
+                }
+
                 foreach (var item in vm.Itens)
                     if (item.selesao == true) setor = true;
 
@@ -185,179 +178,9 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                //ModeloSetoresOrdemServicoViewModel vm = (ModeloSetoresOrdemServicoViewModel)DataContext;
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-                application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_MODELO.xlsx");
-                IWorksheet worksheet = workbook.Worksheets[0];
-
                 var servicos = await Task.Run(() => vm.GetOsEmitidas(vm.ProdutoOsModel.num_os_produto));
-
-                IRange range = worksheet[27, 23, 53, 23];
-                if (servicos.Count == 1)
-                    worksheet.ShowRange(range, false);
-
-                var pagina = 1;
-                var tot = 0;
-                foreach (var servico in servicos)
-                {
-
-                    if (pagina == 1)
-                    {
-                        /*
-                        worksheet.Range["E2"].Text = servico.cliente;
-                        worksheet.Range["G2"].Text = servico.num_os_produto.ToString();
-                        worksheet.Range["I2"].Text = servico.num_os_servico.ToString();
-                        worksheet.Range["B4"].Text = servico.tipo;
-                        worksheet.Range["D4"].Text = $"{servico.data_inicio:dd/MM/yy}";
-                        worksheet.Range["F4"].Text = $"{servico.data_fim:dd/MM/yy}";
-                        worksheet.Range["B5"].Text = servico.setor_caminho;
-                        worksheet.Range["F5"].Text = servico.solicitado_por;
-                        worksheet.Range["G4"].Text = $"META HT: {servico.meta_peca_hora}";
-                        worksheet.Range["B6"].Text = servico.planilha;
-                        worksheet.Range["B7"].Text = servico.descricao_completa;
-                        worksheet.Range["G7"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
-                        worksheet.Range["B9"].Text = servico.quantidade.ToString();
-                        worksheet.Range["D9"].Text = servico.nivel.ToString();
-                        worksheet.Range["B10"].Text = servico.setor_caminho_proximo;
-                        worksheet.Range["B11"].Text = servico.tema;
-                        worksheet.Range["A13"].Text = servico.orientacao_caminho;
-                        worksheet.Range["A17"].Text = servico.acabamento_construcao;
-                        worksheet.Range["A19"].Text = servico.acabamento_fibra;
-                        worksheet.Range["A21"].Text = servico.acabamento_moveis;
-                        worksheet.Range["A23"].Text = servico.laco;
-                        worksheet.Range["A25"].Text = servico.obs_iluminacao;
-                        */
-
-                        worksheet.Range["E2"].Text = servico.cliente;
-                        worksheet.Range["G2"].Text = servico.num_os_produto.ToString();
-                        worksheet.Range["I2"].Text = servico.num_os_servico.ToString();
-                        worksheet.Range["B4"].Text = servico.tipo;
-                        worksheet.Range["D4"].Text = $"{servico.data_inicio:dd/MM/yy}";
-                        worksheet.Range["B5"].Text = servico.setor_caminho;
-                        worksheet.Range["F5"].Text = servico.solicitado_por;
-                        worksheet.Range["G4"].Text = $"META HT: {servico.meta_peca_hora}";
-                        worksheet.Range["B6"].Text = servico.planilha;
-                        worksheet.Range["F6"].Text = Convert.ToString(servico.cod_compl_adicional);
-                        worksheet.Range["B7"].Text = servico.descricao_completa;
-                        worksheet.Range["G7"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
-                        worksheet.Range["B9"].Text = Convert.ToString(servico.quantidade);
-                        worksheet.Range["D9"].Text = Convert.ToString(servico?.nivel);
-                        worksheet.Range["B10"].Text = servico.setor_caminho_proximo;
-                        worksheet.Range["B11"].Text = servico.tema;
-                        worksheet.Range["A13"].Text = servico.orientacao_caminho;
-                        worksheet.Range["A23"].Text = servico.laco;
-                        worksheet.Range["A25"].Text = servico.obs_iluminacao;
-
-
-                        var setores = await Task.Run(() => vm.GetServicos(vm.ProdutoOsModel.num_os_produto));
-                        var idexSetor = 9;
-                        foreach (var setor in setores)
-                        {
-                            worksheet.Range[$"G{idexSetor}"].Text = setor.setor_caminho;
-                            idexSetor++;
-                            if (idexSetor == 17)
-                                break;
-                        }
-                        pagina = 2;
-                        worksheet.ShowRange(range, false);
-                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
-                        tot++;
-
-                        if (tot == servicos.Count)
-                        {
-                            Process.Start(
-                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
-                            {
-                                Verb = "Print",
-                                UseShellExecute = true,
-                            });
-                        }
-                    }
-                    else if (pagina == 2)
-                    {
-                        /*
-                        worksheet.Range["E30"].Text = servico.cliente;
-                        worksheet.Range["G30"].Text = servico.num_os_produto.ToString();
-                        worksheet.Range["I30"].Text = servico.num_os_servico.ToString();
-                        worksheet.Range["B32"].Text = servico.tipo;
-                        worksheet.Range["D32"].Text = $"{servico.data_inicio:dd/MM/yy}";
-                        worksheet.Range["F32"].Text = $"{servico.data_fim:dd/MM/yy}";
-                        worksheet.Range["B33"].Text = servico.setor_caminho;
-                        worksheet.Range["F33"].Text = servico.solicitado_por;
-                        worksheet.Range["G32"].Text = $"META HT: {servico.meta_peca_hora}";
-                        worksheet.Range["B34"].Text = servico.planilha;
-                        worksheet.Range["B35"].Text = servico.descricao_completa;
-                        worksheet.Range["G35"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
-                        worksheet.Range["B37"].Text = servico.quantidade.ToString();
-                        worksheet.Range["D37"].Text = servico.nivel.ToString();
-                        worksheet.Range["B38"].Text = servico.setor_caminho_proximo;
-                        worksheet.Range["B39"].Text = servico.tema;
-                        worksheet.Range["A41"].Text = servico.orientacao_caminho;
-                        worksheet.Range["A45"].Text = servico.acabamento_construcao;
-                        worksheet.Range["A47"].Text = servico.acabamento_fibra;
-                        worksheet.Range["A49"].Text = servico.acabamento_moveis;
-                        worksheet.Range["A51"].Text = servico.laco;
-                        worksheet.Range["A53"].Text = servico.obs_iluminacao;
-                        */
-
-                        worksheet.Range["E29"].Text = servico.cliente;
-                        worksheet.Range["G29"].Text = servico.num_os_produto.ToString();
-                        worksheet.Range["I29"].Text = servico.num_os_servico.ToString();
-                        worksheet.Range["B31"].Text = servico.tipo;
-                        worksheet.Range["D31"].Text = $"{servico.data_inicio:dd/MM/yy}";
-                        worksheet.Range["B32"].Text = servico.setor_caminho;
-                        worksheet.Range["F32"].Text = servico.solicitado_por;
-                        worksheet.Range["G31"].Text = $"META HT: {servico.meta_peca_hora}";
-                        worksheet.Range["B33"].Text = servico.planilha;
-                        worksheet.Range["F33"].Text = Convert.ToString(servico.cod_compl_adicional);
-                        worksheet.Range["B34"].Text = servico.descricao_completa;
-                        worksheet.Range["G34"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
-                        worksheet.Range["B36"].Text = Convert.ToString(servico.quantidade);
-                        worksheet.Range["D36"].Text = Convert.ToString(servico?.nivel);
-                        worksheet.Range["B37"].Text = servico.setor_caminho_proximo;
-                        worksheet.Range["B38"].Text = servico.tema;
-                        worksheet.Range["A40"].Text = servico.orientacao_caminho;
-                        worksheet.Range["A50"].Text = servico.laco;
-                        worksheet.Range["A52"].Text = servico.obs_iluminacao;
-
-                        var setores = await Task.Run(() => vm.GetServicos(vm.ProdutoOsModel.num_os_produto));
-                        var idexSetor = 37;
-                        foreach (var setor in setores)
-                        {
-                            worksheet.Range[$"G{idexSetor}"].Text = setor.setor_caminho;
-                            idexSetor++;
-                            if (idexSetor == 17)
-                                break;
-                        }
-                        pagina = 1;
-                        tot++;
-                        worksheet.ShowRange(range, true);
-                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
-                        Process.Start(
-                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
-                            {
-                                Verb = "Print",
-                                UseShellExecute = true,
-                            });
-                    }
-
-                    
-                }
-
-                //worksheet.ShowRange(range, false);
-                /*workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
-                worksheet.Clear();
-                workbook.Close();
-
-                Process.Start(
-                    new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
-                    {
-                        Verb = "Print",
-                        UseShellExecute = true,
-                    });
-                */
+                var printer = new OrdemServicoModeloPrinter();
+                await printer.ImprimirAsync(servicos, async numOsProduto => await vm.GetServicos(numOsProduto));
             }
             catch (Exception)
             {
@@ -386,7 +209,7 @@ namespace Producao.Views.CentralModelos
                     using ExcelEngine excelEngine = new ExcelEngine();
                     IApplication application = excelEngine.Excel;
                     application.DefaultVersion = ExcelVersion.Xlsx;
-                    IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\REQUISICAO_MODELO.xlsx");
+                    IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("REQUISICAO_MODELO.xlsx"));
                     IWorksheet worksheet = workbook.Worksheets[0];
                     worksheet.Range["C2"].Number = Convert.ToDouble(requi?.num_requisicao);
                     worksheet.Range["E2"].DateTime = Convert.ToDateTime(requi?.data);
@@ -436,9 +259,9 @@ namespace Producao.Views.CentralModelos
                         index++;
                     }
                     //workbook.SaveAs($"Impressos/REQUISICAO_{requi.num_requisicao}.xlsx");
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{re.num_requisicao}.xlsx");
+                    workbook.SaveAs(BaseSettings.ResolveImpressosPath($"REQUISICAO_MODELO_{re.num_requisicao}.xlsx"));
                     Process.Start(
-                    new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICAO_MODELO_{re.num_requisicao}.xlsx")
+                    new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"REQUISICAO_MODELO_{re.num_requisicao}.xlsx"))
                     {
                         Verb = "Print",
                         UseShellExecute = true,
@@ -463,7 +286,7 @@ namespace Producao.Views.CentralModelos
                 using ExcelEngine excelEngine = new ExcelEngine();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\RECEITA_CENTRAL_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("RECEITA_CENTRAL_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["A1"].Text = "CENTRAL DE MODELOS - CONTROLE";
                 worksheet.Range["C2"].Text = Modelo.id_modelo.ToString();
@@ -509,10 +332,10 @@ namespace Producao.Views.CentralModelos
                     index++;
                 }
 
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx");
+                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx"));
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx")
+                Process.Start(new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx"))
                 {
                     Verb = "Print",
                     UseShellExecute = true

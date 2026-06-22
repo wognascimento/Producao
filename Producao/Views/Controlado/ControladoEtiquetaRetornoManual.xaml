@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.Controlado" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              xmlns:app="clr-namespace:Producao"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
@@ -17,40 +17,30 @@
     <Grid>
 
 
-        <syncfusion:SfDataGrid 
+        <telerik:RadGridView 
             x:Name="retornos"
             Grid.Row="1"
             AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            ColumnSizer="AutoWithLastColumnFill"
-            ShowRowHeader="True" 
+            CanUserResizeColumns="True"
+            ShowGroupPanel="False"
             ItemsSource="{Binding Retornos}" 
             SelectedItem="{Binding Retorno, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             RowValidated="OnRowValidated" 
             RowValidating="OnRowValidating" 
-            AllowFiltering="True" 
-            AddNewRowPosition="Bottom"   
-            CurrentCellValidating="retornos_CurrentCellValidating">
-            <syncfusion:SfDataGrid.Columns>
+            IsFilteringAllowed="True" 
+            CanUserInsertRows="True"
+            GroupRenderMode="Flat"
+            NewRowPosition="Bottom">
+            <telerik:RadGridView.Columns>
 
-                <syncfusion:GridNumericColumn 
-                    MappingName="codigo"
-                    DisplayBinding="{Binding codigo , Converter={StaticResource ConverterNumber}}"
-                    AllowEditing="True"
-                    ColumnSizer="SizeToHeader" NumberDecimalDigits="0"/>
+                <telerik:GridViewDataColumn Header="codigo" DataMemberBinding="{Binding codigo, Converter={StaticResource ConverterNumber}}"/>
 
-                <syncfusion:GridTextColumn 
-                    MappingName="planilha"
-                    ColumnSizer="SizeToHeader"
-                    AllowEditing="False"/>
+                <telerik:GridViewDataColumn Header="planilha" DataMemberBinding="{Binding planilha}" IsReadOnly="True"/>
 
-                <syncfusion:GridTextColumn 
-                    MappingName="descricao_completa"
-                    ColumnSizer="SizeToHeader" 
-                    AllowEditing="False"/>
+                <telerik:GridViewDataColumn Header="descricao_completa" DataMemberBinding="{Binding descricao_completa}" IsReadOnly="True"/>
 
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
 
     </Grid>

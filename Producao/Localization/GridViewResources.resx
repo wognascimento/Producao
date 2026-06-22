@@ -213,6 +213,78 @@
   <data name="GridViewSearchPanelTopText" xml:space="preserve">
     <value>Pesquisa de Texto Completo</value>
   </data>
+  <data name="GridViewSearchPanelCloseButtonTooltip" xml:space="preserve">
+    <value>Fechar pesquisa</value>
+  </data>
+  <data name="GridViewSearchPanelNextButtonTooltip" xml:space="preserve">
+    <value>Próximo resultado</value>
+  </data>
+  <data name="GridViewSearchPanelPreviousButtonTooltip" xml:space="preserve">
+    <value>Resultado anterior</value>
+  </data>
+  <data name="GridViewSearchPanelSearchButtonTooltip" xml:space="preserve">
+    <value>Pesquisar</value>
+  </data>
+  <data name="GridViewSearchPanelMatchCase" xml:space="preserve">
+    <value>Coincidir maiúsculas/minúsculas</value>
+  </data>
+  <data name="GridViewNoRecordsText" xml:space="preserve">
+    <value>Nenhum registro encontrado</value>
+  </data>
+  <data name="GridViewColumnMenuSortAscending" xml:space="preserve">
+    <value>Classificar Crescente</value>
+  </data>
+  <data name="GridViewColumnMenuSortDescending" xml:space="preserve">
+    <value>Classificar Decrescente</value>
+  </data>
+  <data name="GridViewColumnMenuClearSorting" xml:space="preserve">
+    <value>Limpar Classificação</value>
+  </data>
+  <data name="GridViewColumnMenuClearFilter" xml:space="preserve">
+    <value>Limpar Filtro</value>
+  </data>
+  <data name="GridViewColumnMenuGroupByColumn" xml:space="preserve">
+    <value>Agrupar por esta Coluna</value>
+  </data>
+  <data name="GridViewColumnMenuUngroupColumn" xml:space="preserve">
+    <value>Desagrupar Coluna</value>
+  </data>
+  <data name="GridViewColumnMenuColumnChooser" xml:space="preserve">
+    <value>Selecionar Colunas</value>
+  </data>
+  <data name="GridViewFilterClearButton" xml:space="preserve">
+    <value>Limpar</value>
+  </data>
+  <data name="GridViewFilterButton" xml:space="preserve">
+    <value>Filtrar</value>
+  </data>
+  <data name="Open_Close" xml:space="preserve">
+    <value>Abrir/Fechar</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Fechar</value>
+  </data>
+  <data name="CloseItem" xml:space="preserve">
+    <value>Fechar</value>
+  </data>
+  <data name="CloseItemQuestion" xml:space="preserve">
+    <value>Tem certeza de que deseja fechar sem salvar as alterações?</value>
+  </data>
+  <data name="Minimize" xml:space="preserve">
+    <value>Minimizar</value>
+  </data>
+  <data name="Maximize" xml:space="preserve">
+    <value>Maximizar</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>Restaurar</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
   <data name="GroupColumn" xml:space="preserve">
     <value>Coluna de Grupo</value>
   </data>

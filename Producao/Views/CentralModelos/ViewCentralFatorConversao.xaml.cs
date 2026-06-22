@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,18 +7,16 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
 
 namespace Producao.Views.CentralModelos
 {
-    /// <summary>
-    /// Interação lógica para ViewCentralFatorConversao.xam
-    /// </summary>
     public partial class ViewCentralFatorConversao : UserControl
     {
         public ViewCentralFatorConversao()
         {
             InitializeComponent();
-            this.DataContext = new ViewCentralFatorConversaoViewModel();
+            DataContext = new ViewCentralFatorConversaoViewModel();
         }
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -26,147 +24,140 @@ namespace Producao.Views.CentralModelos
             ViewCentralFatorConversaoViewModel vm = (ViewCentralFatorConversaoViewModel)DataContext;
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Produtos = await Task.Run(vm.GetProdutosAsync);
-                vm.Itens = await Task.Run(vm.GetItensAsync);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+                vm.Produtos = await vm.GetProdutosAsync();
+                vm.Itens = await vm.GetItensAsync();
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
         }
 
-        private void dgTabela_RowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
+            if (e.Row?.Item is not ModeloTabelaConversaoModel model)
+            {
+                return;
+            }
 
-        }
-
-        private async void dgTabela_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
-        {
-            ModeloTabelaConversaoModel model = (ModeloTabelaConversaoModel)e.RowData;
             if (!model.codcompladicional.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("codcompladicional", "Seleciona o a P.A.");
+                AddValidation(e, nameof(ModeloTabelaConversaoModel.codcompladicional), "Selecione a P.A.");
+            }
+        }
+
+        private async void OnRowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
+        {
+            if (e.EditedItem is not ModeloTabelaConversaoModel model)
+            {
                 return;
             }
 
             ViewCentralFatorConversaoViewModel vm = (ViewCentralFatorConversaoViewModel)DataContext;
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                await Task.Run(() => vm.SaveAsync(model));
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+                await vm.SaveAsync(model);
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
                 MessageBox.Show("Fator cadastrado!!!");
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-
-                //var addNewRowController = this.dgTabela.GetAddNewRowController();
-                //addNewRowController.CancelAddNew();
-
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
+        }
+
+        private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
+        {
+            e.ValidationResults.Add(new GridViewCellValidationResult
+            {
+                PropertyName = propertyName,
+                ErrorMessage = message
+            });
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
         }
     }
 
     public class ViewCentralFatorConversaoViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+
         public void RaisePropertyChanged(string propName)
         {
-            if (this.PropertyChanged != null)
-                this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
         private ModeloTabelaConversaoModel item;
         public ModeloTabelaConversaoModel Item
         {
-            get { return item; }
-            set { item = value; RaisePropertyChanged("Item"); }
+            get => item;
+            set { item = value; RaisePropertyChanged(nameof(Item)); }
         }
+
         private ObservableCollection<ModeloTabelaConversaoModel> itens;
         public ObservableCollection<ModeloTabelaConversaoModel> Itens
         {
-            get { return itens; }
-            set { itens = value; RaisePropertyChanged("Itens"); }
+            get => itens;
+            set { itens = value; RaisePropertyChanged(nameof(Itens)); }
         }
 
         private ProdutoPAModel produto;
         public ProdutoPAModel Produto
         {
-            get { return produto; }
-            set { produto = value; RaisePropertyChanged("Produto"); }
+            get => produto;
+            set { produto = value; RaisePropertyChanged(nameof(Produto)); }
         }
+
         private ObservableCollection<ProdutoPAModel> produtos;
         public ObservableCollection<ProdutoPAModel> Produtos
         {
-            get { return produtos; }
-            set { produtos = value; RaisePropertyChanged("Produtos"); }
+            get => produtos;
+            set { produtos = value; RaisePropertyChanged(nameof(Produtos)); }
         }
 
         public async Task<ObservableCollection<ModeloTabelaConversaoModel>> GetItensAsync()
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.TabelaConversoes.ToListAsync();
-                return new ObservableCollection<ModeloTabelaConversaoModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            using DatabaseContext db = new();
+            var data = await db.TabelaConversoes.ToListAsync();
+            return new ObservableCollection<ModeloTabelaConversaoModel>(data);
         }
 
         public async Task<ObservableCollection<ProdutoPAModel>> GetProdutosAsync()
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var results = await (from s in db.Descricoes
-                                     where s.inativo != "-1   "
-                                     select new ProdutoPAModel
-                                     {
-                                         codcompladicional = s.codcompladicional,
-                                         descricao = s.descricao_completa
-                                     }).ToListAsync();
+            using DatabaseContext db = new();
+            var results = await (from s in db.Descricoes
+                                 where s.inativo != "-1   "
+                                 select new ProdutoPAModel
+                                 {
+                                     codcompladicional = s.codcompladicional,
+                                     descricao = s.descricao_completa
+                                 }).ToListAsync();
 
-                return new ObservableCollection<ProdutoPAModel>(results);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return new ObservableCollection<ProdutoPAModel>(results);
         }
 
         public async Task SaveAsync(ModeloTabelaConversaoModel model)
         {
-            try
+            using DatabaseContext db = new();
+            var result = await db.TabelaConversoes.FindAsync(model.codcompladicional);
+            if (result == null)
             {
-                using DatabaseContext db = new();
-                var result = await db.TabelaConversoes.FindAsync(model.codcompladicional);
-                if (result == null)
-                    await db.TabelaConversoes.AddAsync(model);
-                else
-                    await db.TabelaConversoes.SingleUpdateAsync(model);
-
-                await db.SaveChangesAsync();
-
+                await db.TabelaConversoes.AddAsync(model);
             }
-            catch (Exception)
+            else
             {
-                throw;
+                await db.TabelaConversoes.SingleUpdateAsync(model);
             }
+
+            await db.SaveChangesAsync();
         }
     }
 }

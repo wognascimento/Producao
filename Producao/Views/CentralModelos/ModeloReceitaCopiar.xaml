@@ -1,44 +1,45 @@
-﻿<Window x:Class="Producao.Views.CentralModelos.ModeloReceitaCopiar"
+<Window x:Class="Producao.Views.CentralModelos.ModeloReceitaCopiar"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Producao.Views.CentralModelos" 
-        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+        xmlns:local="clr-namespace:Producao.Views.CentralModelos"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
         mc:Ignorable="d"
         Title="COPIAR RECEITA ANO ANTERIOR"
-        Height="768" Width="1024"
-        WindowStartupLocation="CenterScreen" 
+        Height="768"
+        Width="1024"
+        Language="pt-BR"
+        WindowStartupLocation="CenterScreen"
         WindowStyle="ToolWindow"
-        ResizeMode="NoResize" 
+        ResizeMode="NoResize"
         WindowState="Maximized"
         Loaded="Window_Loaded">
-    
+
     <Grid>
-
-        <syncfusion:SfDataGrid 
+        <telerik:RadGridView
             x:Name="dgModelos"
-            Grid.Row="9" 
+            Grid.Row="9"
             Grid.Column="0"
-            Grid.ColumnSpan="3" 
-            AllowFiltering="True" 
-            AllowResizingColumns="True" 
-            AutoGenerateColumns="False" 
-            ColumnSizer="SizeToHeader"
-            ItemsSource="{Binding Path=ItensReceita}" FontSize="8" MouseDoubleClick="dgModelos_MouseDoubleClick" AllowResizingHiddenColumns="True">
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn MappingName="ano" Width="70" NumberDecimalDigits="0" HeaderText="ANO"/>
-                <syncfusion:GridNumericColumn MappingName="id_modelo" Width="70" NumberDecimalDigits="0" HeaderText="MODELO"/>
-                <syncfusion:GridTextColumn MappingName="tema" Width="55" HeaderText="TEMA"/>
-                <syncfusion:GridTextColumn MappingName="obs_modelo" HeaderText="OBS."/>
-                <syncfusion:GridTextColumn MappingName="planilha" HeaderText="PLANILHA"/>
-                <syncfusion:GridTextColumn MappingName="descricao_completa" HeaderText="DESCRICAO COMPLETA"/>
-                <syncfusion:GridTextColumn MappingName="planilha_receita" HeaderText="PLANILHA RECEITA"/>
-                <syncfusion:GridTextColumn MappingName="descricao_completa_receita" HeaderText="DESCRICAO COMPLETA RECEITA"/>
-                <syncfusion:GridNumericColumn MappingName="qtd_producao_receita" HeaderText="PRODUÇÃO" Width="100"/>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
-
+            Grid.ColumnSpan="3"
+            AutoGenerateColumns="False"
+            ItemsSource="{Binding ItensReceita}"
+            FontSize="8"
+            MouseDoubleClick="dgModelos_MouseDoubleClick"
+            ShowGroupPanel="False"
+            IsFilteringAllowed="True">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn UniqueName="ano" Header="ANO" DataMemberBinding="{Binding ano}" DataFormatString="{}{0:N0}" Width="70"/>
+                <telerik:GridViewDataColumn UniqueName="id_modelo" Header="MODELO" DataMemberBinding="{Binding id_modelo}" DataFormatString="{}{0:N0}" Width="70"/>
+                <telerik:GridViewDataColumn UniqueName="tema" Header="TEMA" DataMemberBinding="{Binding tema}" Width="55"/>
+                <telerik:GridViewDataColumn UniqueName="obs_modelo" Header="OBS." DataMemberBinding="{Binding obs_modelo}"/>
+                <telerik:GridViewDataColumn UniqueName="planilha" Header="PLANILHA" DataMemberBinding="{Binding planilha}"/>
+                <telerik:GridViewDataColumn UniqueName="descricao_completa" Header="DESCRICAO COMPLETA" DataMemberBinding="{Binding descricao_completa}"/>
+                <telerik:GridViewDataColumn UniqueName="planilha_receita" Header="PLANILHA RECEITA" DataMemberBinding="{Binding planilha_receita}"/>
+                <telerik:GridViewDataColumn UniqueName="descricao_completa_receita" Header="DESCRICAO COMPLETA RECEITA" DataMemberBinding="{Binding descricao_completa_receita}"/>
+                <telerik:GridViewDataColumn UniqueName="qtd_producao_receita" Header="PRODUÇÃO" DataMemberBinding="{Binding qtd_producao_receita}" DataFormatString="{}{0:N2}" Width="100"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
     </Grid>
-    
+
 </Window>

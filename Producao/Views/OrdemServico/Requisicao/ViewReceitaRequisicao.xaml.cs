@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Producao.Views.PopUp;
 using System;
 using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             {
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
+                vm.Planilhas = await vm.GetPlanilhasAsync();
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 //txtPlanilha.Focus();
@@ -55,7 +55,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                     string text = ((TextBox)sender).Text;
-                    vm.DescricaoProduto = await Task.Run(() => vm.GetDescricaoAsync(long.Parse(text)));
+                    vm.DescricaoProduto = await vm.GetDescricaoAsync(long.Parse(text));
                     if (vm.DescricaoProduto == null)
                     {
                         MessageBox.Show("Produto não encontrado", "Busca de produto");
@@ -64,7 +64,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                     }
                     txtCodigoProduto.Text = vm.DescricaoProduto.codcompladicional.ToString();
                     txtProdutoReceita.Text = vm.DescricaoProduto.descricao_completa;
-                    vm.Itens = await Task.Run(() => vm.GetItensAsync(vm.DescricaoProduto.codcompladicional));
+                    vm.Itens = await vm.GetItensAsync(vm.DescricaoProduto.codcompladicional);
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (FormatException ex)
@@ -93,7 +93,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                     txtProdutoReceita.Text = vm.DescricaoProduto.descricao_completa;
                 }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Itens = await Task.Run(() => vm.GetItensAsync(vm?.DescricaoProduto?.codcompladicional));
+                vm.Itens = await vm.GetItensAsync(vm?.DescricaoProduto?.codcompladicional);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -112,7 +112,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                     string text = ((TextBox)sender).Text;
-                    vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(long.Parse(text)));
+                    vm.Descricao = await vm.GetDescricaoAsync(long.Parse(text));
                     if (vm.Descricao == null)
                     {
                         MessageBox.Show("Produto não encontrado", "Busca de produto");
@@ -157,11 +157,16 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
         }
 
-        private async void OnSelectedPlanilha(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                RelplanModel? planilha = e.NewValue as RelplanModel;
+                RelplanModel? planilha = e.AddedItems.Count > 0 ? e.AddedItems[0] as RelplanModel : null;
+                if (planilha is null)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.Produtos = new ObservableCollection<ProdutoModel>();
@@ -176,7 +181,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(planilha?.planilha));
+                vm.Produtos = await vm.GetProdutosAsync(planilha?.planilha);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricao.Focus();
             }
@@ -187,11 +192,16 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
         }
 
-        private async void OnSelectedDescricao(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                ProdutoModel? produto = e.NewValue as ProdutoModel;
+                ProdutoModel? produto = e.AddedItems.Count > 0 ? e.AddedItems[0] as ProdutoModel : null;
+                if (produto is null)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
@@ -202,7 +212,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(produto?.codigo));
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(produto?.codigo);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricaoAdicional.Focus();
             }
@@ -213,18 +223,23 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
         }
 
-        private async void OnSelectedDescricaoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                TabelaDescAdicionalModel? adicional = e.NewValue as TabelaDescAdicionalModel;
+                TabelaDescAdicionalModel? adicional = e.AddedItems.Count > 0 ? e.AddedItems[0] as TabelaDescAdicionalModel : null;
+                if (adicional is null)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(adicional?.coduniadicional));
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(adicional?.coduniadicional);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtComplementoAdicional.Focus();
             }
@@ -235,9 +250,9 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
         }
 
-        private void OnSelectedComplementoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
         {
-            TblComplementoAdicionalModel? complemento = e.NewValue as TblComplementoAdicionalModel;
+            TblComplementoAdicionalModel? complemento = e.AddedItems.Count > 0 ? e.AddedItems[0] as TblComplementoAdicionalModel : null;
             vm.Compledicional = complemento;
             txtCodigoProdutoReceita.Text = complemento?.codcompladicional.ToString();
             txtQuantidade.Focus();
@@ -264,8 +279,8 @@ namespace Producao.Views.OrdemServico.Requisicao
                     alterado_por = vm.Item == null ? null : Environment.UserName,
                     alterado_em = vm.Item == null ? null : DateTime.Now,
                 };
-                vm.RequiReceita = await Task.Run(() => vm.AddReceita(dados));
-                vm.Itens = await Task.Run(() => vm.GetItensAsync(vm.DescricaoProduto.codcompladicional));
+                vm.RequiReceita = await vm.AddReceita(dados);
+                vm.Itens = await vm.GetItensAsync(vm.DescricaoProduto.codcompladicional);
                 Limpar();
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -284,7 +299,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync((long)vm.Item?.codcompladicional_receita));
+                vm.Descricao = await vm.GetDescricaoAsync((long)vm.Item?.codcompladicional_receita);
                 txtCodigoProdutoReceita.Text = vm.Descricao.codcompladicional.ToString();
                 txtPlanilha.Text = vm.Descricao.planilha;
                 txtDescricao.Text = vm.Descricao.descricao;
@@ -293,9 +308,9 @@ namespace Producao.Views.OrdemServico.Requisicao
                 txtQuantidade.Text = vm.Item?.quantidade.ToString();
 
 
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(vm.Descricao.planilha));
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(vm.Descricao.codigo));
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional));
+                vm.Produtos = await vm.GetProdutosAsync(vm.Descricao.planilha);
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Descricao.codigo);
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional);
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -309,11 +324,6 @@ namespace Producao.Views.OrdemServico.Requisicao
                 MessageBox.Show(ex.Message);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
-        }
-
-        private void dgModelos_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
-        {
-
         }
 
         private void Limpar()

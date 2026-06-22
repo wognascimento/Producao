@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.kit.desmontagem" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
 
@@ -18,96 +18,67 @@
 
         <StackPanel Grid.RowSpan="1" Margin="5" HorizontalAlignment="Left">
 
-            <syncfusion:SfTextInputLayout 
-                    InputViewPadding="4"
-                    HintFloatMode="Float" 
-                    Hint="Shopping" 
-                    Width="260" 
-                    CharCountVisibility="Collapsed" 
-                    HelperTextVisibility="Collapsed" >
-
-                <syncfusion:SfTextBoxExt 
-                        x:Name="cbSiglaShopping"
-                        SearchItemPath="cliente"
-                        ValueMemberPath="num_os"
-                        ShowDropDownButton="false"
-                        AutoCompleteMode="SuggestAppend"
-                        AutoCompleteSource="{Binding Siglas}" 
-                        SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        SelectedItemChanged="OnSiglaSelectionChanged" 
-                        ShowSuggestionsOnFocus="True" 
-                        ShowClearButton="True"/>
-
-            </syncfusion:SfTextInputLayout>
+            <telerik:RadComboBox
+                x:Name="cbSiglaShopping"
+                Width="260"
+                EmptyText="Shopping"
+                IsEditable="True"
+                IsFilteringEnabled="True"
+                OpenDropDownOnFocus="True"
+                DisplayMemberPath="cliente"
+                SelectedValuePath="num_os"
+                ItemsSource="{Binding Siglas}"
+                SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectionChanged="OnSiglaSelectionChanged"/>
 
         </StackPanel>
 
-        <syncfusion:SfDataGrid 
+        <telerik:RadGridView 
             x:Name="osKit"
             Grid.Row="1"
-            AddNewRowPosition="Bottom"
-            ShowRowHeader="True"
             AutoGenerateColumns="False"
-            ColumnSizer="SizeToHeader"
+            CanUserInsertRows="True"
+            GroupRenderMode="Flat"
+            NewRowPosition="Bottom"
+            ShowGroupPanel="False"
             ItemsSource="{Binding OsKits}"
             SelectedItem="{Binding OsKit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            AllowResizingColumns="True" 
-            AllowResizingHiddenColumns="True" AddNewRowInitiating="SfDataGrid_AddNewRowInitiating" RowValidated="SfDataGrid_RowValidated" RowValidating="SfDataGrid_RowValidating" AllowEditing="True">
-            <syncfusion:SfDataGrid.Columns>
+            AddingNewDataItem="RadGridView_AddingNewDataItem"
+            RowValidating="RadGridView_RowValidating"
+            RowValidated="RadGridView_RowValidated"
+            IsReadOnly="False">
+            <telerik:RadGridView.Columns>
 
-                <syncfusion:GridDateTimeColumn
-                        HeaderText="DATA EMISSAO" 
-                        MappingName="data_emissao"/>
+                <telerik:GridViewDataColumn Header="DATA EMISSAO" DataMemberBinding="{Binding data_emissao}" DataFormatString="{}{0:dd/MM/yyyy}"/>
 
-                <syncfusion:GridTextColumn
-                        HeaderText="SOLICITANTE" 
-                        MappingName="solicitante"/>
-                <!--
-                    <syncfusion:GridDateTimeColumn
-                        HeaderText="HORA SOLICITACAO" 
-                        MappingName="hora_solicitacao"/>
--->
-                <syncfusion:GridDateTimeColumn
-                        HeaderText="CONCLUIR ATE" 
-                        MappingName="concluir_ate"/>
+                <telerik:GridViewDataColumn Header="SOLICITANTE" DataMemberBinding="{Binding solicitante}"/>
 
-                <syncfusion:GridTextColumn
-                        HeaderText="ATENDENTE" 
-                        MappingName="atendente"/>
+                <telerik:GridViewDataColumn Header="CONCLUIR ATE" DataMemberBinding="{Binding concluir_ate}" DataFormatString="{}{0:dd/MM/yyyy}"/>
 
-                <syncfusion:GridDateTimeColumn
-                        HeaderText="DATA SOLICITACAO"
-                        MappingName="data_solicitacao"/>
+                <telerik:GridViewDataColumn Header="ATENDENTE" DataMemberBinding="{Binding atendente}"/>
 
-                <syncfusion:GridTextColumn
-                        HeaderText="NOITE DE MONTAGEM" 
-                        MappingName="noite_montagem"/>
+                <telerik:GridViewDataColumn Header="DATA SOLICITACAO" DataMemberBinding="{Binding data_solicitacao}" DataFormatString="{}{0:dd/MM/yyyy}"/>
 
-                <syncfusion:GridTextColumn
-                        HeaderText="OBSERVAÇÃO" 
-                        MappingName="obs_de_envio"/>
+                <telerik:GridViewDataColumn Header="NOITE DE MONTAGEM" DataMemberBinding="{Binding noite_montagem}"/>
 
-                <syncfusion:GridTextColumn
-                        HeaderText="CONTROLE" 
-                        MappingName="os"/>
+                <telerik:GridViewDataColumn Header="OBSERVAÇÃO" DataMemberBinding="{Binding obs_de_envio}"/>
 
-                <syncfusion:GridTemplateColumn 
-                    HeaderText="DETALHES"
-                    MappingName="os">
-                    <syncfusion:GridTemplateColumn.CellTemplate>
+                <telerik:GridViewDataColumn Header="CONTROLE" DataMemberBinding="{Binding os}"/>
+
+                <telerik:GridViewColumn Header="DETALHES">
+                    <telerik:GridViewColumn.CellTemplate>
                         <DataTemplate>
-                            <Button 
+                            <telerik:RadButton 
                                 Content="DETALHES" 
-                                syncfusion:FocusManagerHelper.FocusedElement="True"
-                                Command="{Binding Path=DataContext.RowDetalhesCommand,ElementName=osKit}" 
-                                CommandParameter="{Binding ElementName=osKit}"/>
+                                Command="{Binding DataContext.RowDetalhesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                CommandParameter="{Binding}"/>
                         </DataTemplate>
-                    </syncfusion:GridTemplateColumn.CellTemplate>
-                </syncfusion:GridTemplateColumn>
+                    </telerik:GridViewColumn.CellTemplate>
+                </telerik:GridViewColumn>
 
-            </syncfusion:SfDataGrid.Columns>
+            </telerik:RadGridView.Columns>
 
-        </syncfusion:SfDataGrid>
+        </telerik:RadGridView>
 
 
     </Grid>

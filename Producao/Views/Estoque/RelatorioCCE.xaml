@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Producao.Views.Estoque" xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:local="clr-namespace:Producao.Views.Estoque"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
              d:DesignHeight="40" d:DesignWidth="500" Loaded="UserControl_Loaded">
 
@@ -16,32 +17,22 @@
             <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
 
-        <syncfusion:SfTextInputLayout
+        <telerik:RadComboBox
+            x:Name="txtPlanilha"
             Grid.Column="0"
-            InputViewPadding="4" 
-            HintFloatMode="Float" 
-            Hint="SELECIONA A PLANILHA" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed">
+            Margin="5"
+            EmptyText="SELECIONE A PLANILHA"
+            DisplayMemberPath="planilha"
+            IsEditable="True"
+            IsTextSearchEnabled="True"
+            ItemsSource="{Binding Planilhas}"
+            SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-            <syncfusion:SfTextBoxExt 
-                x:Name="txtPlanilha"
-                SearchItemPath="planilha"
-                ShowDropDownButton="False"
-                AutoCompleteMode="SuggestAppend"
-                ShowClearButton="True"
-                AutoCompleteSource="{Binding Path=Planilhas}"
-                SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                ShowSuggestionsOnFocus="True"/>
-
-        </syncfusion:SfTextInputLayout>
-
-        <syncfusion:ButtonAdv 
+        <telerik:RadButton
             Grid.Column="1"
-            SizeMode="Small"
             Margin="5" 
-            SmallIcon="/icones/icons8-ms-excel-blue-ui-32.png" 
-            LargeIcon="/icones/icons8-ms-excel-blue-ui-96.png" Click="ButtonAdv_Click" />
+            Content="EXPORTAR EXCEL"
+            Click="OnExportarExcel" />
 
     </Grid>
 

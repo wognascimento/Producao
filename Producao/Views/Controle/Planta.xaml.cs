@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.DataBase.Model;
 using Producao.Views.Helper;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.Grid.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.Controle;
 
@@ -67,101 +67,99 @@ public partial class Planta : UserControl
         }
     }
 
-    private void OnCurrentCellEndEdit(object sender, CurrentCellEndEditEventArgs e)
+    private void OnCellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
     {
-
+        _ = AtualizarConclusaoAsync(sender as RadGridView, e.Cell?.DataContext as AprovadoModel, e.Cell?.Column?.UniqueName);
     }
 
-    private async void OnCurrentCellValueChanged(object sender, CurrentCellValueChangedEventArgs e)
+    private async Task AtualizarConclusaoAsync(RadGridView dataGrid, AprovadoModel record, string columnName)
     {
-        var dataGrid = sender as SfDataGrid;
+        if (dataGrid is null || record is null || string.IsNullOrWhiteSpace(columnName))
+        {
+            return;
+        }
+
         var vm = (ViewPlantaViewModel)DataContext;
-        var provider = dataGrid.View.GetPropertyAccessProvider();
-        var record = dataGrid.GetRecordAtRowIndex(e.RowColumnIndex.RowIndex) as AprovadoModel;
-        var column = dataGrid.Columns[dataGrid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex)];
-        var dataRow = this.itens.RowGenerator.Items.FirstOrDefault(item => item.RowIndex == e.RowColumnIndex.RowIndex);
-        var newEntity = new TAprovadoModel();
-        MapperHelper.CopyMatchingProperties(record, newEntity);
         
         try
         {
-            if (column.MappingName.Equals("ok_planta_base"))
+            if (columnName.Equals("ok_planta_base"))
             {
                 record.planta_base = _dataBaseSettings.Username;
                 record.liberacao_planta_base = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
-            else if (column.MappingName.Equals("conclusao_planta_cerca"))
+            else if (columnName.Equals("conclusao_planta_cerca"))
             {
                 record.planta_cercas_concluida_por = _dataBaseSettings.Username;
                 record.data_conclusao_planta_cercas = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
-            else if (column.MappingName.Equals("conclusao_revisao_planta_base"))
+            else if (columnName.Equals("conclusao_revisao_planta_base"))
             {
                 record.revisao_planta_base_concluida_por = _dataBaseSettings.Username;
                 record.data_revisao_planta_base = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
-            else if (column.MappingName.Equals("ok_planta_pca"))
+            else if (columnName.Equals("ok_planta_pca"))
             {
                 record.planta_pca = _dataBaseSettings.Username;
                 record.liberacao_planta_pca = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
 
-            else if (column.MappingName.Equals("conclusao_revisao_planta_praca"))
+            else if (columnName.Equals("conclusao_revisao_planta_praca"))
             {
                 record.revisao_planta_praca_concluida_por = _dataBaseSettings.Username;
                 record.data_conclusso_revisao_planta_praca = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
-            else if (column.MappingName.Equals("conclusao_revisao_final"))
+            else if (columnName.Equals("conclusao_revisao_final"))
             {
                 record.revisao_final_concluida_por = _dataBaseSettings.Username;
                 record.data_conclusao_revisao_final = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
-            else if (column.MappingName.Equals("conclusao_retorno_vt"))
+            else if (columnName.Equals("conclusao_retorno_vt"))
             {
                 record.resp_retorno_vt = _dataBaseSettings.Username;
                 record.data_retorno_vt = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
-            else if (column.MappingName.Equals("ok_planta_mall"))
+            else if (columnName.Equals("ok_planta_mall"))
             {
                 record.planta_mall = _dataBaseSettings.Username;
                 record.conclusao_planta_mall = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
-            else if (column.MappingName.Equals("OkPlantaFachada"))
+            else if (columnName.Equals("ok_planta_fachada"))
             {
                 record.planta_fachada = _dataBaseSettings.Username;
                 record.conclusao_planta_fachada = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
-            else if (column.MappingName.Equals("conclusao_planta_corte_elevacao"))
+            else if (columnName.Equals("conclusao_planta_corte_elevacao"))
             {
                 record.planta_corte_elevacao_concluida_por = _dataBaseSettings.Username;
                 record.data_conclusao_planta_corte_elevacao = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }
-            else if (column.MappingName.Equals("conclusao_planta_as_built"))
+            else if (columnName.Equals("conclusao_planta_as_built"))
             {
                 record.as_built_plantas = _dataBaseSettings.Username;
                 record.as_built_plantas_data = DateTime.Now;
-                await vm.SaveAsync(newEntity);
-                dataGrid.View.Refresh();
+                await SalvarAsync(vm, record);
+                dataGrid.Items.Refresh();
             }  
         }
         catch (Exception ex)
@@ -171,19 +169,27 @@ public partial class Planta : UserControl
 
     }
 
-    private async void itens_RowValidated(object sender, RowValidatedEventArgs e)
+    private async void itens_RowValidated(object sender, GridViewRowValidatedEventArgs e)
     {
         try
         {
             var vm = (ViewPlantaViewModel)DataContext;
-            var newEntity = new TAprovadoModel();
-            MapperHelper.CopyMatchingProperties(e.RowData, newEntity);
-            await vm.SaveAsync(newEntity);
+            if (e.Row?.Item is AprovadoModel aprovado)
+            {
+                await SalvarAsync(vm, aprovado);
+            }
         }
         catch (DbUpdateException ex)
         {
             MessageBox.Show($"Erro: {ex.InnerException.Message}");
         }
+    }
+
+    private static async Task SalvarAsync(ViewPlantaViewModel vm, AprovadoModel record)
+    {
+        var newEntity = new TAprovadoModel();
+        MapperHelper.CopyMatchingProperties(record, newEntity);
+        await vm.SaveAsync(newEntity);
     }
 }
 

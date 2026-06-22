@@ -1,14 +1,15 @@
-﻿<UserControl x:Class="Producao.Views.OrdemServico.Produto.SolicitacaoOrdemServicoProduto"
+<UserControl x:Class="Producao.Views.OrdemServico.Produto.SolicitacaoOrdemServicoProduto"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Producao.Views.OrdemServico.Produto" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Producao.Views.OrdemServico.Produto"
              xmlns:vewModel="clr-namespace:Producao"
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" 
-             Loaded="UserControl_Loaded" 
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             Loaded="UserControl_Loaded"
              Unloaded="UserControl_Unloaded">
 
     <UserControl.Resources>
@@ -16,263 +17,152 @@
         <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
     </UserControl.Resources>
 
-
     <Grid Margin="5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="303"/>
             <ColumnDefinition Width="5"/>
-            <ColumnDefinition />
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="5" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="5" />
-            <RowDefinition />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <syncfusion:SfTextInputLayout
-            Grid.Row="0"
-            InputViewPadding="5" 
-            HintFloatMode="Float" 
-            Hint="TIPO DA O.S." 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed">
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="TIPO DA O.S."/>
+            <telerik:RadComboBox x:Name="cmbTipoOs" ItemsSource="{Binding TpoOS}"/>
+        </StackPanel>
 
-            <syncfusion:ComboBoxAdv 
-                x:Name="cmbTipoOs"
-                ItemsSource="{Binding TpoOS}"/>
-            
-        </syncfusion:SfTextInputLayout>
+        <StackPanel Grid.Row="1" Grid.Column="0">
+            <TextBlock Text="BUSCAR PRODUTO POR CÓDIGO"/>
+            <telerik:RadWatermarkTextBox x:Name="tbCodproduto" PreviewKeyDown="OnBuscaProduto"/>
+        </StackPanel>
 
-        <syncfusion:SfTextInputLayout
-                Grid.Row="1"
-                Grid.Column="0"
-                InputViewPadding="4" 
-                HintFloatMode="Float" 
-                Hint="BUSCAR PRODUTO POR CÓDIGO" 
-                CharCountVisibility="Collapsed" 
-                HelperTextVisibility="Collapsed">
+        <telerik:RadButton x:Name="btnBuscar"
+                           Grid.Row="1"
+                           Grid.Column="2"
+                           Width="50"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Bottom"
+                           Content="..."
+                           Click="OnOpenDescricoes"/>
 
-            <syncfusion:SfTextBoxExt 
-                x:Name="tbCodproduto" 
-                PreviewKeyDown="OnBuscaProduto"/>
+        <StackPanel Grid.Row="2" Grid.Column="0">
+            <TextBlock Text="PLANILHA"/>
+            <telerik:RadComboBox x:Name="txtPlanilha"
+                      IsEditable="True"
+                      IsTextSearchEnabled="True"
+                      ItemsSource="{Binding Planilhas}"
+                      DisplayMemberPath="planilha"
+                      SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectionChanged="OnSelectedPlanilha"/>
+        </StackPanel>
 
-        </syncfusion:SfTextInputLayout>
+        <StackPanel Grid.Row="2" Grid.Column="2">
+            <TextBlock Text="DESCRIÇÃO"/>
+            <telerik:RadComboBox x:Name="txtDescricao"
+                      IsEditable="True"
+                      IsTextSearchEnabled="True"
+                      ItemsSource="{Binding Produtos}"
+                      DisplayMemberPath="descricao"
+                      SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectionChanged="OnSelectedDescricao"/>
+        </StackPanel>
 
-        <syncfusion:ButtonAdv 
-                x:Name="btnBuscar" 
-                Grid.Row="1" 
-                Grid.Column="2" 
-                Width="30" 
-                HorizontalAlignment="Left" 
-                SmallIcon="/icones/icons8-pesquisar-40.png" 
-                LargeIcon="/icones/icons8-pesquisar-80.png" 
-                SizeMode="Small" 
-                Click="OnOpenDescricoes" />
+        <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3">
+            <TextBlock Text="DESCRIÇÃO ADICIONAL"/>
+            <telerik:RadComboBox x:Name="txtDescricaoAdicional"
+                      IsEditable="True"
+                      IsTextSearchEnabled="True"
+                      ItemsSource="{Binding DescAdicionais}"
+                      DisplayMemberPath="descricao_adicional"
+                      SelectedItem="{Binding DescAdicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectionChanged="OnSelectedDescricaoAdicional"/>
+        </StackPanel>
 
-        <syncfusion:SfTextInputLayout
-                Grid.Row="2"
-                Grid.Column="0"
-                InputViewPadding="4" 
-                HintFloatMode="Float" 
-                Hint="PLANILHA" 
-                CharCountVisibility="Collapsed" 
-                HelperTextVisibility="Collapsed">
+        <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+            <TextBlock Text="COMPLEMENTO ADICIONAL"/>
+            <telerik:RadComboBox x:Name="txtComplementoAdicional"
+                      IsEditable="True"
+                      IsTextSearchEnabled="True"
+                      ItemsSource="{Binding CompleAdicionais}"
+                      DisplayMemberPath="complementoadicional"
+                      SelectedItem="{Binding Compledicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectionChanged="OnSelectedComplementoAdicional"/>
+        </StackPanel>
 
-            <syncfusion:SfTextBoxExt 
-                x:Name="txtPlanilha"
-                SearchItemPath="planilha"
-                ShowDropDownButton="False"
-                AutoCompleteMode="SuggestAppend"
-                ShowClearButton="True"
-                AutoCompleteSource="{Binding Path=Planilhas}" 
-                SelectedItemChanged="OnSelectedPlanilha" 
-                ShowSuggestionsOnFocus="True"/>
+        <StackPanel Grid.Row="5" Grid.Column="0">
+            <TextBlock Text="QUANTIDADE"/>
+            <telerik:RadWatermarkTextBox x:Name="txtQuantidade"/>
+        </StackPanel>
 
-        </syncfusion:SfTextInputLayout>
+        <telerik:RadButton x:Name="btnCriar"
+                           Grid.Row="5"
+                           Grid.Column="2"
+                           Width="50"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Bottom"
+                           Content=">"
+                           Click="OnCriarOS"/>
 
-        <syncfusion:SfTextInputLayout
-                Grid.Row="2"
-                Grid.Column="2"
-                InputViewPadding="4" 
-                HintFloatMode="Float" 
-                Hint="DESCRIÇÃO" 
-                CharCountVisibility="Collapsed" 
-                HelperTextVisibility="Collapsed">
+        <telerik:RadButton x:Name="btnNovo"
+                           Grid.Row="5"
+                           Grid.Column="2"
+                           Width="50"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Bottom"
+                           Content="N"
+                           Visibility="Collapsed"
+                           Click="OnCriarNovaOS"/>
 
-            <syncfusion:SfTextBoxExt 
-                x:Name="txtDescricao"
-                ShowDropDownButton="False"
-                SearchItemPath="descricao"
-                AutoCompleteMode="SuggestAppend"
-                ShowClearButton="True"
-                AutoCompleteSource="{Binding Path=Produtos}"
-                SelectedItemChanged="OnSelectedDescricao"
-                ShowSuggestionsOnFocus="True"/>
-
-        </syncfusion:SfTextInputLayout>
-
-        <syncfusion:SfTextInputLayout
-                Grid.Row="3"
-                Grid.Column="0"
-                Grid.ColumnSpan="3"
-                InputViewPadding="4" 
-                HintFloatMode="Float" 
-                Hint="DESCRIÇÃO ADICIONAL"
-                CharCountVisibility="Collapsed" 
-                HelperTextVisibility="Collapsed">
-
-            <syncfusion:SfTextBoxExt
-                x:Name="txtDescricaoAdicional"
-                ShowDropDownButton="False"
-                SearchItemPath="descricao_adicional"
-                AutoCompleteMode="SuggestAppend"
-                ShowClearButton="True"
-                AutoCompleteSource="{Binding Path=DescAdicionais}"
-                SelectedItemChanged="OnSelectedDescricaoAdicional"
-                ShowSuggestionsOnFocus="True"/>
-
-        </syncfusion:SfTextInputLayout>
-
-        <syncfusion:SfTextInputLayout
-                Grid.Row="4"
-                Grid.Column="0"
-                Grid.ColumnSpan="3"
-                InputViewPadding="4" 
-                HintFloatMode="Float" 
-                Hint="COMPLEMENTO ADICIONAL"
-                CharCountVisibility="Collapsed" 
-                HelperTextVisibility="Collapsed">
-
-            <syncfusion:SfTextBoxExt 
-                x:Name="txtComplementoAdicional"
-                ShowDropDownButton="False"
-                SearchItemPath="complementoadicional"
-                AutoCompleteMode="SuggestAppend"
-                ShowClearButton="True"
-                AutoCompleteSource="{Binding Path=CompleAdicionais}"
-                SelectedItemChanged="OnSelectedComplementoAdicional"
-                ShowSuggestionsOnFocus="True"/>
-
-        </syncfusion:SfTextInputLayout>
-
-        <syncfusion:SfTextInputLayout
-                Grid.Row="5"
-                Grid.Column="0"
-                InputViewPadding="4" 
-                HintFloatMode="Float" 
-                Hint="QUANTIDADE"
-                CharCountVisibility="Collapsed" 
-                HelperTextVisibility="Collapsed">
-
-            <syncfusion:SfTextBoxExt x:Name="txtQuantidade"/>
-
-        </syncfusion:SfTextInputLayout>
-
-        <syncfusion:ButtonAdv 
-                x:Name="btnCriar" 
-                Grid.Row="5" 
-                Grid.Column="2" 
-                Width="30" 
-                HorizontalAlignment="Left" 
-                SmallIcon="/icones/icons8-next-page-blue-ui-32.png" 
-                LargeIcon="/icones/icons8-next-page-blue-ui-96.png" 
-                SizeMode="Small" 
-                Click="OnCriarOS" />
-
-        <syncfusion:ButtonAdv
-            x:Name="btnNovo" 
-            Grid.Row="5" 
-            Grid.Column="2" 
-            Width="30" 
-            HorizontalAlignment="Left" 
-            SmallIcon="/icones/icons8-vassoura-40.png" 
-            LargeIcon="/icones/icons8-vassoura-80.png" 
-            SizeMode="Small" 
-            Visibility="Collapsed"
-            Click="OnCriarNovaOS" />
-
-
-        <syncfusion:SfDataGrid
-            x:Name="caminhos" 
-            Grid.Row="10"
-            Grid.Column="0"
-            Grid.ColumnSpan="3"
-            AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            AllowEditing="True"
-            AddNewRowPosition="Top"
-            ColumnSizer="AutoWithLastColumnFill"
-            ShowRowHeader="True" 
-            RowHeight="50"
-            ItemsSource="{Binding ObsOSs}" 
-            SelectedItem="{Binding ObsOs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            Visibility="Collapsed" 
-            AddNewRowInitiating="caminhos_AddNewRowInitiating" RowValidated="caminhos_RowValidated" RowValidating="caminhos_RowValidating" CurrentCellDropDownSelectionChanged="caminhos_CurrentCellDropDownSelectionChanged">
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn 
-                    HeaderText="ORDEM CAMINHO" 
-                    MappingName="num_caminho"
-                    DisplayBinding="{Binding num_caminho, Converter={StaticResource ConverterNumber}}"
-                    ColumnSizer="SizeToHeader"/>
-
-                <syncfusion:GridMultiColumnDropDownList
-                    HeaderText="CAMINHO - SETOR"
-                    MappingName="codigo_setor"
-                    AutoGenerateColumns="false"
-                    ItemsSource="{Binding Setores}"
-                    ValueMember="codigo_setor"
-                    DisplayMember="setor"
-                    Width="236">
-                    <syncfusion:GridMultiColumnDropDownList.Columns>
-                        <syncfusion:Columns>
-                            <syncfusion:GridTextColumn MappingName="setor" ColumnSizer="Auto" />
-                        </syncfusion:Columns>
-                    </syncfusion:GridMultiColumnDropDownList.Columns>
-                </syncfusion:GridMultiColumnDropDownList>
-
-                    <syncfusion:GridTextColumn 
-                    HeaderText="ORIENTAÇÃO" 
-                    MappingName="orientacao_caminho"
-                    TextWrapping="Wrap"
-                    ColumnSizer="AutoLastColumnFill"/>
-
-                <syncfusion:GridCheckBoxColumn 
-                    HeaderText="PERMISSÃO DE TRABALHO" 
-                    MappingName="pt"
-                    ColumnSizer="SizeToHeader"/>
-
-                <syncfusion:GridComboBoxColumn 
-                    HeaderText="DISTRIBUIR" 
-                    MappingName="distribuir_os"
-                    ItemsSource="{Binding DistribuirOS}"
-                    ColumnSizer="SizeToHeader"/>
-
-                <syncfusion:GridMultiColumnDropDownList 
-                    HeaderText="SHOPP" 
-                    MappingName="cliente"
-                    AutoGenerateColumns="false"
-                    ItemsSource="{Binding Siglas}"
-                    ValueMember="sigla_serv"
-                    DisplayMember="sigla_serv"
-                    ColumnSizer="SizeToCells">
-                    <syncfusion:GridMultiColumnDropDownList.Columns>
-                        <syncfusion:Columns>
-                            <syncfusion:GridTextColumn MappingName="sigla_serv" ColumnSizer="AutoWithLastColumnFill" />
-                        </syncfusion:Columns>
-                    </syncfusion:GridMultiColumnDropDownList.Columns>
-                </syncfusion:GridMultiColumnDropDownList>
-
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
-
+        <telerik:RadGridView x:Name="caminhos"
+                             Grid.Row="10"
+                             Grid.Column="0"
+                             Grid.ColumnSpan="3"
+                             AutoGenerateColumns="False"
+                             CanUserResizeColumns="True"
+                             CanUserInsertRows="True"
+                             GroupRenderMode="Flat"
+                             NewRowPosition="Top"
+                             ShowGroupPanel="False"
+                             RowHeight="50"
+                             ItemsSource="{Binding ObsOSs}"
+                             SelectedItem="{Binding ObsOs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Visibility="Collapsed"
+                             AddingNewDataItem="caminhos_AddNewDataItem"
+                             RowValidated="caminhos_RowValidated"
+                             RowValidating="caminhos_RowValidating">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="ORDEM CAMINHO"
+                                            DataMemberBinding="{Binding num_caminho, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewComboBoxColumn Header="CAMINHO - SETOR"
+                                                DataMemberBinding="{Binding codigo_setor}"
+                                                ItemsSource="{Binding DataContext.Setores, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                DisplayMemberPath="setor"
+                                                SelectedValueMemberPath="codigo_setor"/>
+                <telerik:GridViewDataColumn Header="ORIENTAÇÃO"
+                                            DataMemberBinding="{Binding orientacao_caminho}"
+                                            TextWrapping="Wrap"/>
+                <telerik:GridViewCheckBoxColumn Header="PERMISSÃO DE TRABALHO"
+                                                DataMemberBinding="{Binding pt}"/>
+                <telerik:GridViewComboBoxColumn Header="DISTRIBUIR"
+                                                DataMemberBinding="{Binding distribuir_os}"
+                                                ItemsSource="{Binding DataContext.DistribuirOS, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                <telerik:GridViewComboBoxColumn Header="SHOPP"
+                                                DataMemberBinding="{Binding cliente}"
+                                                ItemsSource="{Binding DataContext.Siglas, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                DisplayMemberPath="sigla_serv"
+                                                SelectedValueMemberPath="sigla_serv"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
     </Grid>
-
 </UserControl>

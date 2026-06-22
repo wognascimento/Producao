@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -26,7 +26,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 RequisicaoMaterialEmitidasViewModel vm = (RequisicaoMaterialEmitidasViewModel)DataContext;
-                vm.Itens = await Task.Run(vm.GetRequisicaoDetalhesAsync);
+                vm.Itens = await vm.GetRequisicaoDetalhesAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)

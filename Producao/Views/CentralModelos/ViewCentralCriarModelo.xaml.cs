@@ -1,9 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Producao.Views.PopUp;
-using Syncfusion.Data;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.UI.Xaml.ScrollAxis;
-using Syncfusion.UI.Xaml.Utility;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -13,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Telerik.Windows.Controls;
 
 namespace Producao.Views.CentralModelos
 {
@@ -56,7 +53,7 @@ namespace Producao.Views.CentralModelos
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                    string text = ((TextBox)sender).Text;
+                    string text = txtCodigoProduto.Text;
                     vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(long.Parse(text)));
                     if (vm.Descricao == null)
                     {
@@ -71,12 +68,6 @@ namespace Producao.Views.CentralModelos
                     txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
                     txtTema.Focus();
 
-                    dgModelos.Columns["codcompladicional"].FilteredFrom = FilteredFrom.FilterRow;
-                    dgModelos.Columns["codcompladicional"].FilterPredicates.Add(new FilterPredicate()
-                    {
-                        FilterType = FilterType.Equals,
-                        FilterValue = vm.Descricao.codcompladicional
-                    });
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (FormatException ex)
@@ -108,19 +99,13 @@ namespace Producao.Views.CentralModelos
                 txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
                 txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
                 txtTema.Focus();
-                dgModelos.Columns["codcompladicional"].FilteredFrom = FilteredFrom.FilterRow;
-                dgModelos.Columns["codcompladicional"].FilterPredicates.Add(new FilterPredicate()
-                {
-                    FilterType = FilterType.Equals,
-                    FilterValue = vm.Descricao.codcompladicional
-                });
             }  
         }
-        private async void OnSelectedPlanilha(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                RelplanModel? planilha = e.NewValue as RelplanModel;
+                RelplanModel? planilha = txtPlanilha.SelectedItem as RelplanModel;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.Produtos = new ObservableCollection<ProdutoModel>();
@@ -138,12 +123,6 @@ namespace Producao.Views.CentralModelos
                 vm.Produtos = await Task.Run(()=> vm.GetProdutosAsync(planilha?.planilha));
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricao.Focus();
-                dgModelos.Columns["planilha"].FilteredFrom = FilteredFrom.FilterRow;
-                dgModelos.Columns["planilha"].FilterPredicates.Add(new FilterPredicate()
-                {
-                    FilterType = FilterType.Equals,
-                    FilterValue = planilha?.planilha
-                });
             }
             catch (Exception ex)
             {
@@ -152,11 +131,11 @@ namespace Producao.Views.CentralModelos
             }
         }
 
-        private async void OnSelectedDescricao(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                ProdutoModel? produto = e.NewValue as ProdutoModel;
+                ProdutoModel? produto = txtDescricao.SelectedItem as ProdutoModel;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
@@ -170,13 +149,6 @@ namespace Producao.Views.CentralModelos
                 vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(produto?.codigo));
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricaoAdicional.Focus();
-                dgModelos.Columns["descricao_completa"].FilteredFrom = FilteredFrom.FilterRow;
-                dgModelos.Columns["descricao_completa"].FilterPredicates.Add(new FilterPredicate()
-                {
-                    FilterBehavior = FilterBehavior.StringTyped,
-                    FilterType = FilterType.Contains,
-                    FilterValue = produto?.descricao
-                });
             }
             catch (Exception ex)
             {
@@ -184,11 +156,11 @@ namespace Producao.Views.CentralModelos
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
-        private async void OnSelectedDescricaoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                TabelaDescAdicionalModel? adicional = e.NewValue as TabelaDescAdicionalModel;
+                TabelaDescAdicionalModel? adicional = txtDescricaoAdicional.SelectedItem as TabelaDescAdicionalModel;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
@@ -198,13 +170,6 @@ namespace Producao.Views.CentralModelos
                 vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(adicional?.coduniadicional));
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtComplementoAdicional.Focus();
-                dgModelos.Columns["descricao_completa"].FilteredFrom = FilteredFrom.FilterRow;
-                dgModelos.Columns["descricao_completa"].FilterPredicates.Add(new FilterPredicate()
-                {
-                    FilterBehavior = FilterBehavior.StringTyped,
-                    FilterType = FilterType.Contains,
-                    FilterValue = adicional?.descricao_adicional
-                });
             }
             catch (Exception ex)
             {
@@ -213,31 +178,18 @@ namespace Producao.Views.CentralModelos
             }
         }
 
-        private void OnSelectedComplementoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
         {
-            TblComplementoAdicionalModel? complemento = e.NewValue as TblComplementoAdicionalModel;
+            TblComplementoAdicionalModel? complemento = txtComplementoAdicional.SelectedItem as TblComplementoAdicionalModel;
             vm.Compledicional = complemento;
             txtCodigoProduto.Text = complemento?.codcompladicional.ToString();
             txtTema.Focus();
-            dgModelos.Columns["descricao_completa"].FilteredFrom = FilteredFrom.FilterRow;
-            dgModelos.Columns["descricao_completa"].FilterPredicates.Add(new FilterPredicate()
-            {
-                FilterBehavior = FilterBehavior.StringTyped,
-                FilterType = FilterType.Contains,
-                FilterValue = complemento?.complementoadicional
-            });
         }
 
-        private void OnSelectedTema(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void OnSelectedTema(object sender, SelectionChangedEventArgs e)
         {
-            TemaModel? tema = e.NewValue as TemaModel;
+            TemaModel? tema = txtTema.SelectedItem as TemaModel;
             vm.Tema = tema;
-            dgModelos.Columns["tema"].FilteredFrom = FilteredFrom.FilterRow;
-            dgModelos.Columns["tema"].FilterPredicates.Add(new FilterPredicate()
-            {
-                FilterType = FilterType.Equals,
-                FilterValue = tema?.temas
-            });
         }
 
         private void Limpar()
@@ -250,7 +202,7 @@ namespace Producao.Views.CentralModelos
             txtTema.Text = string.Empty;
             txtObservacao.Text = string.Empty;
             txtPlanilha.Focus();
-            dgModelos.ClearFilters();
+            dgModelos.FilterDescriptors.Clear();
             this.dgModelos.SelectedItems.Clear();
             modelo = null;
         }
@@ -280,15 +232,10 @@ namespace Producao.Views.CentralModelos
                 vm.Modelo = await Task.Run(() => vm.AddModeloAsync(dados, tema));
                 if (modelo == null)
                 {
-                    dgModelos.ClearFilters();
                     modelo = await Task.Run(() => vm.GetModelo(vm.Modelo.id_modelo));
                     vm?.QryModelos.Add(modelo);
-                    RowColumnIndex rowColumnIndex = new RowColumnIndex();
-                    this.dgModelos.SearchHelper.Search(vm?.Modelo.id_modelo.ToString());
-                    this.dgModelos.SearchHelper.FindNext(vm?.Modelo.id_modelo.ToString());
-                    rowColumnIndex.RowIndex = this.dgModelos.SearchHelper.CurrentRowColumnIndex.RowIndex;
-                    dgModelos.ScrollInView(rowColumnIndex);
                     this.dgModelos.SelectedItem = modelo;
+                    this.dgModelos.ScrollIntoViewAsync(modelo, null);
                 }
                 else
                 {
@@ -399,9 +346,24 @@ namespace Producao.Views.CentralModelos
             }
         }
 
-        private void dgModelos_SelectionChanged(object sender, GridSelectionChangedEventArgs e)
+        private void dgModelos_SelectionChanged(object sender, SelectionChangeEventArgs e)
         {
             //var SelectedItem = ((DetailsViewDataGrid)e.OriginalSender).SelectedItem;
+        }
+
+        private async void OnAtualizarGridClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                vm.QryModelos = await Task.Run(vm.GetModelos);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
@@ -698,35 +660,4 @@ namespace Producao.Views.CentralModelos
         }
 
     }
-
-    public static class CentralCriarModeloContextMenuCommands
-    {
-        static BaseCommand? atualizarGrid;
-        public static BaseCommand AtualizarGrid
-        {
-            get
-            {
-                if (atualizarGrid == null)
-                    atualizarGrid = new BaseCommand(OnAtualizarGridClicked);
-                return atualizarGrid;
-            }
-        }
-        private static async void OnAtualizarGridClicked(object obj)
-        {
-            var grid = ((GridColumnContextMenuInfo)obj).DataGrid;
-            CentralCriarModeloViewModel vm = (CentralCriarModeloViewModel)grid.DataContext;
-            try
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.QryModelos = await Task.Run(vm.GetModelos);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-        }
-    }
-
 }

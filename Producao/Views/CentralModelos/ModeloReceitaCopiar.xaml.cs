@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.Data;
-using Syncfusion.UI.Xaml.Grid;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,60 +9,46 @@ using System.Windows.Input;
 
 namespace Producao.Views.CentralModelos
 {
-    /// <summary>
-    /// Lógica interna para ModeloReceitaCopiar.xaml
-    /// </summary>
     public partial class ModeloReceitaCopiar : Window
     {
-
         private QryModeloModel Modelo { get; set; }
-
-        //public ObservableCollection<ModeloReceitaAnoAnterior> itens { get; set; }
         public ObservableCollection<ModeloReceitaModel> itens { get; set; }
 
-        public ModeloReceitaCopiar(QryModeloModel Modelo)
+        public ModeloReceitaCopiar(QryModeloModel modelo)
         {
             InitializeComponent();
-            this.Modelo = Modelo;
-            this.DataContext = new ModeloReceitaCopiarViewModel();
+            Modelo = modelo;
+            DataContext = new ModeloReceitaCopiarViewModel();
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
-                ModeloReceitaCopiarViewModel? vm = (ModeloReceitaCopiarViewModel)DataContext;
-                vm.ItensReceita = await Task.Run(() => vm.GetModelosAsync(Modelo));
-                //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+                ModeloReceitaCopiarViewModel vm = (ModeloReceitaCopiarViewModel)DataContext;
+                vm.ItensReceita = await vm.GetModelosAsync(Modelo);
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
         }
 
         private void dgModelos_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var modelo = (HistoricoModeloCompletaModel)dgModelos.SelectedItem;
-
-            dgModelos.Columns["id_modelo"].FilteredFrom = FilteredFrom.FilterRow;
-            dgModelos.Columns["id_modelo"].FilterPredicates.Add(new FilterPredicate()
+            if (dgModelos.SelectedItem is not HistoricoModeloCompletaModel modeloSelecionado)
             {
-                FilterType = FilterType.Equals,
-                FilterValue = modelo.id_modelo
-            });
+                return;
+            }
 
-            this.itens = [];
-            var filteredResult = this.dgModelos.View.Records.Select(recordentry => recordentry.Data);
-            foreach (HistoricoModeloCompletaModel item in filteredResult.Cast<HistoricoModeloCompletaModel>())
-            {
-                this.itens.Add(
-                    new ModeloReceitaModel
+            ModeloReceitaCopiarViewModel vm = (ModeloReceitaCopiarViewModel)DataContext;
+            itens = new ObservableCollection<ModeloReceitaModel>(
+                vm.ItensReceita
+                    .Where(item => item.id_modelo == modeloSelecionado.id_modelo)
+                    .Select(item => new ModeloReceitaModel
                     {
                         id_modelo = Modelo.id_modelo,
                         codcompladicional = item.itens_receita,
@@ -73,50 +57,40 @@ namespace Producao.Views.CentralModelos
                         observacao = item.observacao,
                         cadastrado_por = Environment.UserName,
                         data_cadastro = DateTime.Now,
-                    });
-            }
+                    }));
 
-            this.DialogResult = true;
+            DialogResult = true;
         }
     }
 
     public class ModeloReceitaCopiarViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+
         public void RaisePropertyChanged(string propName)
         {
-            if (this.PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
         private HistoricoModeloCompletaModel _itemReceita;
         public HistoricoModeloCompletaModel ItemReceita
         {
-            get { return _itemReceita; }
-            set { _itemReceita = value; RaisePropertyChanged("ItemReceita"); }
+            get => _itemReceita;
+            set { _itemReceita = value; RaisePropertyChanged(nameof(ItemReceita)); }
         }
+
         private ObservableCollection<HistoricoModeloCompletaModel> _itensReceita;
         public ObservableCollection<HistoricoModeloCompletaModel> ItensReceita
         {
-            get { return _itensReceita; }
-            set { _itensReceita = value; RaisePropertyChanged("ItensReceita"); }
+            get => _itensReceita;
+            set { _itensReceita = value; RaisePropertyChanged(nameof(ItensReceita)); }
         }
 
-        public async Task<ObservableCollection<HistoricoModeloCompletaModel>> GetModelosAsync(QryModeloModel Modelo)
+        public async Task<ObservableCollection<HistoricoModeloCompletaModel>> GetModelosAsync(QryModeloModel modelo)
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.HistoricoModeloCompletas
-                    //.Where(c => c.planilha == Modelo.planilha && c.descricao == Modelo.descricao)
-                    .ToListAsync();
-                return new ObservableCollection<HistoricoModeloCompletaModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            using DatabaseContext db = new();
+            var data = await db.HistoricoModeloCompletas.ToListAsync();
+            return new ObservableCollection<HistoricoModeloCompletaModel>(data);
         }
-
     }
 }

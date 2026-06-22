@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              xmlns:local="clr-namespace:Producao.Views.Estoque" 
              xmlns:app="clr-namespace:Producao" 
              mc:Ignorable="d" 
@@ -26,45 +26,36 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <syncfusion:SfTextInputLayout
+        <telerik:RadWatermarkTextBox
+            x:Name="tbCodproduto"
             Grid.Row="0"
             Grid.Column="0"
-            InputViewPadding="4" 
-            HintFloatMode="Float" 
-            Hint="NÚMERO DA REQUISIÇÃO" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" Margin="0,-5,0,5">
+            WatermarkContent="NÚMERO DA REQUISIÇÃO"
+            PreviewKeyDown="OnBuscaRequisicao"
+            Margin="0,0,0,5" />
 
-            <syncfusion:SfTextBoxExt 
-                x:Name="tbCodproduto" 
-                PreviewKeyDown="OnBuscaRequisicao"/>
-
-        </syncfusion:SfTextInputLayout>
-
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             x:Name="itens" 
             Grid.Row="1"
             Grid.Column="0"
             Grid.ColumnSpan="3"
             AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            AllowDraggingColumns="True"
-            AllowFiltering="True"
-            ColumnSizer="AutoWithLastColumnFill"
-            ShowRowHeader="True" 
-            ItemsSource="{Binding Itens}" RowValidated="itens_RowValidated">
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn MappingName="codcompladicional" DisplayBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToCells"/>
-                <syncfusion:GridTextColumn MappingName="planilha" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridTextColumn MappingName="descricao_completa"/>
-                <syncfusion:GridTextColumn MappingName="unidade" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridNumericColumn MappingName="qtd_req" AllowEditing="false" DisplayBinding="{Binding qtd_req, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridNumericColumn MappingName="qtd_baixa" AllowEditing="True" DisplayBinding="{Binding qtd_baixa, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToHeader"/>
-                <!--<syncfusion:GridTextColumn MappingName="destino" ColumnSizer="SizeToHeader"/>-->
-                <syncfusion:GridDateTimeColumn MappingName="saida_data" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridTextColumn MappingName="saida_por" ColumnSizer="SizeToHeader"/>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            CanUserInsertRows="False"
+            ShowGroupPanel="False"
+            IsFilteringAllowed="True"
+            ItemsSource="{Binding Itens}"
+            RowEditEnded="itens_RowEditEnded">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding codcompladicional}" Header="CÓDIGO" IsReadOnly="True" Width="95" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding planilha}" Header="PLANILHA" IsReadOnly="True" Width="110" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding descricao_completa}" Header="DESCRIÇÃO" IsReadOnly="True" Width="*" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding unidade}" Header="UNID." IsReadOnly="True" Width="70" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding qtd_req}" Header="QTDE. REQ." DataFormatString="{}{0:N2}" IsReadOnly="True" Width="100" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding qtd_baixa}" Header="QTDE. BAIXA" DataFormatString="{}{0:N2}" Width="110" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding saida_data}" Header="SAÍDA EM" DataFormatString="{}{0:dd/MM/yyyy HH:mm}" IsReadOnly="True" Width="145" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding saida_por}" Header="SAÍDA POR" IsReadOnly="True" Width="130" />
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
 
     </Grid>

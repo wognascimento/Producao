@@ -1,11 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.XlsIO;
+using ClosedXML.Excel;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -34,7 +33,7 @@ namespace Producao.Views.Estoque
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 SaldoEstoqueViewModel vm = (SaldoEstoqueViewModel)DataContext;
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
+                vm.Planilhas = await vm.GetPlanilhasAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -51,47 +50,22 @@ namespace Producao.Views.Estoque
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 SaldoEstoqueViewModel vm = (SaldoEstoqueViewModel)DataContext;
-                vm.SaldoDetalhados = await Task.Run(() => vm.GetSaldoDetalhadosAsync(vm.Planilha.planilha));
-                using (ExcelEngine excelEngine = new())
+                if (vm.Planilha?.planilha is not string planilha)
+                    throw new InvalidOperationException("Selecione uma planilha.");
+
+                vm.SaldoDetalhados = await vm.GetSaldoDetalhadosAsync(planilha);
+                var filePath = BaseSettings.ResolveImpressosPath("SALDO_ESTOQUE_DETALHADO.xlsx");
+                using var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Saldo");
+                worksheet.Cell(1, 1).InsertTable(vm.SaldoDetalhados, "SaldoEstoqueDetalhado", true);
+                worksheet.Columns().AdjustToContents();
+                workbook.SaveAs(filePath);
+
+                Process.Start(new ProcessStartInfo(filePath)
                 {
-                    IApplication application = excelEngine.Excel;
-                    application.DefaultVersion = ExcelVersion.Excel2016;
+                    UseShellExecute = true
+                });
 
-                    //Create a new workbook
-                    IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorksheet sheet = workbook.Worksheets[0];
-
-                    //Import data from the data table with column header, at first row and first column, 
-                    //and by its column type.
-
-                    ExcelImportDataOptions importDataOptions = new()
-                    {
-                        FirstRow = 1,
-                        FirstColumn = 1,
-                        IncludeHeader = true,
-                        PreserveTypes = true
-                    };
-                    sheet.ImportData(vm.SaldoDetalhados, importDataOptions);
-
-                    //Creating Excel table or list object and apply style to the table
-                    IListObject table = sheet.ListObjects.Create("Employee_PersonalDetails", sheet.UsedRange);
-
-                    table.BuiltInTableStyle = TableBuiltInStyles.TableStyleMedium14;
-
-                    //Autofit the columns
-                    sheet.UsedRange.AutofitColumns();
-
-                    //Save the file in the given path
-                    Stream excelStream = File.Create(Path.GetFullPath(@$"{BaseSettings.CaminhoSistema}\Impressos\Output.xlsx"));
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\SALDO_ESTOQUE_DETALHADO.xlsx");
-
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\SALDO_ESTOQUE_DETALHADO.xlsx")
-                    {
-                        UseShellExecute = true
-                    });
-
-                    excelStream.Dispose();
-                }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -138,29 +112,17 @@ namespace Producao.Views.Estoque
 
         public async Task<ObservableCollection<RelplanModel>> GetPlanilhasAsync()
         {
-            try
-            {
-                using DatabaseContext db = new();
-                return new ObservableCollection<RelplanModel>(await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync());
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            const string sql = "SELECT * FROM producao.relplan WHERE ativo = '1' ORDER BY planilha;";
+            await using var connection = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            return new ObservableCollection<RelplanModel>(await connection.QueryAsync<RelplanModel>(sql));
         }
         
         public async Task<ObservableCollection<SaldoDetalhadoModel>> GetSaldoDetalhadosAsync(string? planilha)
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var result = await db.SaldoDetalhados.Where(c => c.planilha == planilha).ToListAsync();
-                return new ObservableCollection<SaldoDetalhadoModel>(result);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            const string sql = "SELECT * FROM producao.qry_saldo_detalhado_c WHERE planilha = @planilha;";
+            await using var connection = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            return new ObservableCollection<SaldoDetalhadoModel>(
+                await connection.QueryAsync<SaldoDetalhadoModel>(sql, new { planilha }));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

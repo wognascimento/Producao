@@ -1,17 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-using Syncfusion.Pdf;
-using Syncfusion.Pdf.Graphics;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Documents.Fixed.FormatProviders.Pdf;
+using Telerik.Windows.Documents.Fixed.Model;
+using Telerik.Windows.Documents.Fixed.Model.Editing;
+using Telerik.Windows.Documents.Fixed.Model.Fonts;
 
 namespace Producao.Views.RelatoriosTecnicos
 {
@@ -46,13 +49,15 @@ namespace Producao.Views.RelatoriosTecnicos
             }
         }
 
-        private async void OnSiglaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSiglaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
+                if (sender is RadComboBox combo)
+                    vm.Sigla = combo.SelectedItem as string;
 
-                if (e.NewValue == null)
+                if (vm.Sigla == null)
                 {
                     vm.Responsavel = null;
                     vm.Detalhes = [];
@@ -76,13 +81,16 @@ namespace Producao.Views.RelatoriosTecnicos
             }
         }
 
-        private async void OnResponsavelSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnResponsavelSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
 
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
-                if (e.NewValue == null)
+                if (sender is RadComboBox combo)
+                    vm.Responsavel = combo.SelectedItem as InflamabilidadeResponsavelModel;
+
+                if (vm.Responsavel == null)
                 {
                     vm.Inflamabilidade = null;
 
@@ -101,11 +109,19 @@ namespace Producao.Views.RelatoriosTecnicos
             }
         }
 
-        private async void DetalhesRowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private async void DetalhesCellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
             try
             {
-                var dado = e.RowData as InflamabilidadeDetalhe;
+                if (e.Cell.Column.UniqueName != "classificacao")
+                    return;
+
+                var grid = sender as RadGridView;
+                var dado = grid?.Items.CurrentEditItem as InflamabilidadeDetalhe ?? e.Cell.DataContext as InflamabilidadeDetalhe;
+
+                if (dado == null)
+                    return;
+
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 await Task.Run(() => vm.SaveDetalhesAsync(new InflamabilidadeDetalheModel { sigla = dado.sigla, tipo = dado.tipo, classificacao = dado.classificacao}));
@@ -118,12 +134,10 @@ namespace Producao.Views.RelatoriosTecnicos
             }
         }
 
-        private async void SfTextBoxExt_LostFocus(object sender, RoutedEventArgs e)
+        private async void Rrt_LostFocus(object sender, RoutedEventArgs e)
         {
             try
             {
-                //Inflamabilidade.rrt
-                //OriginalSource = {Syncfusion.Windows.Controls.Input.SfTextBoxExt: 123}
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
                 await Task.Run(() => vm.SaveInflamabilidadeAsync(vm.Inflamabilidade));
@@ -146,13 +160,6 @@ namespace Producao.Views.RelatoriosTecnicos
                 if (vm.Sigla == null)
                     return;
 
-                PdfDocument document = new();
-                document.PageSettings.Orientation = PdfPageOrientation.Portrait;
-                document.PageSettings.Margins.All = 20;
-                PdfFont font = new PdfStandardFont(PdfFontFamily.TimesRoman, 12);
-                PdfFont fontBold = new PdfStandardFont(PdfFontFamily.TimesRoman, 15, PdfFontStyle.Bold);
-                PdfBrush brush = PdfBrushes.Black;
-
                 DateTime dataAtual = DateTime.Now;
                 string cidade = "São Paulo";
 
@@ -162,42 +169,38 @@ namespace Producao.Views.RelatoriosTecnicos
                 // Formatar a data conforme desejado
                 string dataFormatada = $"{cidade}, {dataAtual:dd MMMM} de {dataAtual:yyyy}";
 
-                PdfPage page = document.Pages.Add();
+                RadFixedDocument document = new();
+                RadFixedPage page = AddPdfPage(document);
 
-                PdfGraphics graphics = page.Graphics;
-
-                PdfImage image = PdfImage.FromFile("LOCACAO_NOVO.png");
-                RectangleF bounds = new RectangleF(220, 0, 100, 40);
-                page.Graphics.DrawImage(image, bounds);
-
-                graphics.DrawString(dataFormatada, font, brush, new PointF(0, 60));
-                graphics.DrawString("Ao", font, brush, new PointF(0, 80));
-                graphics.DrawString($"{vm.Cliente.nome}", font, brush, new PointF(0, 100));
-                graphics.DrawString($"{vm.Cliente.cidade} - {vm.Cliente.est}", font, brush, new PointF(0, 120));
-                graphics.DrawString("Ref. Relatório de Inflamabilidade", fontBold, brush, new PointF(0, 170));
-                graphics.DrawString("Este relatório foi elaborado para a perfeita aplicação dos agentes extintores aos\r\nnossos produtos, classificando-os segundo a natureza dos corpos em\r\ncombustão.\r\nSendo a decoração composta de vários tipos de materiais, apresentamos a\r\nseguir a lista dos agentes combustíveis mais significativos, seguida de suas\r\nqualidades individuais.\r\nConcluindo, o procedimento de combate propriamente dito.\r\nFicaremos a disposição para quaisquer esclarecimentos que se fizerem\r\nnecessários", font, brush, new PointF(0, 210));
+                DrawImage(page, "LOCACAO_NOVO.png", 220, 0, 100, 40);
+                DrawText(page, dataFormatada, 0, 60);
+                DrawText(page, "Ao", 0, 80);
+                DrawText(page, $"{vm.Cliente.nome}", 0, 100);
+                DrawText(page, $"{vm.Cliente.cidade} - {vm.Cliente.est}", 0, 120);
+                DrawText(page, "Ref. Relatório de Inflamabilidade", 0, 170, bold: true, fontSize: 15);
+                DrawMultilineText(page, "Este relatório foi elaborado para a perfeita aplicação dos agentes extintores aos\r\nnossos produtos, classificando-os segundo a natureza dos corpos em\r\ncombustão.\r\nSendo a decoração composta de vários tipos de materiais, apresentamos a\r\nseguir a lista dos agentes combustíveis mais significativos, seguida de suas\r\nqualidades individuais.\r\nConcluindo, o procedimento de combate propriamente dito.\r\nFicaremos a disposição para quaisquer esclarecimentos que se fizerem\r\nnecessários", 0, 210);
 
 
-                graphics.DrawString("Atenciosamente,", font, brush, new PointF(0, 500));
-                graphics.DrawString($"{vm.Responsavel?.nome}", font, brush, new PointF(0, 560));
-                graphics.DrawString($"RG. {vm.Responsavel?.rg}", font, brush, new PointF(0, 570));
-                graphics.DrawString($"CAU/SP. {vm.Responsavel?.cau_sp}", font, brush, new PointF(0, 580));
-                graphics.DrawString($"RRT. {vm.Inflamabilidade?.rrt}", font, brush, new PointF(0, 590));
+                DrawText(page, "Atenciosamente,", 0, 500);
+                DrawText(page, $"{vm.Responsavel?.nome}", 0, 560);
+                DrawText(page, $"RG. {vm.Responsavel?.rg}", 0, 570);
+                DrawText(page, $"CAU/SP. {vm.Responsavel?.cau_sp}", 0, 580);
+                DrawText(page, $"RRT. {vm.Inflamabilidade?.rrt}", 0, 590);
 
 
-                PdfPage page2 = document.Pages.Add();
-                page2.Graphics.DrawString("Informações dos Materiais Predominantes na Decoração", fontBold, brush, new PointF(0, 0));
+                RadFixedPage page2 = AddPdfPage(document);
+                DrawText(page2, "Informações dos Materiais Predominantes na Decoração", 0, 0, bold: true, fontSize: 15);
 
                 string[] inflamabilidadesDesejadas = ["1", "2", "3"];
                 var itens = vm.Detalhes.Where(m => inflamabilidadesDesejadas.Contains(m.classificacao)).ToArray();
 
-                float yPositionTipo = 60;
-                float yPositionDescritivo = 90;
+                double yPositionTipo = 60;
+                double yPositionDescritivo = 90;
 
-                float yPositionExtraTipo = 0;
-                float yPositionExtraDescritivo = 30;
+                double yPositionExtraTipo = 0;
+                double yPositionExtraDescritivo = 30;
 
-                PdfPage pageExtra = new();
+                RadFixedPage? pageExtra = null;
 
                 int det = 1;
                 foreach (var item in itens)
@@ -211,20 +214,20 @@ namespace Producao.Views.RelatoriosTecnicos
                     if (det > 5)
                     {
                         if(det == 6)
-                            pageExtra = document.Pages.Add();
+                            pageExtra = AddPdfPage(document);
 
-                        pageExtra.Graphics.DrawString($"{item.tipo}", fontBold, brush, new PointF(0, yPositionExtraTipo));
-                        pageExtra.Graphics.DrawString($"{item.descritivo}", font, brush, new PointF(0, yPositionExtraDescritivo));
-                        pageExtra.Graphics.DrawString($"{classificacao.FirstOrDefault()}", font, brush, new PointF(185, yPositionExtraDescritivo + 14));
+                        DrawText(pageExtra!, $"{item.tipo}", 0, yPositionExtraTipo, bold: true, fontSize: 15);
+                        DrawText(pageExtra!, $"{item.descritivo}", 0, yPositionExtraDescritivo);
+                        DrawText(pageExtra!, $"{classificacao.FirstOrDefault()}", 185, yPositionExtraDescritivo + 14);
 
                         yPositionExtraTipo += 120;
                         yPositionExtraDescritivo += 120;
                     }
                     else 
                     {
-                        page2.Graphics.DrawString($"{item.tipo}", fontBold, brush, new PointF(0, yPositionTipo));
-                        page2.Graphics.DrawString($"{item.descritivo}", font, brush, new PointF(0, yPositionDescritivo));
-                        page2.Graphics.DrawString($"{classificacao.FirstOrDefault()}", font, brush, new PointF(185, yPositionDescritivo + 14));
+                        DrawText(page2, $"{item.tipo}", 0, yPositionTipo, bold: true, fontSize: 15);
+                        DrawText(page2, $"{item.descritivo}", 0, yPositionDescritivo);
+                        DrawText(page2, $"{classificacao.FirstOrDefault()}", 185, yPositionDescritivo + 14);
 
                         //page.Graphics.DrawString(materialInfo, font, brush, new RectangleF(0, yPosition, page.GetClientSize().Width, page.GetClientSize().Height), format);
                         yPositionTipo += 120;
@@ -236,21 +239,21 @@ namespace Producao.Views.RelatoriosTecnicos
                 }
 
 
-                PdfPage page3 = document.Pages.Add();
-                page3.Graphics.DrawString("Classes de Incêndio Quanto à Forma de Combate", fontBold, brush, new PointF(0, 0));
-                page3.Graphics.DrawString("CLASSE A", fontBold, brush, new PointF(0, 60));
-                page3.Graphics.DrawString("Constituído por materiais que tem a propriedade de queimar em sua superfície e\r\nprofundidade e deixam resíduos. Para Extinção, necessita-se o resfriamento e\r\npenetração do agente extintor. Exemplo: madeira, couro, papel, algodão,m cereais,\r\netc.", font, brush, new PointF(0, 90));
-                page3.Graphics.DrawString("CLASSE C", fontBold, brush, new PointF(0, 160));
-                page3.Graphics.DrawString("Constituído por equipamentos elétricos com energia, caracterizando-se por\r\noferecer riscos a quem irá combate-lo. Para a sua extinção é necessário usar um\r\nagente extintor não condutor de eletricidade. Quando a rede elétrica é desligada,\r\nnão havendo mais energia, o incêndio torna-se Classe A.", font, brush, new PointF(0, 190));
-                page3.Graphics.DrawString("CONCLUSÃO", fontBold, brush, new PointF(0, 260));
-                page3.Graphics.DrawString("Lembrando que a nossa decoração é provida de micro-lâmpadas, lâmpadas,\r\nmotores e equipamentos elétricos em carga, o procedimento de combate a um\r\npossível incêndio deve ser executado em duas fases.\r\nCombate inicial classe C, não em face do material que queima, mas sim pelo risco\r\nque oferece ao operador na sua extinção. Para este tipo de incêndio é necessário\r\nusar um agente extintor não condutor de eletricidade (Extintores de gás\r\ncarbônico ou pó químico seco) e desligar a rede elétrica tão rápido quanto\r\npossível.\r\nQuando a rede elétrica for desligada o incêndio torna-se de Classe A, podendo\r\nser tratado com hidrante e extintores de água ou espuma.", font, brush, new PointF(0, 290));
+                RadFixedPage page3 = AddPdfPage(document);
+                DrawText(page3, "Classes de Incêndio Quanto à Forma de Combate", 0, 0, bold: true, fontSize: 15);
+                DrawText(page3, "CLASSE A", 0, 60, bold: true, fontSize: 15);
+                DrawMultilineText(page3, "Constituído por materiais que tem a propriedade de queimar em sua superfície e\r\nprofundidade e deixam resíduos. Para Extinção, necessita-se o resfriamento e\r\npenetração do agente extintor. Exemplo: madeira, couro, papel, algodão,m cereais,\r\netc.", 0, 90);
+                DrawText(page3, "CLASSE C", 0, 160, bold: true, fontSize: 15);
+                DrawMultilineText(page3, "Constituído por equipamentos elétricos com energia, caracterizando-se por\r\noferecer riscos a quem irá combate-lo. Para a sua extinção é necessário usar um\r\nagente extintor não condutor de eletricidade. Quando a rede elétrica é desligada,\r\nnão havendo mais energia, o incêndio torna-se Classe A.", 0, 190);
+                DrawText(page3, "CONCLUSÃO", 0, 260, bold: true, fontSize: 15);
+                DrawMultilineText(page3, "Lembrando que a nossa decoração é provida de micro-lâmpadas, lâmpadas,\r\nmotores e equipamentos elétricos em carga, o procedimento de combate a um\r\npossível incêndio deve ser executado em duas fases.\r\nCombate inicial classe C, não em face do material que queima, mas sim pelo risco\r\nque oferece ao operador na sua extinção. Para este tipo de incêndio é necessário\r\nusar um agente extintor não condutor de eletricidade (Extintores de gás\r\ncarbônico ou pó químico seco) e desligar a rede elétrica tão rápido quanto\r\npossível.\r\nQuando a rede elétrica for desligada o incêndio torna-se de Classe A, podendo\r\nser tratado com hidrante e extintores de água ou espuma.", 0, 290);
                 
                 
-                page3.Graphics.DrawString("Atenciosamente,", font, brush, new PointF(0, 500));
-                page3.Graphics.DrawString($"{vm.Responsavel?.nome}", font, brush, new PointF(0, 560));
-                page3.Graphics.DrawString($"RG. {vm.Responsavel?.rg}", font, brush, new PointF(0, 570));
-                page3.Graphics.DrawString($"CAU/SP. {vm.Responsavel?.cau_sp}", font, brush, new PointF(0, 580));
-                page3.Graphics.DrawString($"RRT. {vm.Inflamabilidade?.rrt}", font, brush, new PointF(0, 590));
+                DrawText(page3, "Atenciosamente,", 0, 500);
+                DrawText(page3, $"{vm.Responsavel?.nome}", 0, 560);
+                DrawText(page3, $"RG. {vm.Responsavel?.rg}", 0, 570);
+                DrawText(page3, $"CAU/SP. {vm.Responsavel?.cau_sp}", 0, 580);
+                DrawText(page3, $"RRT. {vm.Inflamabilidade?.rrt}", 0, 590);
 
                 string[] footerLines =
                 [
@@ -261,25 +264,18 @@ namespace Producao.Views.RelatoriosTecnicos
                     "E-mail: cipolatti@cipolatti.com.br"
                 ];
 
-                float yPosition = page.GetClientSize().Height - 60; // Posição inicial do rodapé
-                float lineSpacing = 12; // Espaçamento entre as linhas
+                double yPosition = PageHeight - PageMargin - 60; // Posição inicial do rodapé
+                double lineSpacing = 12; // Espaçamento entre as linhas
 
                 foreach (string line in footerLines)
                 {
-                    // Calcula a largura do texto
-                    SizeF textSize = font.MeasureString(line);
-
-                    // Calcula a posição do texto para centralizá-lo
-                    float xPosition = (page.GetClientSize().Width - textSize.Width) / 2;
+                    double textWidth = EstimateTextWidth(line, 12);
+                    double xPosition = ((PageWidth - (PageMargin * 2)) - textWidth) / 2;
 
                     // Adiciona o texto do rodapé
-                    page.Graphics.DrawString(line, font, brush, new PointF(xPosition, yPosition));
-                    page2.Graphics.DrawString(line, font, brush, new PointF(xPosition, yPosition));
-                    page3.Graphics.DrawString(line, font, brush, new PointF(xPosition, yPosition));
-                    if (det > 5)
-                    {
-                        //pageExtra.Graphics.DrawString(line, font, brush, new PointF(xPosition, yPosition));
-                    }
+                    DrawText(page, line, xPosition, yPosition);
+                    DrawText(page2, line, xPosition, yPosition);
+                    DrawText(page3, line, xPosition, yPosition);
 
 
                     // Atualiza a posição y para a próxima linha
@@ -287,12 +283,13 @@ namespace Producao.Views.RelatoriosTecnicos
                 }
 
 
-                document.Save(@$"{BaseSettings.CaminhoSistema}\RelatorioInflamabilidade.pdf");
-                //Close the document.
-                document.Close(true);
+                string reportPath = Path.Combine(BaseSettings.CaminhoSistema, "RelatorioInflamabilidade.pdf");
+                PdfFormatProvider provider = new();
+                using (Stream output = File.Open(reportPath, FileMode.Create))
+                    provider.Export(document, output);
 
                 
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\RelatorioInflamabilidade.pdf")
+                Process.Start(new ProcessStartInfo(reportPath)
                 {
                     UseShellExecute = true
                 });
@@ -304,6 +301,55 @@ namespace Producao.Views.RelatoriosTecnicos
                 MessageBox.Show(ex.Message);
             }
             
+        }
+
+        private const double PageWidth = 595;
+        private const double PageHeight = 842;
+        private const double PageMargin = 20;
+
+        private static RadFixedPage AddPdfPage(RadFixedDocument document)
+        {
+            RadFixedPage page = document.Pages.AddPage();
+            page.Size = new Size(PageWidth, PageHeight);
+            return page;
+        }
+
+        private static void DrawImage(RadFixedPage page, string imagePath, double x, double y, double width, double height)
+        {
+            string path = Path.Combine(AppContext.BaseDirectory, imagePath);
+            if (!File.Exists(path))
+                path = imagePath;
+
+            if (!File.Exists(path))
+                return;
+
+            FixedContentEditor editor = new(page);
+            editor.Position.Translate(PageMargin + x, PageMargin + y);
+            using Stream imageStream = File.OpenRead(path);
+            editor.DrawImage(imageStream, width, height);
+        }
+
+        private static void DrawText(RadFixedPage page, string? text, double x, double y, bool bold = false, double fontSize = 12)
+        {
+            FixedContentEditor editor = new(page);
+            editor.Position.Translate(PageMargin + x, PageMargin + y);
+            editor.TextProperties.Font = bold ? FontsRepository.TimesBold : FontsRepository.TimesRoman;
+            editor.TextProperties.FontSize = fontSize;
+            editor.DrawText(text ?? string.Empty);
+        }
+
+        private static void DrawMultilineText(RadFixedPage page, string text, double x, double y, double fontSize = 12, double lineSpacing = 14)
+        {
+            foreach (string line in text.Replace("\r\n", "\n").Split('\n'))
+            {
+                DrawText(page, line, x, y, fontSize: fontSize);
+                y += lineSpacing;
+            }
+        }
+
+        private static double EstimateTextWidth(string text, double fontSize)
+        {
+            return text.Length * fontSize * 0.45;
         }
 
         private async void OnConcluirClick(object sender, RoutedEventArgs e)

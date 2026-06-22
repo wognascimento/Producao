@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Syncfusion.XlsIO;
+using ClosedXML.Excel;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -42,7 +42,7 @@ namespace Producao.Views.Estoque
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 RelatorioCCEViewModel vm = (RelatorioCCEViewModel)DataContext;
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
+                vm.Planilhas = await vm.GetPlanilhasAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -52,82 +52,50 @@ namespace Producao.Views.Estoque
             }
         }
 
-        private async void ButtonAdv_Click(object sender, RoutedEventArgs e)
+        private async void OnExportarExcel(object sender, RoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 RelatorioCCEViewModel vm = (RelatorioCCEViewModel)DataContext;
-                vm.Descricoes = await Task.Run(() => vm.GetDescricoesAsync(vm.Planilha.planilha));
-                using (ExcelEngine excelEngine = new())
+                if (vm.Planilha?.planilha is not string planilha)
+                    throw new InvalidOperationException("Selecione uma planilha.");
+
+                vm.Descricoes = await vm.GetDescricoesAsync(planilha);
+                var filePath = BaseSettings.ResolveImpressosPath("RELATORIO_CCE.xlsx");
+                using var workbook = new XLWorkbook(BaseSettings.ResolveModeloPath("RELATORIO_CCE_MODELO.xlsx"));
+                var worksheet = workbook.Worksheet(1);
+
+                worksheet.Cell("H1").Value = vm.Planilha.planilha;
+
+                var row = 5;
+                foreach (var item in vm.Descricoes)
                 {
-                    IApplication application = excelEngine.Excel;
-                    application.DefaultVersion = ExcelVersion.Excel2016;
+                    var codigoRange = worksheet.Range(row, 1, row, 2).Merge();
+                    codigoRange.Value = item.codcompladicional;
+                    ApplyBodyStyle(codigoRange);
+                    codigoRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                    //Create a new workbook
-                    //IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorkbook workbook = application.Workbooks.OpenReadOnly(@$"{BaseSettings.CaminhoSistema}\Modelos\RELATORIO_CCE_MODELO.xlsx");
-                    IWorksheet worksheet = workbook.Worksheets[0];
+                    var descricaoRange = worksheet.Range(row, 3, row, 11).Merge();
+                    descricaoRange.Value = item.descricao_completa ?? string.Empty;
+                    ApplyBodyStyle(descricaoRange);
 
-                    IStyle bodyStyle;
-
-                    bodyStyle = workbook.Styles.Add("BodyStyle");
-                    bodyStyle.BeginUpdate();
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeTop].Color = ExcelKnownColors.Grey_25_percent;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeBottom].Color = ExcelKnownColors.Grey_25_percent;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeLeft].Color = ExcelKnownColors.Grey_25_percent;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeRight].Color = ExcelKnownColors.Grey_25_percent;
-                    bodyStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                    bodyStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                    //bodyStyle.Font.Bold = true;
-                    bodyStyle.WrapText = true;
-                    bodyStyle.EndUpdate();
-
-                    worksheet.Range["H1"].Text = vm.Planilha.planilha;
-                    var row = 5;
-                    foreach (var item in vm.Descricoes)
+                    for (var column = 12; column <= 21; column++)
                     {
-                        worksheet.Range[$"A{row}:B{row}"].Merge();
-                        worksheet.Range[$"A{row}:B{row}"].Text = item.codcompladicional.ToString();
-                        worksheet.Range[$"A{row}:B{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"A{row}:B{row}"].HorizontalAlignment = ExcelHAlign.HAlignCenter;
-
-
-                        worksheet.Range[$"C{row}:K{row}"].Merge();
-                        worksheet.Range[$"C{row}:K{row}"].Text = item.descricao_completa;
-                        worksheet.Range[$"C{row}:K{row}"].CellStyle = bodyStyle;
-
-                        worksheet.Range[$"L{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"M{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"N{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"O{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"P{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"Q{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"R{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"S{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"T{row}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"U{row}"].CellStyle = bodyStyle;
-
-                        row++;
+                        ApplyBodyStyle(worksheet.Cell(row, column));
                     }
 
-                    //Autofit the columns
-                    //sheet.UsedRange.AutofitColumns();
-
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CCE.xlsx");
-
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CCE.xlsx")
-                    {
-                        UseShellExecute = true
-                    });
-
-
+                    row++;
                 }
+
+                workbook.SaveAs(filePath);
+
+                Process.Start(new ProcessStartInfo(filePath)
+                {
+                    UseShellExecute = true
+                });
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -140,6 +108,27 @@ namespace Producao.Views.Estoque
         private void RowDefinition_Unloaded(object sender, RoutedEventArgs e)
         {
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
+        }
+
+        private static void ApplyBodyStyle(IXLRange range)
+        {
+            ApplyBodyStyle(range.Style);
+        }
+
+        private static void ApplyBodyStyle(IXLCell cell)
+        {
+            ApplyBodyStyle(cell.Style);
+        }
+
+        private static void ApplyBodyStyle(IXLStyle style)
+        {
+            style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            style.Border.InsideBorder = XLBorderStyleValues.Thin;
+            style.Border.OutsideBorderColor = XLColor.FromArgb(191, 191, 191);
+            style.Border.InsideBorderColor = XLColor.FromArgb(191, 191, 191);
+            style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+            style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+            style.Alignment.WrapText = true;
         }
     }
 
@@ -174,29 +163,17 @@ namespace Producao.Views.Estoque
 
         public async Task<ObservableCollection<RelplanModel>> GetPlanilhasAsync()
         {
-            try
-            {
-                using DatabaseContext db = new();
-                return new ObservableCollection<RelplanModel>(await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync());
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            const string sql = "SELECT * FROM producao.relplan WHERE ativo = '1' ORDER BY planilha;";
+            await using var connection = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            return new ObservableCollection<RelplanModel>(await connection.QueryAsync<RelplanModel>(sql));
         }
 
         public async Task<ObservableCollection<QryDescricao>> GetDescricoesAsync(string planilha)
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.Descricoes.Where(c => c.inativo.Equals("0") && c.planilha == planilha).ToListAsync();
-                return new ObservableCollection<QryDescricao>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            const string sql = "SELECT * FROM producao.qry3descricoes WHERE inativo = '0' AND planilha = @planilha;";
+            await using var connection = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            return new ObservableCollection<QryDescricao>(
+                await connection.QueryAsync<QryDescricao>(sql, new { planilha }));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

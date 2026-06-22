@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dapper;
+using Npgsql;
 using Producao.Views.PopUp;
-using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.CadastroProduto
 {
@@ -45,7 +47,7 @@ namespace Producao.Views.CadastroProduto
             }
         }
 
-        private async void OnPlanilhaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnPlanilhaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
@@ -65,60 +67,35 @@ namespace Producao.Views.CadastroProduto
             }
         }
 
-        private void OnAddNewRowInitiating(object sender, Syncfusion.UI.Xaml.Grid.AddNewRowInitiatingEventArgs e)
+        private void OnAddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
             CadastroProdutoViewModel vm = (CadastroProdutoViewModel)DataContext;
-            ((ProdutoModel)e.NewObject).planilha = vm.Planilha.planilha;
-        }
-
-        private void OnCurrentCellDropDownSelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellDropDownSelectionChangedEventArgs e)
-        {
-
-        }
-
-        private async void OnCurrentCellValueChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellValueChangedEventArgs e)
-        {
-            CadastroProdutoViewModel vm = (CadastroProdutoViewModel)DataContext;
-            SfDataGrid? grid = sender as SfDataGrid;
-            int columnindex = grid.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
-            var column = grid.Columns[columnindex];
-            //if (column.GetType() == typeof(GridCheckBoxColumn) && column.MappingName == "inativo")
-            if ( column.GetType() == typeof(GridCheckBoxColumn) )
+            if (e.NewObject is ProdutoModel produto)
             {
-                var rowIndex = grid.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-                var record = grid.View.Records[rowIndex].Data as ProdutoModel;
-                //var value = record.inativo;
-                try
-                {
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    await Task.Run(() => vm.SaveAsync(record));
-                    grid.View.Refresh();
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
+                produto.planilha = vm.Planilha?.planilha;
             }
         }
 
-        private async void OnRowValidated(object sender, RowValidatedEventArgs e)
+        private async void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-            var sfdatagrid = sender as SfDataGrid;
+            var grid = sender as RadGridView;
             CadastroProdutoViewModel vm = (CadastroProdutoViewModel)DataContext;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                ProdutoModel data = (ProdutoModel)e.RowData;
+                if (e.Row?.Item is not ProdutoModel data)
+                {
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                    return;
+                }
+
                 data.inativo = data.inativo == null ? "0" : "-1";
                 data.cadastrado_por = data.codigo == null ? Environment.UserName : data.cadastrado_por;
                 data.datacadastro = data.codigo == null ? DateTime.Now : data.datacadastro;
                 data.alterado_por = data.codigo == null ? null : Environment.UserName;
                 data.data_altera = data.codigo == null ? null : DateTime.Now;
                 data = await Task.Run(() => vm.SaveAsync(data));
-                var record = sfdatagrid.View.CurrentAddItem as ProdutoModel;
-                sfdatagrid.View.Refresh();
+                grid?.Items.Refresh();
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -132,47 +109,56 @@ namespace Producao.Views.CadastroProduto
             }
         }
 
-        private void OnRowValidating(object sender, RowValidatingEventArgs e)
+        private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-            ProdutoModel rowData = (ProdutoModel)e.RowData;
+            if (e.Row?.Item is not ProdutoModel rowData)
+            {
+                return;
+            }
+
             //rowData.planilha == "Null" || rowData.planilha == "DbNull"
             if (rowData.planilha == null)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("classe_solict_compra", "Informe a CLASSE COMPRA");
-                e.ErrorMessages.Add("familia", "Informe a FAMILIA COMPRAS");
-                e.ErrorMessages.Add("descricao", "Informe a DESCRIÇÃO");
+                AddValidation(e, nameof(ProdutoModel.classe_solict_compra), "Informe a CLASSE COMPRA");
+                AddValidation(e, nameof(ProdutoModel.familia), "Informe a FAMILIA COMPRAS");
+                AddValidation(e, nameof(ProdutoModel.descricao), "Informe a DESCRIÇÃO");
             }
             else if (rowData.classe_solict_compra == null)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("classe_solict_compra", "Informe a CLASSE COMPRA");
+                AddValidation(e, nameof(ProdutoModel.classe_solict_compra), "Informe a CLASSE COMPRA");
             }
             else if (rowData.familia == null)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("familia", "Informe a FAMILIA COMPRAS");
+                AddValidation(e, nameof(ProdutoModel.familia), "Informe a FAMILIA COMPRAS");
             }
             else if (rowData.descricao == null)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("descricao", "Informe a DESCRIÇÃO");
+                AddValidation(e, nameof(ProdutoModel.descricao), "Informe a DESCRIÇÃO");
             }
-        }
-
-        private void OnCurrentCellEndEdit(object sender, CurrentCellEndEditEventArgs e)
-        {
-            
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
         }
+
+        private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
+        {
+            e.ValidationResults.Add(new GridViewCellValidationResult
+            {
+                ErrorMessage = message,
+                PropertyName = propertyName
+            });
+        }
     }
 
     public class CadastroProdutoViewModel : INotifyPropertyChanged
     {
+        private static NpgsqlConnection CreateConnection()
+        {
+            return new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -250,9 +236,12 @@ namespace Producao.Views.CadastroProduto
         {
             try
             {
-                //obj = {Syncfusion.UI.Xaml.Grid.SfDataGrid}
-                var window = new CadastroAdicional(Produto);
-                window.Title = $"Descrição Adicional do produto -> {Produto.descricao}";
+                var produtoSelecionado = obj as ProdutoModel ?? this.Produto;
+                if (produtoSelecionado == null)
+                    return;
+
+                var window = new CadastroAdicional(produtoSelecionado);
+                window.Title = $"Descrição Adicional do produto -> {produtoSelecionado.descricao}";
                 window.Owner = App.Current.MainWindow;
                 window.Height = 450;
                 window.Width = 700;
@@ -270,8 +259,12 @@ namespace Producao.Views.CadastroProduto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<RelplanModel>(
+                    @"SELECT *
+                      FROM producao.relplan
+                      WHERE ativo = '1'
+                      ORDER BY planilha;");
                 return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
@@ -284,11 +277,13 @@ namespace Producao.Views.CadastroProduto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Produtos
-                    .OrderBy(c => c.descricao)
-                    .Where(c => c.planilha.Equals(planilha))
-                    .ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<ProdutoModel>(
+                    @"SELECT *
+                      FROM producao.produtos
+                      WHERE planilha = @planilha
+                      ORDER BY descricao;",
+                    new { planilha });
                 return new ObservableCollection<ProdutoModel>(data);
             }
             catch (Exception)
@@ -301,10 +296,11 @@ namespace Producao.Views.CadastroProduto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.FamiliaProds
-                    .OrderBy(c => c.nomefamilia)
-                    .ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<FamiliaProdModel>(
+                    @"SELECT *
+                      FROM compras.tblfamiliaprod
+                      ORDER BY nomefamilia;");
                 return new ObservableCollection<FamiliaProdModel>(data);
             }
             catch (Exception)
@@ -317,10 +313,11 @@ namespace Producao.Views.CadastroProduto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ClasseSolicitCompras
-                    .OrderBy(c => c.classe_solicit_compra)
-                    .ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<ClasseSolicitCompra>(
+                    @"SELECT *
+                      FROM producao.tbl_classe_solicit_compra
+                      ORDER BY classe_solicit_compra;");
                 return new ObservableCollection<ClasseSolicitCompra>(data);
             }
             catch (Exception)
@@ -333,9 +330,36 @@ namespace Producao.Views.CadastroProduto
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.Produtos.SingleMergeAsync(produto);
-                await db.SaveChangesAsync();
+                using var conn = CreateConnection();
+                if (produto.codigo.HasValue)
+                {
+                    await conn.ExecuteAsync(
+                        @"UPDATE producao.produtos
+                          SET descricao = @descricao,
+                              planilha = @planilha,
+                              cadastrado_por = @cadastrado_por,
+                              datacadastro = @datacadastro,
+                              familia = @familia,
+                              classe_solict_compra = @classe_solict_compra,
+                              alterado_por = @alterado_por,
+                              data_altera = @data_altera,
+                              inativo = @inativo
+                          WHERE codigo = @codigo;",
+                        produto);
+                }
+                else
+                {
+                    produto.codigo = await conn.ExecuteScalarAsync<long>(
+                        @"INSERT INTO producao.produtos
+                            (descricao, planilha, cadastrado_por, datacadastro, familia,
+                             classe_solict_compra, alterado_por, data_altera, inativo)
+                          VALUES
+                            (@descricao, @planilha, @cadastrado_por, @datacadastro, @familia,
+                             @classe_solict_compra, @alterado_por, @data_altera, @inativo)
+                          RETURNING codigo;",
+                        produto);
+                }
+
                 return produto;
             }
             catch (Exception)

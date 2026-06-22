@@ -4,10 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Producao.Views.CentralModelos" 
-        xmlns:Syncfusion="http://schemas.syncfusion.com/wpf"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
         mc:Ignorable="d"
         Title="CONTROLE BAIXA MODELO CHECK-LIST"
         Height="450" Width="800" 
+        Language="pt-BR"
         WindowStartupLocation="CenterScreen" 
         WindowStyle="ToolWindow"
         ResizeMode="NoResize"
@@ -19,25 +20,25 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Syncfusion:SfDataGrid 
+        <telerik:RadGridView
             x:Name="dgItens"
             Grid.Row="0" 
-            AllowResizingColumns="True" 
-            AllowDraggingColumns="True" 
             AutoGenerateColumns="False" 
             FontSize="10" 
             ItemsSource="{Binding ItensChkList}" 
             SelectedItem="{Binding ItemChkList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            PreviewKeyDown="dgItens_PreviewKeyDown">
-            <Syncfusion:SfDataGrid.Columns>
-                <Syncfusion:GridTextColumn HeaderText="SIGLA" ColumnSizer="SizeToCells" MappingName="sigla"/>
-                <Syncfusion:GridNumericColumn HeaderText="COD.DET." ColumnSizer="SizeToHeader" MappingName="coddetalhescompl"/>
-                <Syncfusion:GridTextColumn HeaderText="PLANILHA" ColumnSizer="SizeToHeader" MappingName="planilha"/>
-                <Syncfusion:GridTextColumn HeaderText="DESCRIÇÃO COMPLETA" ColumnSizer="AutoWithLastColumnFill" MappingName="descricao_completa"/>
-                <Syncfusion:GridTextColumn HeaderText="UNID" ColumnSizer="SizeToCells" MappingName="unidade"/>
-                <Syncfusion:GridNumericColumn HeaderText="QTDE" ColumnSizer="SizeToCells" MappingName="qtd_compl_chk"/>
-            </Syncfusion:SfDataGrid.Columns>
-        </Syncfusion:SfDataGrid>
+            PreviewKeyDown="dgItens_PreviewKeyDown"
+            ShowGroupPanel="False"
+            IsReadOnly="True">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="SIGLA" DataMemberBinding="{Binding sigla}" Width="SizeToCells"/>
+                <telerik:GridViewDataColumn Header="COD.DET." DataMemberBinding="{Binding coddetalhescompl}" DataFormatString="{}{0:N0}" Width="SizeToHeader"/>
+                <telerik:GridViewDataColumn Header="PLANILHA" DataMemberBinding="{Binding planilha}" Width="SizeToHeader"/>
+                <telerik:GridViewDataColumn Header="DESCRIÇÃO COMPLETA" DataMemberBinding="{Binding descricao_completa}" Width="*"/>
+                <telerik:GridViewDataColumn Header="UNID" DataMemberBinding="{Binding unidade}" Width="SizeToCells"/>
+                <telerik:GridViewDataColumn Header="QTDE" DataMemberBinding="{Binding qtd_compl_chk}" DataFormatString="{}{0:N0}" Width="SizeToCells"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
         <StatusBar Grid.Row="1">
             <StatusBarItem Grid.Column="1">

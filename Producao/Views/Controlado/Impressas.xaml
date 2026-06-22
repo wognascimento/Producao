@@ -31,13 +31,12 @@
             SelectedValuePath="codigo"                 
             DisplayMemberPath="codigo">
             <telerik:RadContextMenu.ContextMenu>
-                <telerik:RadContextMenu>
-                    <telerik:RadMenuItem 
+            <telerik:RadContextMenu>
+                <telerik:RadMenuItem 
                         Header="Imprimir" 
-                        Command="{Binding Source={x:Static Member=local:ContextMenuCommandEtiquetaImpressa.Imprimir}}"
-                        CommandParameter="{Binding }"/>
-                </telerik:RadContextMenu>
-            </telerik:RadContextMenu.ContextMenu>
+                        Click="OnImprimirEtiquetaClick"/>
+            </telerik:RadContextMenu>
+        </telerik:RadContextMenu.ContextMenu>
         </telerik:RadListBox>
 
 

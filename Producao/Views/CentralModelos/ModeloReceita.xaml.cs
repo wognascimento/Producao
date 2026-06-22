@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
 using Producao.Views.PopUp;
-using Syncfusion.XlsIO;
+using Producao.Views.CentralModelos.Compat;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -74,7 +74,7 @@ namespace Producao.Views.CentralModelos
                 try
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    string text = ((TextBox)sender).Text;
+                    string text = txtCodigoProduto.Text;
                     vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(long.Parse(text)));
                     if (vm.Descricao == null)
                     {
@@ -142,12 +142,12 @@ namespace Producao.Views.CentralModelos
            
         }
 
-        private async void OnSelectedPlanilha(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
-                RelplanModel? planilha = e.NewValue as RelplanModel;
+                RelplanModel? planilha = txtPlanilha.SelectedItem as RelplanModel;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(planilha?.planilha));
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
@@ -159,12 +159,12 @@ namespace Producao.Views.CentralModelos
             }
         }
 
-        private async void OnSelectedDescricao(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
-                ProdutoModel? produto = e.NewValue as ProdutoModel;
+                ProdutoModel? produto = txtDescricao.SelectedItem as ProdutoModel;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(produto?.codigo));
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
@@ -176,12 +176,12 @@ namespace Producao.Views.CentralModelos
             }
         }
 
-        private async void OnSelectedDescricaoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
-                TabelaDescAdicionalModel? adicional = e.NewValue as TabelaDescAdicionalModel;
+                TabelaDescAdicionalModel? adicional = txtDescricaoAdicional.SelectedItem as TabelaDescAdicionalModel;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(adicional?.coduniadicional));
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
@@ -193,10 +193,10 @@ namespace Producao.Views.CentralModelos
             }
         }
 
-        private void OnSelectedComplementoAdicional(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
         {
             ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
-            TblComplementoAdicionalModel? complemento = e.NewValue as TblComplementoAdicionalModel;
+            TblComplementoAdicionalModel? complemento = txtComplementoAdicional.SelectedItem as TblComplementoAdicionalModel;
             vm.Compledicional = complemento;
             txtCodigoProduto.Text = complemento?.codcompladicional.ToString();
             txtObservacao.Focus();
@@ -215,8 +215,8 @@ namespace Producao.Views.CentralModelos
             txtDescricaoAdicional.Text = string.Empty;
             txtComplementoAdicional.Text = string.Empty;
             txtObservacao.Text = string.Empty;
-            txtQtdModelo.Value = double.NaN;
-            txtQtdProducao.Value = double.NaN;
+            txtQtdModelo.Value = null;
+            txtQtdProducao.Value = null;
             mod01.Value = null;
             mod02.Value = null;
             mod03.Value = null;
@@ -383,7 +383,7 @@ namespace Producao.Views.CentralModelos
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\RECEITA_CENTRAL_MODELO.xlsx");
+                IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("RECEITA_CENTRAL_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
                 worksheet.Range["C2"].Text = Modelo.id_modelo.ToString();
                 worksheet.Range["C3"].Text = Modelo.planilha;
@@ -471,10 +471,10 @@ namespace Producao.Views.CentralModelos
                     index++;
                 }
 
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx");
+                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx"));
                 workbook.Close();
 
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx")
+                Process.Start(new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"RECEITA_CENTRAL_MODELO_{Modelo.id_modelo}.xlsx"))
                 {
                     UseShellExecute = true
                 });
@@ -834,8 +834,8 @@ namespace Producao.Views.CentralModelos
                 //worksheet.PageSetup.CenterVertically = true;
                 worksheet.PageSetup.CenterHorizontally = true;
 
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\DISTRIBUICAO_FIADA.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\DISTRIBUICAO_FIADA.xlsx")
+                workbook.SaveAs(BaseSettings.ResolveImpressosPath($"DISTRIBUICAO_FIADA.xlsx"));
+                Process.Start(new ProcessStartInfo(BaseSettings.ResolveImpressosPath($"DISTRIBUICAO_FIADA.xlsx"))
                 {
                     UseShellExecute = true
                 });

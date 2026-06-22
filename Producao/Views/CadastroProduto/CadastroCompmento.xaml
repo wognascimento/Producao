@@ -1,81 +1,67 @@
-﻿<Window x:Class="Producao.Views.CadastroProduto.CadastroCompmento"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:vewModel="clr-namespace:Producao"
-             xmlns:local="clr-namespace:Producao.Views.CadastroProduto" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="600"
-             WindowStartupLocation="CenterOwner"
-             WindowStyle="ToolWindow" Loaded="OnLoaded" Title="Complemento Adicional">
+<Window x:Class="Producao.Views.CadastroProduto.CadastroCompmento"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:vewModel="clr-namespace:Producao"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+        mc:Ignorable="d"
+        d:DesignHeight="450"
+        d:DesignWidth="600"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="ToolWindow"
+        Loaded="OnLoaded"
+        Title="Complemento Adicional">
 
     <Window.Resources>
-        <vewModel:ConverterNumber x:Key="ConverterNumber"/>
         <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
     </Window.Resources>
 
     <Grid>
-
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             x:Name="adicionais"
-            Grid.Row="1"
-            AddNewRowPosition="Bottom"
-            ShowRowHeader="True"
             AutoGenerateColumns="False"
-            AllowFiltering="True"
-            ColumnSizer="AutoWithLastColumnFill"
+            CanUserInsertRows="True"
+            NewRowPosition="Bottom"
+            GroupRenderMode="Flat"
+            ShowGroupPanel="False"
+            IsFilteringAllowed="True"
             ItemsSource="{Binding ComplementoAdicionais}"
             SelectedItem="{Binding ComplementoAdicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            CurrentCellDropDownSelectionChanged="OnCurrentCellDropDownSelectionChanged" 
-            CurrentCellValueChanged="OnCurrentCellValueChanged" 
-            FontSize="10" 
-            RowValidated="OnRowValidated" 
-            RowValidating="OnRowValidating" 
-            AddNewRowInitiating="OnAddNewRowInitiating" AllowEditing="True" >
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn
-                        HeaderText="CÓDIGO" 
-                        MappingName="codcompladicional"
-                        DisplayBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridTextColumn
-                        HeaderText="COMPLEMENTO ADICIONAL" 
-                        MappingName="complementoadicional"/>
-                <syncfusion:GridTextColumn
-                        HeaderText="DESCRIÇÃO FISCAL" 
-                        MappingName="descricaofiscal"/>
-                <syncfusion:GridComboBoxColumn
-                        HeaderText="UNIDADE" 
-                        MappingName="unidade"
-                        ItemsSource="{Binding Unidades}"
-                        DisplayMemberPath="unidade"
-                        SelectedValuePath="unidade"/>
-                <syncfusion:GridNumericColumn
-                        HeaderText="PREÇO" 
-                        MappingName="precolocacao"
-                        DisplayBinding="{Binding precolocacao, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridNumericColumn
-                        HeaderText="VIDA ÚTIL" 
-                        MappingName="vida_util"
-                        DisplayBinding="{Binding vida_util, Converter={StaticResource ConverterNumber}}"/>       
-                <syncfusion:GridCheckBoxColumn
-                        AllowEditing="True"
-                        HeaderText="INATIVO" 
-                        MappingName="inativo"
-                        DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
-                        ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}" />
-                <syncfusion:GridCheckBoxColumn
-                    AllowEditing="True"
-                    HeaderText="CONTROLADO" 
-                    MappingName="prodcontrolado"
-                    DisplayBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}}"
-                    ValueBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}}" />
-            </syncfusion:SfDataGrid.Columns>
-
-
-        </syncfusion:SfDataGrid>
-
+            FontSize="10"
+            RowValidated="OnRowValidated"
+            RowValidating="OnRowValidating"
+            AddingNewDataItem="OnAddingNewDataItem">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn
+                    Header="CÓDIGO"
+                    DataMemberBinding="{Binding codcompladicional}"
+                    IsReadOnly="True" />
+                <telerik:GridViewDataColumn
+                    Header="COMPLEMENTO ADICIONAL"
+                    DataMemberBinding="{Binding complementoadicional}" />
+                <telerik:GridViewDataColumn
+                    Header="DESCRIÇÃO FISCAL"
+                    DataMemberBinding="{Binding descricaofiscal}" />
+                <telerik:GridViewComboBoxColumn
+                    Header="UNIDADE"
+                    DataMemberBinding="{Binding unidade}"
+                    ItemsSource="{Binding DataContext.Unidades, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"
+                    DisplayMemberPath="unidade"
+                    SelectedValueMemberPath="unidade" />
+                <telerik:GridViewDataColumn
+                    Header="PREÇO"
+                    DataMemberBinding="{Binding precolocacao, StringFormat=N2}" />
+                <telerik:GridViewDataColumn
+                    Header="VIDA ÚTIL"
+                    DataMemberBinding="{Binding vida_util}" />
+                <telerik:GridViewCheckBoxColumn
+                    Header="INATIVO"
+                    DataMemberBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}, Mode=TwoWay}" />
+                <telerik:GridViewCheckBoxColumn
+                    Header="CONTROLADO"
+                    DataMemberBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}, Mode=TwoWay}" />
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
     </Grid>
-
 </Window>

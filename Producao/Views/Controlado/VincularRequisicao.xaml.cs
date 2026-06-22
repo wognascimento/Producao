@@ -33,14 +33,14 @@ namespace Producao.Views.Controlado
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                     long requisicao = long.Parse(((TextBox)sender).Text);
                     VincularRequisicaoViewModel vm = (VincularRequisicaoViewModel)DataContext;
-                    vm.Requisicao = await Task.Run(() => vm.GetRequisicaoAsync(requisicao));
+                    vm.Requisicao = await vm.GetRequisicaoAsync(requisicao);
                     if (vm.Requisicao == null)
                     {
                         MessageBox.Show("Requisição não encontrado", "Busca de requisição");
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                         return;
                     }
-                    vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(requisicao));
+                    vm.Produtos = await vm.GetProdutosAsync(requisicao);
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     codigoProduto.Focus();
                 }
@@ -62,7 +62,7 @@ namespace Producao.Views.Controlado
 
                     long codigo = long.Parse(((TextBox)sender).Text);
                     VincularRequisicaoViewModel vm = (VincularRequisicaoViewModel)DataContext;
-                    vm.Etiqueta = await Task.Run(() => vm.GetEtiquetaAsync(codigo));
+                    vm.Etiqueta = await vm.GetEtiquetaAsync(codigo);
                     if (vm.Etiqueta == null)
                     {
                         MessageBox.Show("Etiqueta não encontrado", "Busca de etiqueta");
@@ -70,7 +70,7 @@ namespace Producao.Views.Controlado
                         return;
                     }
 
-                    vm.Barcode = await Task.Run(() => vm.GetBarcodeAsync(codigo));
+                    vm.Barcode = await vm.GetBarcodeAsync(codigo);
                     if (vm.Barcode == null)
                     {
                         MessageBox.Show("Código de barras não encontrado", "Busca de Barcode");
@@ -81,18 +81,18 @@ namespace Producao.Views.Controlado
                     var confirma = MessageBox.Show("Deseja Adicionar o produto na lista?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
                     if (confirma == MessageBoxResult.Yes)
                     {
-                        await Task.Run(() => vm.AddControladoAsync(
+                        await vm.AddControladoAsync(
                             new ControladoShoppingModel 
                             { 
                                 barcode = vm.Barcode.barcode, 
                                 inserido_por = Environment.UserName, 
                                 inserido_em = DateTime.Now, 
                                 num_requisicao = vm.Requisicao.num_requisicao
-                            }));
+                            });
                     }
 
                     long requisicao = long.Parse(txtRequisicao.Text);
-                    vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(requisicao));
+                    vm.Produtos = await vm.GetProdutosAsync(requisicao);
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -127,7 +127,7 @@ namespace Producao.Views.Controlado
 
                 foreach (var item in query)
                 {
-                    await Task.Run(() => vm.BaixaReceitaAsync(item));
+                    await vm.BaixaReceitaAsync(item);
                 }
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -140,26 +140,6 @@ namespace Producao.Views.Controlado
             }
         }
 
-        private void SfDataGrid_RecordDeleted(object sender, Syncfusion.UI.Xaml.Grid.RecordDeletedEventArgs e)
-        {
-
-        }
-
-        private async void SfDataGrid_RecordDeleting(object sender, Syncfusion.UI.Xaml.Grid.RecordDeletingEventArgs e)
-        {
-            VincularRequisicaoViewModel vm = (VincularRequisicaoViewModel)DataContext;
-            var confirma = MessageBox.Show("Deseja Deletar o produto da lista?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
-            var item = e.Items[0] as TransformaRequisicaoModel;
-            if (confirma == MessageBoxResult.Yes)
-            {
-                await Task.Run(() => vm.DeleteControladoAsync((long)item.num_requisicao, item.barcode));
-                   
-            }
-            else
-            {
-                e.Cancel = true;
-            }
-        }
     }
 
     public class VincularRequisicaoViewModel : INotifyPropertyChanged

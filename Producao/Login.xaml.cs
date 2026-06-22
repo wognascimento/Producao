@@ -41,13 +41,17 @@ namespace Producao
                         throw new Exception("Credenciais inválidas.");
 
                     // Atualiza config e fecha
-                    var config = ConfigurationManager.OpenExeConfiguration(@$"{BaseSettings.CaminhoSistema}Producao.dll");
-                    config.AppSettings.Settings["Username"].Value = txtLogin.Text;
+                    var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    if (config.AppSettings.Settings["Username"] == null)
+                        config.AppSettings.Settings.Add("Username", txtLogin.Text);
+                    else
+                        config.AppSettings.Settings["Username"].Value = txtLogin.Text;
+
                     config.Save(ConfigurationSaveMode.Modified);
                     ConfigurationManager.RefreshSection("appSettings");
 
                     BaseSettings.Username = txtLogin.Text;
-                    BaseSettings.connectionString = $"Host={BaseSettings.Host};Database={BaseSettings.Database};Username={BaseSettings.Username};Password={BaseSettings.Password}";
+                    BaseSettings.RefreshConnectionString();
 
                     this.DialogResult = true;
                     this.Close();

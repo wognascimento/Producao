@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
 using Producao.Views.OrdemServico.Produto;
-using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,6 +17,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.OrdemServico.Desbaiamento
 {
@@ -39,7 +40,7 @@ namespace Producao.Views.OrdemServico.Desbaiamento
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 EmitirOSDesbaiamentoViewModel vm = (EmitirOSDesbaiamentoViewModel)DataContext;
-                vm.Itens = await Task.Run(vm.GetItensAsync);
+                vm.Itens = await vm.GetItensAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -49,21 +50,25 @@ namespace Producao.Views.OrdemServico.Desbaiamento
             }
         }
 
-        private async void SfDataGrid_RowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void RadGridView_RowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
         {
-            var sfdatagrid = sender as SfDataGrid;
+            if (e.EditAction != GridViewEditAction.Commit)
+            {
+                return;
+            }
+
+            var grid = sender as RadGridView;
             EmitirOSDesbaiamentoViewModel vm = (EmitirOSDesbaiamentoViewModel)DataContext;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                OsExpModel data = (OsExpModel)e.RowData;
+                OsExpModel data = (OsExpModel)e.Row.Item;
                 data.inserido_por = Environment.UserName;
                 data.inserido_em = DateTime.Now;
-                vm.Item = await Task.Run(() => vm.AddOsAsync(data));
-                //vm.Itens = await Task.Run(vm.GetItensAsync);
+                vm.Item = await vm.AddOsAsync(data);
 
-                ((OsExpModel)e.RowData).n_os_desbaiamento = vm.Item.n_os_desbaiamento;
-                sfdatagrid.View.Refresh();
+                ((OsExpModel)e.Row.Item).n_os_desbaiamento = vm.Item.n_os_desbaiamento;
+                grid?.Items.Refresh();
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }

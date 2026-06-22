@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-using Syncfusion.UI.Xaml.Utility;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -33,7 +32,7 @@ namespace Producao.Views.Controlado
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ImpressasViewModel vm = (ImpressasViewModel)DataContext;
-                vm.Impressas = await Task.Run( () => vm.GetImpressasAsync(Codcompladicional));
+                vm.Impressas = await vm.GetImpressasAsync(Codcompladicional);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -76,22 +75,20 @@ namespace Producao.Views.Controlado
             {
                 try
                 {
-                    string IPAdress = "192.168.0.113";
-                    int Port = 9100;
-                    StreamWriter? SWriter;
-                    TcpClient? Client = new();
+                    var printer = ThermalPrinterConfiguration.Load();
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                     ImpressasViewModel vm = (ImpressasViewModel)DataContext;
-                    await Client.ConnectAsync(IPAdress, Port);
-                    SWriter = new(Client.GetStream());
+                    using var client = new TcpClient();
+                    await client.ConnectAsync(printer.IpAddress, printer.Port);
+                    await using var writer = new StreamWriter(client.GetStream());
                     foreach (var impressa in vm.Impressas.Where(f => f.vinculado == false))
                     {
                         var record = impressa;
                         var etiqueta = await vm.GetImprimirAsync(record.codigo);
-                        SWriter.WriteLine($@"^XA");
-                        SWriter.WriteLine($@"^PW184");
-                        SWriter.WriteLine($@"^CI28");
+                        writer.WriteLine($@"^XA");
+                        writer.WriteLine($@"^PW184");
+                        writer.WriteLine($@"^CI28");
                         //SWriter.WriteLine($@"^FT24,313^BQN,2,6");
                         //SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
                         //SWriter.WriteLine($@"^FT124,159^AAB,9,5^FH\^FDPRODUTO^FS");
@@ -100,21 +97,19 @@ namespace Producao.Views.Controlado
                         //SWriter.WriteLine($@"^FT139,93^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
                         //SWriter.WriteLine($@"^FT105,160^AAB,9,5^FB121,6,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
                         //SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
-                        SWriter.WriteLine($@"^FT24,313^BQN,2,6");
-                        SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
-                        SWriter.WriteLine($@"^FT160,295^AAB,9,5^FH\^FDPRODUTO^FS");
-                        SWriter.WriteLine($@"^FT175,295^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
-                        SWriter.WriteLine($@"^FT160,229^AAB,9,5^FH\^FDETIQUETA^FS");
-                        SWriter.WriteLine($@"^FT175,229^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
-                        SWriter.WriteLine($@"^FT141,160^A0B,15^FB121,8,0,C^FH\^FD{etiqueta.descricao_completa?.Replace("ÚNICO", "")}^FS");
-                        SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
+                        writer.WriteLine($@"^FT24,313^BQN,2,6");
+                        writer.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
+                        writer.WriteLine($@"^FT160,295^AAB,9,5^FH\^FDPRODUTO^FS");
+                        writer.WriteLine($@"^FT175,295^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
+                        writer.WriteLine($@"^FT160,229^AAB,9,5^FH\^FDETIQUETA^FS");
+                        writer.WriteLine($@"^FT175,229^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
+                        writer.WriteLine($@"^FT141,160^A0B,15^FB121,8,0,C^FH\^FD{etiqueta.descricao_completa?.Replace("ÚNICO", "")}^FS");
+                        writer.WriteLine($@"^PQ1,0,1,Y^XZ");
 
                         //using DatabaseContext db = new();
                         //await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
                     }
-                    await SWriter.FlushAsync();
-                    await SWriter.DisposeAsync();
-                    SWriter.Close();
+                    await writer.FlushAsync();
 
                     RadWindow.Alert(new DialogParameters()
                     {
@@ -131,6 +126,44 @@ namespace Producao.Views.Controlado
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 
+            }
+        }
+
+        private async void OnImprimirEtiquetaClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ImpressasViewModel vm || vm.Impressa is null)
+            {
+                return;
+            }
+
+            var printer = ThermalPrinterConfiguration.Load();
+            try
+            {
+                using var client = new TcpClient();
+                await client.ConnectAsync(printer.IpAddress, printer.Port);
+                await using var writer = new StreamWriter(client.GetStream());
+                var etiqueta = await vm.GetImprimirAsync(vm.Impressa.codigo);
+
+                writer.WriteLine(@"^XA");
+                writer.WriteLine(@"^PW184");
+                writer.WriteLine(@"^CI28");
+                writer.WriteLine($@"^FT24,313^BQN,2,6");
+                writer.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
+                writer.WriteLine($@"^FT160,295^AAB,9,5^FH\^FDPRODUTO^FS");
+                writer.WriteLine($@"^FT175,295^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
+                writer.WriteLine($@"^FT160,229^AAB,9,5^FH\^FDETIQUETA^FS");
+                writer.WriteLine($@"^FT175,229^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
+                writer.WriteLine($@"^FT141,160^A0B,15^FB121,8,0,C^FH\^FD{etiqueta.descricao_completa?.Replace("ÚNICO", "")}^FS");
+                writer.WriteLine(@"^PQ1,0,1,Y^XZ");
+
+                await writer.FlushAsync();
+
+                using DatabaseContext db = new();
+                await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
     }
@@ -185,65 +218,4 @@ namespace Producao.Views.Controlado
         }
     }
 
-    public static class ContextMenuCommandEtiquetaImpressa
-    {
-        static BaseCommand? imprimir;
-        public static BaseCommand Imprimir
-        {
-            get
-            {
-                imprimir ??= new BaseCommand(OnImprimir);
-                return imprimir;
-            }
-        }
-        private static async void OnImprimir(object obj)
-        {
-            ImpressasViewModel vm = (ImpressasViewModel)obj;
-            var record = vm.Impressa;
-            string IPAdress = "192.168.0.113";
-            int Port = 9100;
-            StreamWriter? SWriter;
-            TcpClient? Client = new();
-            try
-            {
-                await Client.ConnectAsync(IPAdress, Port);
-                SWriter = new(Client.GetStream());
-                //SWriter = new(@"C:\TEMP\ETIQUETA.TXT");
-                var etiqueta = await vm.GetImprimirAsync(record.codigo);
-
-                //SWriter.WriteLine($@"^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR2,2~SD15^JUS^LRN^CI28^XZ");
-                SWriter.WriteLine($@"^XA");
-                SWriter.WriteLine($@"^PW184");
-                SWriter.WriteLine($@"^CI28");
-                //SWriter.WriteLine($@"^FT24,313^BQN,2,6");
-                //SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
-                //SWriter.WriteLine($@"^FT124,159^AAB,9,5^FH\^FDPRODUTO^FS");
-                //SWriter.WriteLine($@"^FT139,159^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
-                //SWriter.WriteLine($@"^FT124,93^AAB,9,5^FH\^FDETIQUETA^FS");
-                //SWriter.WriteLine($@"^FT139,93^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
-                //SWriter.WriteLine($@"^FT105,160^AAB,9,5^FB121,6,0,C^FH\^FD{etiqueta.descricao_completa}^FS");
-                //SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
-
-                SWriter.WriteLine($@"^FT24,313^BQN,2,6");
-                SWriter.WriteLine($@"^FH\^FDHA,{etiqueta.barcode}^FS");
-                SWriter.WriteLine($@"^FT160,295^AAB,9,5^FH\^FDPRODUTO^FS");
-                SWriter.WriteLine($@"^FT175,295^A0B,11,19^FH\^FD{etiqueta.codcompladicional}^FS");
-                SWriter.WriteLine($@"^FT160,229^AAB,9,5^FH\^FDETIQUETA^FS");
-                SWriter.WriteLine($@"^FT175,229^A0B,11,19^FH\^FD{etiqueta.codigo}^FS");
-                SWriter.WriteLine($@"^FT141,160^A0B,15^FB121,8,0,C^FH\^FD{etiqueta.descricao_completa?.Replace("ÚNICO", "")}^FS");
-                SWriter.WriteLine($@"^PQ1,0,1,Y^XZ");
-
-                await SWriter.FlushAsync();
-                await SWriter.DisposeAsync();
-                SWriter.Close();
-
-                using DatabaseContext db = new();
-                await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-    }
 }

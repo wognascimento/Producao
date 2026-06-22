@@ -1,78 +1,65 @@
-﻿<UserControl x:Class="Producao.Views.CadastroProduto.TodasDescricoes"
+<UserControl x:Class="Producao.Views.CadastroProduto.TodasDescricoes"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Producao.Views.CadastroProduto" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+             xmlns:local="clr-namespace:Producao.Views.CadastroProduto"
              xmlns:app="clr-namespace:Producao"
-             xmlns:Syncfusion="http://schemas.syncfusion.com/wpf"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" 
-             Loaded="OnLoaded" Unloaded="UserControl_Unloaded">
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             Loaded="OnLoaded"
+             Unloaded="UserControl_Unloaded"
+             Language="pt-BR">
 
     <UserControl.Resources>
         <app:ConverterNumber x:Key="ConverterNumber"/>
         <app:ConverterBoolen x:Key="ConverterBoolen"/>
     </UserControl.Resources>
 
-
     <Grid>
-        <Syncfusion:SfDataGrid
-            Name="itens" 
-            ItemsSource="{Binding Descricoes}" 
-            ColumnSizer="AutoLastColumnFill" 
-            AllowFiltering="True" 
-            AllowResizingColumns="True" 
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <telerik:RadButton Margin="5"
+                           Width="120"
+                           HorizontalAlignment="Left"
+                           Content="Exportar Excel"
+                           Click="OnExportarExcelClick"/>
+
+        <telerik:RadGridView
+            Grid.Row="1"
+            Name="itens"
+            ItemsSource="{Binding Descricoes}"
+            IsFilteringAllowed="True"
             AutoGenerateColumns="False"
-            AllowResizingHiddenColumns="True" 
-            SelectionUnit="Row"
-            SelectionMode="Extended"
-            GridCopyOption="CopyData,IncludeHeaders,IncludeFormat" >
-
-
-            <Syncfusion:SfDataGrid.HeaderContextMenu>
-                <ContextMenu>
-                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsCadastroProduto.ExportarExcel}}"
-                              CommandParameter="{Binding}"
-                              Header="Exportar Excel"/>
-
-                </ContextMenu>
-            </Syncfusion:SfDataGrid.HeaderContextMenu>
-
-
-            <Syncfusion:SfDataGrid.StackedHeaderRows>
-                <Syncfusion:StackedHeaderRow>
-                    <Syncfusion:StackedHeaderRow.StackedColumns>
-                        <Syncfusion:StackedColumn ChildColumns="m3,pl,pb" HeaderText="Media Expedida"/>
-                    </Syncfusion:StackedHeaderRow.StackedColumns>
-                </Syncfusion:StackedHeaderRow>
-            </Syncfusion:SfDataGrid.StackedHeaderRows>
-            <Syncfusion:SfDataGrid.Columns>
-                <Syncfusion:GridTextColumn MappingName="codcompladicional"/>
-                <Syncfusion:GridTextColumn MappingName="planilha" />
-                <Syncfusion:GridTextColumn MappingName="familia" />
-                <Syncfusion:GridTextColumn MappingName="descricao" ColumnSizer="SizeToHeader"/>
-                <Syncfusion:GridTextColumn MappingName="descricao_adicional" ColumnSizer="SizeToHeader"/>
-                <Syncfusion:GridTextColumn MappingName="complementoadicional" ColumnSizer="SizeToHeader"/>
-                <Syncfusion:GridTextColumn MappingName="unidade"/>
-                <Syncfusion:GridTextColumn MappingName="descricaofiscal"/>
-                <Syncfusion:GridTextColumn MappingName="descricaoespanhol"/>
-                <Syncfusion:GridCheckBoxColumn MappingName="prodcontrolado"
-                                           DisplayBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}}"
-                                           ValueBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}}" />
-                <Syncfusion:GridCheckBoxColumn MappingName="inativo"
-                                           DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
-                                           ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"/>
-                <Syncfusion:GridNumericColumn MappingName="vida_util"/>
-                <Syncfusion:GridNumericColumn MappingName="custo"/>
-                <Syncfusion:GridNumericColumn MappingName="saldo_estoque"/>
-                <Syncfusion:GridNumericColumn MappingName="peso"/>
-
-                <Syncfusion:GridNumericColumn MappingName="m3" ColumnSizer="SizeToCells"/>
-                <Syncfusion:GridNumericColumn MappingName="pl" ColumnSizer="SizeToCells"/>
-                <Syncfusion:GridNumericColumn MappingName="pb" ColumnSizer="SizeToCells"/>
-            </Syncfusion:SfDataGrid.Columns>
-        </Syncfusion:SfDataGrid>
+            ShowGroupPanel="False"
+            GroupRenderMode="Flat"
+            SelectionUnit="FullRow"
+            SelectionMode="Extended">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="codcompladicional" UniqueName="codcompladicional" DataMemberBinding="{Binding codcompladicional}" DataFormatString="{}{0:F0}"/>
+                <telerik:GridViewDataColumn Header="planilha" UniqueName="planilha" DataMemberBinding="{Binding planilha}"/>
+                <telerik:GridViewDataColumn Header="familia" UniqueName="familia" DataMemberBinding="{Binding familia}"/>
+                <telerik:GridViewDataColumn Header="descricao" UniqueName="descricao" DataMemberBinding="{Binding descricao}"/>
+                <telerik:GridViewDataColumn Header="descricao_adicional" UniqueName="descricao_adicional" DataMemberBinding="{Binding descricao_adicional}"/>
+                <telerik:GridViewDataColumn Header="complementoadicional" UniqueName="complementoadicional" DataMemberBinding="{Binding complementoadicional}"/>
+                <telerik:GridViewDataColumn Header="unidade" UniqueName="unidade" DataMemberBinding="{Binding unidade}"/>
+                <telerik:GridViewDataColumn Header="descricaofiscal" UniqueName="descricaofiscal" DataMemberBinding="{Binding descricaofiscal}"/>
+                <telerik:GridViewDataColumn Header="descricaoespanhol" UniqueName="descricaoespanhol" DataMemberBinding="{Binding descricaoespanhol}"/>
+                <telerik:GridViewCheckBoxColumn Header="prodcontrolado" UniqueName="prodcontrolado" DataMemberBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}}"/>
+                <telerik:GridViewCheckBoxColumn Header="inativo" UniqueName="inativo" DataMemberBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"/>
+                <telerik:GridViewDataColumn Header="vida_util" UniqueName="vida_util" DataMemberBinding="{Binding vida_util}"/>
+                <telerik:GridViewDataColumn Header="custo" UniqueName="custo" DataMemberBinding="{Binding custo}" DataFormatString="{}{0:N2}"/>
+                <telerik:GridViewDataColumn Header="saldo_estoque" UniqueName="saldo_estoque" DataMemberBinding="{Binding saldo_estoque}"/>
+                <telerik:GridViewDataColumn Header="peso" UniqueName="peso" DataMemberBinding="{Binding peso}" DataFormatString="{}{0:N2}"/>
+                <telerik:GridViewDataColumn Header="m3" UniqueName="m3" DataMemberBinding="{Binding m3}" DataFormatString="{}{0:N2}"/>
+                <telerik:GridViewDataColumn Header="pl" UniqueName="pl" DataMemberBinding="{Binding pl}" DataFormatString="{}{0:N2}"/>
+                <telerik:GridViewDataColumn Header="pb" UniqueName="pb" DataMemberBinding="{Binding pb}" DataFormatString="{}{0:N2}"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
     </Grid>
-
 </UserControl>

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.CheckList
 {
@@ -30,7 +32,7 @@ namespace Producao.Views.CheckList
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
                 //vm.Siglas =  await Task.Run(vm.GetSiglasAsync);
-                vm.Dados = await Task.Run(vm.GetItensAsync);
+                vm.Dados = await vm.GetItensAsync();
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -68,7 +70,7 @@ namespace Producao.Views.CheckList
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
-                vm.Etiquetas = await Task.Run(() => vm.GetEtiquetasAsync(vm.Dado.coddetalhescompl));
+                vm.Etiquetas = await vm.GetEtiquetasAsync(vm.Dado.coddetalhescompl);
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -80,19 +82,16 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private async void dgEtiqueta_RowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void dgEtiqueta_RowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
             try
             {
-                //RowIndex = 1 NOVA LINHA
-
-                //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
-                vm.Etiqueta = (EtiquetaProducaoModel)e.RowData;
-                EtiquetaProducaoModel data = (EtiquetaProducaoModel)e.RowData;
+                vm.Etiqueta = (EtiquetaProducaoModel)e.Row.Item;
+                EtiquetaProducaoModel data = (EtiquetaProducaoModel)e.Row.Item;
 
-                if (e.RowIndex == 1)
+                if (data.codvol is null)
                 {
                     for (int i = 0; i < data.volumes_total; i++)
                     {
@@ -104,15 +103,14 @@ namespace Producao.Views.CheckList
                             //vm.Etiqueta.criado_por = Environment.UserName;
                             //vm.Etiqueta.criado_em = DateTime.Now;
                         }
-                        vm.Etiqueta = await Task.Run(() => vm.AddEtiquetaAsync(vm.Etiqueta));
+                        vm.Etiqueta = await vm.AddEtiquetaAsync(vm.Etiqueta);
                     }
-                    vm.Etiquetas = await Task.Run(() => vm.GetEtiquetasAsync(data.coddetalhescompl));
+                    vm.Etiquetas = await vm.GetEtiquetasAsync(data.coddetalhescompl);
                 }
                 else 
                 {
-                    vm.Etiqueta = await Task.Run(() => vm.AddEtiquetaAsync(vm.Etiqueta));
+                    vm.Etiqueta = await vm.AddEtiquetaAsync(vm.Etiqueta);
                 }
-                //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -122,23 +120,23 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private void dgEtiqueta_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private void dgEtiqueta_RowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
             EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
-            EtiquetaProducaoModel rowData = (EtiquetaProducaoModel)e.RowData;
+            EtiquetaProducaoModel rowData = (EtiquetaProducaoModel)e.Row.Item;
             if (!rowData.coddetalhescompl.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("codvol", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("volumes", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("volumes_total", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("qtd", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("largura", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("altura", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("profundidade", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("peso_bruto", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("peso_liquido", "Erro ao selecionar a linha.");
-                e.ErrorMessages.Add("impresso", "Erro ao selecionar a linha.");
+                AddValidation(e, "codvol", "Erro ao selecionar a linha.");
+                AddValidation(e, "volumes", "Erro ao selecionar a linha.");
+                AddValidation(e, "volumes_total", "Erro ao selecionar a linha.");
+                AddValidation(e, "qtd", "Erro ao selecionar a linha.");
+                AddValidation(e, "largura", "Erro ao selecionar a linha.");
+                AddValidation(e, "altura", "Erro ao selecionar a linha.");
+                AddValidation(e, "profundidade", "Erro ao selecionar a linha.");
+                AddValidation(e, "peso_bruto", "Erro ao selecionar a linha.");
+                AddValidation(e, "peso_liquido", "Erro ao selecionar a linha.");
+                AddValidation(e, "impresso", "Erro ao selecionar a linha.");
             }
             /*else if(rowData.codvol.HasValue)
             {
@@ -148,32 +146,32 @@ namespace Producao.Views.CheckList
             else if (!rowData.volumes.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("volumes", "Informe o volume.");
+                AddValidation(e, "volumes", "Informe o volume.");
             }
             else if (rowData.volumes == 0)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("volumes", "Volume não pode ser Zero(0).");
+                AddValidation(e, "volumes", "Volume não pode ser Zero(0).");
             }
             else if (!rowData.volumes_total.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("volumes_total", "Informe o total de volume.");
+                AddValidation(e, "volumes_total", "Informe o total de volume.");
             }
             else if (rowData.volumes_total < rowData.volumes)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("volumes_total", "Total de volumes não pode ser menor que volume");
+                AddValidation(e, "volumes_total", "Total de volumes não pode ser menor que volume");
             }
             else if (!rowData.qtd.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("qtd", "Informe a quantidade em cada volume.");
+                AddValidation(e, "qtd", "Informe a quantidade em cada volume.");
             }
             else if (rowData.qtd > vm.Dado.qtd_nao_expedida)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("qtd", "a quantidade da etiqueta não pode ser menor que a do checklist");
+                AddValidation(e, "qtd", "a quantidade da etiqueta não pode ser maior que a do checklist");
             }
             /*if ((e.RowData as EtiquetaProducaoModel).volumes == null)
             {
@@ -182,12 +180,15 @@ namespace Producao.Views.CheckList
             }*/
         }
 
-        private void dgEtiqueta_AddNewRowInitiating(object sender, Syncfusion.UI.Xaml.Grid.AddNewRowInitiatingEventArgs e)
+        private void dgEtiqueta_AddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
             EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
-            ((EtiquetaProducaoModel)e.NewObject).coddetalhescompl = vm.Dado.coddetalhescompl; 
-            ((EtiquetaProducaoModel)e.NewObject).criado_por = Environment.UserName; 
-            ((EtiquetaProducaoModel)e.NewObject).criado_em = DateTime.Now;
+            e.NewObject = new EtiquetaProducaoModel
+            {
+                coddetalhescompl = vm.Dado.coddetalhescompl,
+                criado_por = Environment.UserName,
+                criado_em = DateTime.Now
+            };
 
             /*
              * vm.Etiqueta.criado_por = Environment.UserName;
@@ -195,7 +196,7 @@ namespace Producao.Views.CheckList
             */
         }
 
-        private async void dgEtiqueta_RecordDeleting(object sender, Syncfusion.UI.Xaml.Grid.RecordDeletingEventArgs e)
+        private async void dgEtiqueta_Deleting(object sender, GridViewDeletingEventArgs e)
         {
             
             if (MessageBox.Show("Confirma a exclusão a etiqueta?", "Excluir", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
@@ -203,9 +204,9 @@ namespace Producao.Views.CheckList
                 try
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    EtiquetaProducaoModel data = (EtiquetaProducaoModel)e.Items[0];
+                    EtiquetaProducaoModel data = (EtiquetaProducaoModel)e.Items.First();
                     EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
-                    await Task.Run((() => vm.DeleteEtiquetaAsync(data)));
+                    await vm.DeleteEtiquetaAsync(data);
                     e.Cancel = false;
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -224,6 +225,38 @@ namespace Producao.Views.CheckList
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
+        }
+
+        private async void OnImprimirEtiquetaCheckListClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: EtiquetaCheckListModel item })
+            {
+                return;
+            }
+
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
+                var etiquetasEmitidas = await vm.GetEtiquetasEmitidasAsync(item.coddetalhescompl);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+
+                ViewEtiquetaCheckListEmitida.ImprimirEtiquetas(etiquetasEmitidas, vm.BaseSettings);
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
+        {
+            e.ValidationResults.Add(new GridViewCellValidationResult
+            {
+                PropertyName = propertyName,
+                ErrorMessage = message
+            });
         }
     }
 
@@ -333,6 +366,23 @@ namespace Producao.Views.CheckList
                 using DatabaseContext db = new();
                 var data = await db.EtiquetaProducaos.Where(e => e.coddetalhescompl == coddetalhescompl ).OrderBy(c => c.codvol).ToListAsync();
                 return new ObservableCollection<EtiquetaProducaoModel>(data);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<ObservableCollection<EtiquetaEmitidaModel>> GetEtiquetasEmitidasAsync(long? coddetalhescompl)
+        {
+            try
+            {
+                using DatabaseContext db = new();
+                var data = await db.EtiquetaEmitidas
+                    .Where(e => e.coddetalhescompl == coddetalhescompl)
+                    .OrderBy(e => e.codvol)
+                    .ToListAsync();
+                return new ObservableCollection<EtiquetaEmitidaModel>(data);
             }
             catch (Exception)
             {

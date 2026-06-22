@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.RelatoriosTecnicos" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
              xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation" x:Class="Producao.Views.RelatoriosTecnicos.CargaEletrica"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
@@ -22,101 +21,70 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <syncfusion:SfTextInputLayout 
-            InputViewPadding="4"
-            HintFloatMode="Float" 
-            Hint="Shopping" 
-            Width="200" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" >
+        <telerik:RadComboBox
+            x:Name="cbSiglaShopping"
+            Width="200"
+            EmptyText="Shopping"
+            DisplayMemberPath="sigla"
+            IsEditable="True"
+            IsFilteringEnabled="True"
+            OpenDropDownOnFocus="True"
+            ItemsSource="{Binding Siglas}"
+            SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectionChanged="OnSiglaSelectionChanged"/>
 
-            <syncfusion:SfTextBoxExt
-                x:Name="cbSiglaShopping"
-                SearchItemPath="sigla"
-                ValueMemberPath="sigla"
-                ShowDropDownButton="false"
-                AutoCompleteMode="SuggestAppend"
-                AutoCompleteSource="{Binding Siglas}" 
-                SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectedValue="{Binding ComplementoCheckList.sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectedItemChanged="OnSiglaSelectionChanged" 
-                ShowSuggestionsOnFocus="True" 
-                ShowClearButton="True"/>
+        <telerik:RadComboBox
+            x:Name="cbTensao"
+            Grid.Column="1"
+            Width="200"
+            Visibility="Collapsed"
+            EmptyText="Tensão (V)"
+            DisplayMemberPath="sigla_serv"
+            SelectedValuePath="id_aprovado"
+            IsEditable="True"
+            IsFilteringEnabled="True"
+            OpenDropDownOnFocus="True"
+            ItemsSource="{Binding Siglas}"
+            SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-        </syncfusion:SfTextInputLayout>
-
-        <syncfusion:SfTextInputLayout 
-            InputViewPadding="4"
-            HintFloatMode="Float" 
-            Hint="Tensão (V)" 
-            Width="200" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" 
-            Grid.Column="1" Visibility="Collapsed" >
-
-            <syncfusion:SfTextBoxExt
-                x:Name="cbTensao"
-                SearchItemPath="sigla_serv"
-                ValueMemberPath="id_aprovado"
-                ShowDropDownButton="false"
-                AutoCompleteMode="SuggestAppend"
-                AutoCompleteSource="{Binding Siglas}" 
-                SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectedValue="{Binding ComplementoCheckList.id_aprovado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                ShowSuggestionsOnFocus="True" 
-                ShowClearButton="True"/>
-
-        </syncfusion:SfTextInputLayout>
-
-
-        <syncfusion:SfTextInputLayout 
-            InputViewPadding="4"
-            HintFloatMode="Float" 
-            Hint="Tensão (V)" 
-            Width="200" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" 
-            Grid.Row="1" Visibility="Collapsed" >
-
-            <syncfusion:SfTextBoxExt
-                x:Name="cbTipo"
-                SearchItemPath="sigla_serv"
-                ValueMemberPath="id_aprovado"
-                ShowDropDownButton="false"
-                AutoCompleteMode="SuggestAppend"
-                AutoCompleteSource="{Binding Siglas}" 
-                SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectedValue="{Binding ComplementoCheckList.id_aprovado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                ShowSuggestionsOnFocus="True" 
-                ShowClearButton="True"/>
-
-        </syncfusion:SfTextInputLayout>
+        <telerik:RadComboBox
+            x:Name="cbTipo"
+            Grid.Row="1"
+            Width="200"
+            Visibility="Collapsed"
+            EmptyText="Tensão (V)"
+            DisplayMemberPath="sigla_serv"
+            SelectedValuePath="id_aprovado"
+            IsEditable="True"
+            IsFilteringEnabled="True"
+            OpenDropDownOnFocus="True"
+            ItemsSource="{Binding Siglas}"
+            SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
         <telerik:RadButton 
             Grid.Row="1" 
             Grid.Column="1" 
-            Content="AVANÇAR" telerik:StyleManager.Theme="Windows11" Visibility="Collapsed" />
+            Content="AVANÇAR" Visibility="Collapsed" />
 
         <telerik:RadButton 
             Grid.Row="0" 
             Grid.RowSpan="2"
             Grid.Column="2" 
-            Content="IMPRIMIR" Width="90" telerik:StyleManager.Theme="Windows11" Click="RadButton_Click" />
+            Content="IMPRIMIR" Width="90" Click="RadButton_Click" />
         
         <telerik:RadButton 
             Grid.Row="0" 
             Grid.RowSpan="2"
             Grid.Column="3" 
-            Content="TODAS DESCRIÇÕES" Width="180" HorizontalAlignment="Left" telerik:StyleManager.Theme="Windows11" Visibility="Collapsed" />
+            Content="TODAS DESCRIÇÕES" Width="180" HorizontalAlignment="Left" Visibility="Collapsed" />
 
         <telerik:RadGridView x:Name="itens" 
             Grid.Column="0" 
             Grid.ColumnSpan="5"
             Grid.Row="2" 
             AutoGenerateColumns="False" 
-            telerik:StyleManager.Theme="Office2016" 
             ShowGroupPanel="False"
-            ItemsSource="{Binding Itens}" IsLocalizationLanguageRespected="False" CellEditEnded="RadGridView_CellEditEnded">
+            ItemsSource="{Binding Itens}" CellEditEnded="RadGridView_CellEditEnded">
 
             <telerik:RadGridView.Columns>
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding item}" Header="ITEM" IsReadOnly="True"/>

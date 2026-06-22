@@ -1,74 +1,57 @@
-﻿<Window x:Class="Producao.Views.CadastroProduto.CadastroAdicional"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Producao.Views.CadastroProduto" 
-             xmlns:vewModel="clr-namespace:Producao" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="600" 
-             WindowStartupLocation="CenterOwner" 
-             WindowStyle="ToolWindow" Loaded="OnLoaded" Title="Descrição Adicional">
-
-    <Window.Resources>
-        <vewModel:ConverterNumber x:Key="ConverterNumber"/>
-        <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
-    </Window.Resources>
+<Window x:Class="Producao.Views.CadastroProduto.CadastroAdicional"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+        mc:Ignorable="d"
+        d:DesignHeight="450"
+        d:DesignWidth="600"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="ToolWindow"
+        Loaded="OnLoaded"
+        Title="Descrição Adicional">
 
     <Grid>
-
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             x:Name="adicionais"
-            Grid.Row="1"
-            AddNewRowPosition="Bottom"
-            ShowRowHeader="True"
             AutoGenerateColumns="False"
-            AllowFiltering="True"
-            ColumnSizer="AutoWithLastColumnFill"
+            CanUserInsertRows="True"
+            NewRowPosition="Bottom"
+            GroupRenderMode="Flat"
+            ShowGroupPanel="False"
+            IsFilteringAllowed="True"
             ItemsSource="{Binding ProdutosAdicionais}"
             SelectedItem="{Binding ProdutoAdicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            CurrentCellDropDownSelectionChanged="OnCurrentCellDropDownSelectionChanged" 
-            CurrentCellValueChanged="OnCurrentCellValueChanged" 
-            FontSize="10" 
-            RowValidated="OnRowValidated" 
-            RowValidating="OnRowValidating" 
-            AddNewRowInitiating="OnAddNewRowInitiating" AllowEditing="True" >
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn
-                    HeaderText="CÓDIGO" 
-                    MappingName="coduniadicional"
-                    DisplayBinding="{Binding coduniadicional, Converter={StaticResource ConverterNumber}}"/>
-                <syncfusion:GridTextColumn
-                        HeaderText="DESCRIÇÃO ADICIONAL" 
-                        MappingName="descricao_adicional"/>
-                <syncfusion:GridTextColumn
-                        HeaderText="REVISÃO" 
-                        MappingName="revisao"/>
-                <syncfusion:GridCheckBoxColumn
-                        AllowEditing="True"
-                        HeaderText="INATIVO" 
-                        MappingName="inativo"
-                        DisplayBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"
-                        ValueBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}" />
-                <syncfusion:GridTemplateColumn 
-                        HeaderText=""
-                        MappingName="coduniadicional" ColumnSizer="SizeToCells">
-                    <syncfusion:GridTemplateColumn.CellTemplate>
+            FontSize="10"
+            RowValidated="OnRowValidated"
+            RowValidating="OnRowValidating"
+            AddingNewDataItem="OnAddingNewDataItem">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn
+                    Header="CÓDIGO"
+                    DataMemberBinding="{Binding coduniadicional}"
+                    IsReadOnly="True" />
+                <telerik:GridViewDataColumn
+                    Header="DESCRIÇÃO ADICIONAL"
+                    DataMemberBinding="{Binding descricao_adicional}" />
+                <telerik:GridViewDataColumn
+                    Header="REVISÃO"
+                    DataMemberBinding="{Binding revisao}" />
+                <telerik:GridViewCheckBoxColumn
+                    Header="INATIVO"
+                    DataMemberBinding="{Binding inativo}" />
+                <telerik:GridViewColumn Header="">
+                    <telerik:GridViewColumn.CellTemplate>
                         <DataTemplate>
-                            <Button 
-                                    Content="Complemento" 
-                                    syncfusion:FocusManagerHelper.FocusedElement="True"
-                                    Command="{Binding Path=DataContext.RowDataCommand, ElementName=adicionais}" 
-                                    CommandParameter="{Binding ElementName=adicionais}"/>
+                            <telerik:RadButton
+                                Content="Complemento"
+                                Command="{Binding Path=DataContext.RowDataCommand, RelativeSource={RelativeSource AncestorType={x:Type telerik:RadGridView}}}"
+                                CommandParameter="{Binding}" />
                         </DataTemplate>
-                    </syncfusion:GridTemplateColumn.CellTemplate>
-                </syncfusion:GridTemplateColumn>
-            </syncfusion:SfDataGrid.Columns>
-
-
-        </syncfusion:SfDataGrid>
-
+                    </telerik:GridViewColumn.CellTemplate>
+                </telerik:GridViewColumn>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
     </Grid>
-    
 </Window>

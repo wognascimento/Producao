@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.UI.Xaml.Grid;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,12 +8,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.Estoque
 {
-    /// <summary>
-    /// Interação lógica para DesbloqueioAcertoEstoque.xam
-    /// </summary>
     public partial class DesbloqueioAcertoEstoque : UserControl
     {
         public DesbloqueioAcertoEstoque()
@@ -24,117 +23,109 @@ namespace Producao.Views.Estoque
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                DesbloqueioAcertoEstoqueViewModel vm = (DesbloqueioAcertoEstoqueViewModel)DataContext;
-                vm.Itens = await Task.Run(vm.GetListAsync);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
+            await CarregarAsync();
         }
 
-        private async void itens_CurrentCellValueChanged(object sender, CurrentCellValueChangedEventArgs e)
+        private async Task CarregarAsync()
         {
             try
             {
-                var sfdatagrid = sender as SfDataGrid;
-                DesbloqueioAcertoEstoqueViewModel vm = (DesbloqueioAcertoEstoqueViewModel)DataContext;
-                AcertoEstoque acerto = (AcertoEstoque)e.Record;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                await Task.Run(() => vm.UpdateAsync(acerto));
-                sfdatagrid.View.Refresh();
-                vm.Itens = await Task.Run(vm.GetListAsync);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Mouse.OverrideCursor = Cursors.Wait;
+                var vm = (DesbloqueioAcertoEstoqueViewModel)DataContext;
+                vm.Itens = await vm.GetListAsync();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        private async void itens_RowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
+        {
+            if (e.EditAction != GridViewEditAction.Commit ||
+                e.EditedItem is not AcertoEstoque acerto || !acerto.desbloqueado)
+            {
+                return;
+            }
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var vm = (DesbloqueioAcertoEstoqueViewModel)DataContext;
+                await vm.UpdateAsync(acerto);
+                vm.Itens = await vm.GetListAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
             }
         }
     }
 
-    class DesbloqueioAcertoEstoqueViewModel : INotifyPropertyChanged
+    internal class DesbloqueioAcertoEstoqueViewModel : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void RaisePropertyChanged(string propName)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-        }
+        private List<AcertoEstoque> itens = [];
 
-        private List<AcertoEstoque> _itens;
         public List<AcertoEstoque> Itens
         {
-            get { return _itens; }
-            set { _itens = value; RaisePropertyChanged("Itens"); }
+            get => itens;
+            set
+            {
+                itens = value;
+                RaisePropertyChanged(nameof(Itens));
+            }
         }
+
+        private static NpgsqlConnection CreateConnection() =>
+            new(DataBaseSettings.Instance.ConnectionString);
 
         public async Task<List<AcertoEstoque>> GetListAsync()
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var itens = await (
-                    from ai in db.ControleAcertoEstoques
-                    join al in db.Descricoes on ai.codcompladicional equals al.codcompladicional
-                    where (ai.bloqueado == "-1")
-                    select new AcertoEstoque
-                    {
-                        codigo = ai.codigo,
-                        cod_movimentacao = ai.cod_movimentacao,
-                        codcompladicional = al.codcompladicional,
-                        planilha = al.planilha,
-                        descricao_completa = al.descricao_completa,
-                        unidade = al.unidade,
-                        quantidade = ai.quantidade,
-                        bloqueado = ai.bloqueado,
-                        processo = ai.processo
-
-                    }).ToListAsync();
-
-                return itens;
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            const string sql = """
+                SELECT ai.codigo, ai.cod_movimentacao, ai.processo, ai.quantidade, ai.bloqueado,
+                       descricao.codcompladicional, descricao.planilha,
+                       descricao.descricao_completa, descricao.unidade,
+                       false AS desbloqueado
+                FROM producao.tbl_controle_acerto_estoque ai
+                JOIN producao.qry3descricoes descricao
+                  ON descricao.codcompladicional = ai.codcompladicional
+                WHERE ai.bloqueado = '-1'
+                ORDER BY descricao.planilha, descricao.descricao_completa;
+                """;
+            await using var connection = CreateConnection();
+            return (await connection.QueryAsync<AcertoEstoque>(sql)).ToList();
         }
 
         public async Task UpdateAsync(AcertoEstoque acerto)
         {
-            try
+            const string sql = """
+                UPDATE producao.tbl_controle_acerto_estoque
+                SET bloqueado = '0', liberado_por = @liberadoPor, liberado_em = @liberadoEm
+                WHERE codigo = @codigo;
+                """;
+            await using var connection = CreateConnection();
+            var linhas = await connection.ExecuteAsync(sql, new
             {
-                using DatabaseContext db = new();
-                var produto = db.ControleAcertoEstoques.FirstOrDefault(p => p.codigo == acerto.codigo);
-                if (produto != null)
-                {
-
-                    produto.bloqueado = acerto.bloqueado;
-                    db.Entry(produto).Property(p => p.bloqueado).IsModified = true;
-                    
-                    produto.liberado_por = Environment.UserName;
-                    db.Entry(produto).Property(p => p.liberado_por).IsModified = true;
-                    
-                    produto.liberado_em = DateTime.Now;
-                    db.Entry(produto).Property(p => p.liberado_em).IsModified = true;
-
-
-                    db.SaveChanges();
-                }
-
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+                acerto.codigo,
+                liberadoPor = Environment.UserName,
+                liberadoEm = DateTime.Now
+            });
+            if (linhas != 1)
+                throw new InvalidOperationException("O lancamento de estoque nao foi localizado.");
         }
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void RaisePropertyChanged(string propertyName) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public class AcertoEstoque
@@ -147,6 +138,7 @@ namespace Producao.Views.Estoque
         public string? unidade { get; set; }
         public double? quantidade { get; set; }
         public string? bloqueado { get; set; }
+        public bool desbloqueado { get; set; }
         public string? processo { get; set; }
     }
 }

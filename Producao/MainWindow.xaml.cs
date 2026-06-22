@@ -1,5 +1,6 @@
-﻿using Dapper;
-using Microsoft.EntityFrameworkCore;
+﻿using BibliotecasSIG;
+using ClosedXML.Excel;
+using Dapper;
 using Npgsql;
 using Producao.DataBase.Model.Dto;
 using Producao.Views;
@@ -20,23 +21,22 @@ using Producao.Views.OrdemServico.Requisicao;
 using Producao.Views.OrdemServico.Servicos;
 using Producao.Views.Planilha;
 using Producao.Views.RelatoriosTecnicos;
-using Squirrel;
-using Syncfusion.SfSkinManager;
-using Syncfusion.Windows.Tools.Controls;
-using Syncfusion.XlsIO;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Telerik.Windows.Controls;
-using Telerik.Windows.Documents.Spreadsheet.Expressions.Functions;
-using SizeMode = Syncfusion.SfSkinManager.SizeMode;
 namespace Producao
 {
     /// <summary>
@@ -44,92 +44,154 @@ namespace Producao
     /// </summary>
     public partial class MainWindow : Window
     {
-		#region Fields
-        private string currentVisualStyle;
-		private string currentSizeMode;
-        #endregion
-
-        #region Properties
-        /// <summary>
-        /// Gets or sets the current visual style.
-        /// </summary>
-        /// <value></value>
-        /// <remarks></remarks>
-        public string CurrentVisualStyle
-        {
-            get
-            {
-                return currentVisualStyle;
-            }
-            set
-            {
-                currentVisualStyle = value;
-                OnVisualStyleChanged();
-            }
-        }
-		
-		/// <summary>
-        /// Gets or sets the current Size mode.
-        /// </summary>
-        /// <value></value>
-        /// <remarks></remarks>
-        public string CurrentSizeMode
-        {
-            get
-            {
-                return currentSizeMode;
-            }
-            set
-            {
-                currentSizeMode = value;
-                OnSizeModeChanged();
-            }
-        }
-
-        #endregion
-
         DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+        private readonly string CURRENT_VERSION = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         public MainWindow()
         {
             InitializeComponent();
-			this.Loaded += OnLoaded;
             StyleManager.ApplicationTheme = new Windows11Theme();
-
-            var appSettings = ConfigurationManager.GetSection("appSettings") as NameValueCollection;
-            if(appSettings[0].Length > 0)
-                BaseSettings.Username = appSettings[0];
 
             txtUsername.Text = BaseSettings.Username;
             txtDataBase.Text = BaseSettings.Database;
         }
-        /// <summary>
-        /// Called when [loaded].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void OnLoaded(object sender, RoutedEventArgs e)
+
+        private string ExportToExcelAndOpen<T>(IEnumerable<T> data, string fileName)
         {
-            CurrentVisualStyle = "Metro"; // "FluentLight";
-	        CurrentSizeMode = "Default";
-        }
-		/// <summary>
-        /// On Visual Style Changed.
-        /// </summary>
-        /// <remarks></remarks>
-        private void OnVisualStyleChanged()
-        {
-            VisualStyles visualStyle = VisualStyles.Default;
-            Enum.TryParse(CurrentVisualStyle, out visualStyle);            
-            if (visualStyle != VisualStyles.Default)
-            {
-                SfSkinManager.ApplyStylesOnApplication = true;
-                SfSkinManager.SetVisualStyle(this, visualStyle);
-                SfSkinManager.ApplyStylesOnApplication = false;
-            }
+            var filePath = BaseSettings.ResolveImpressosPath(fileName);
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Dados");
+            worksheet.Cell(1, 1).InsertTable(data, "Dados", true);
+            worksheet.Columns().AdjustToContents();
+            workbook.SaveAs(filePath);
+
+            OpenFile(filePath);
+            return filePath;
         }
 
-        UpdateManager manager;
+        private string ExportDataTableToExcelAndOpen(DataTable dataTable, string fileName)
+        {
+            var filePath = BaseSettings.ResolveImpressosPath(fileName);
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Dados");
+            worksheet.Cell(1, 1).InsertTable(dataTable, "Dados", true);
+            worksheet.Columns().AdjustToContents();
+            workbook.SaveAs(filePath);
+
+            OpenFile(filePath);
+            return filePath;
+        }
+
+        private static void OpenFile(string filePath)
+        {
+            Process.Start(new ProcessStartInfo(filePath)
+            {
+                UseShellExecute = true
+            });
+        }
+
+        private async Task<DataTable> QueryDataTableAsync(string sql, object? parameters = null)
+        {
+            await using var conn = new NpgsqlConnection(BaseSettings.connectionString);
+            await conn.OpenAsync();
+
+            using var reader = await conn.ExecuteReaderAsync(
+                new CommandDefinition(sql, parameters, commandTimeout: 300));
+
+            var table = new DataTable();
+            table.Load(reader);
+            return table;
+        }
+
+        private static object ConvertDataTableValue(object? value, Type targetType)
+        {
+            if (value is null)
+                return DBNull.Value;
+
+            if (value is DateOnly dateOnly && targetType == typeof(DateTime))
+                return dateOnly.ToDateTime(TimeOnly.MinValue);
+
+            if (value is TimeOnly timeOnly && targetType == typeof(TimeSpan))
+                return timeOnly.ToTimeSpan();
+
+            return value;
+        }
+
+        private async Task<List<T>> QueryListAsync<T>(string sql, object? parameters = null)
+        {
+            await using var conn = new NpgsqlConnection(BaseSettings.connectionString);
+            var data = await conn.QueryAsync<T>(
+                new CommandDefinition(sql, parameters, commandTimeout: 300));
+
+            return data.AsList();
+        }
+
+        private string ExportControladoRetornoToExcelAndOpen(
+            IEnumerable<ProdutoControladoRecebimentoModel> data,
+            string title,
+            string secondColumnHeader,
+            Func<ProdutoControladoRecebimentoModel, object?> secondColumnValue,
+            string fileName)
+        {
+            var filePath = BaseSettings.ResolveImpressosPath(fileName);
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Dados");
+
+            worksheet.Cell("A1").Value = title;
+            worksheet.Range("A1:F1").Merge();
+            worksheet.Range("A1:F1").Style.Font.Bold = true;
+            worksheet.Range("A1:F1").Style.Font.FontSize = 20;
+            worksheet.Range("A1:F1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+            worksheet.Range("A1:F1").Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+            var headers = new[] { "COD.", secondColumnHeader, "DESCRIÇÃO", "UNID.", "EXPEDIDO", "RETORNO" };
+            for (var column = 0; column < headers.Length; column++)
+                worksheet.Cell(3, column + 1).Value = headers[column];
+
+            var headerRange = worksheet.Range(3, 1, 3, headers.Length);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            var rowIndex = 4;
+            foreach (var row in data)
+            {
+                worksheet.Cell(rowIndex, 1).Value = row.codcompladicional ?? 0;
+                worksheet.Cell(rowIndex, 2).Value = XLCellValue.FromObject(secondColumnValue(row) ?? string.Empty);
+                worksheet.Cell(rowIndex, 3).Value = row.descricao ?? string.Empty;
+                worksheet.Cell(rowIndex, 4).Value = row.unidade ?? string.Empty;
+                worksheet.Cell(rowIndex, 5).Value = (row.solucao_manutencao ?? 0) + (row.expedido ?? 0);
+                worksheet.Cell(rowIndex, 6).Value = string.Empty;
+                rowIndex++;
+            }
+
+            if (rowIndex > 4)
+            {
+                var bodyRange = worksheet.Range(4, 1, rowIndex - 1, headers.Length);
+                bodyRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                bodyRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                worksheet.Range(4, 5, rowIndex - 1, 5).Style.NumberFormat.Format = "0.00";
+            }
+
+            worksheet.PageSetup.PageOrientation = XLPageOrientation.Landscape;
+            worksheet.PageSetup.Margins.Footer = 0;
+            worksheet.PageSetup.Margins.Header = 0;
+            worksheet.PageSetup.Margins.Left = 0;
+            worksheet.PageSetup.Margins.Right = 0;
+            worksheet.PageSetup.Margins.Top = 0;
+            worksheet.PageSetup.Margins.Bottom = 0;
+            worksheet.PageSetup.CenterHorizontally = true;
+            worksheet.PageSetup.CenterVertically = false;
+            worksheet.PageSetup.SetRowsToRepeatAtTop(1, 3);
+            worksheet.Columns().AdjustToContents();
+
+            workbook.SaveAs(filePath);
+            OpenFile(filePath);
+            return filePath;
+        }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -165,52 +227,131 @@ namespace Producao
             */
         }
 
-        /// <summary>
-        /// On Size Mode Changed event.
-        /// </summary>
-        /// <remarks></remarks>
-        private void OnSizeModeChanged()
+        private async Task CheckForUpdatesAsync()
         {
-            SizeMode sizeMode = SizeMode.Default;
-            Enum.TryParse(CurrentSizeMode, out sizeMode);
-            if (sizeMode != SizeMode.Default)
+            try
             {
-                SfSkinManager.ApplyStylesOnApplication = true;
-                SfSkinManager.SetSizeMode(this, sizeMode);
-                SfSkinManager.ApplyStylesOnApplication = false;
+                if (string.IsNullOrWhiteSpace(BaseSettings.UpdateInfoUrl))
+                {
+                    MessageBox.Show(
+                        "O endereco de atualizacao nao esta configurado.",
+                        "Atualizacao do sistema",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                var updateChecker = new UpdateChecker(BaseSettings.UpdateInfoUrl, CURRENT_VERSION);
+                var updateInfo = await updateChecker.CheckForUpdatesAsync();
+
+                if (updateInfo == null)
+                {
+                    MessageBox.Show(
+                        $"O sistema ja esta atualizado.\n\nVersao instalada: {CURRENT_VERSION}",
+                        "Atualizacao do sistema",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                var result = MessageBox.Show(
+                    $"Nova versao disponivel!\n\n" +
+                    $"Versao atual: {CURRENT_VERSION}\n" +
+                    $"Nova versao: {updateInfo.updateVersion}\n\n" +
+                    "Alteracoes:\n" +
+                    string.Join("\n", updateInfo.changelog) +
+                    "\n\nDeseja atualizar o sistema agora?",
+                    "Atualizacao disponivel",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                string updateExecutable = Path.Combine(AppContext.BaseDirectory, "Update.exe");
+                if (!File.Exists(updateExecutable))
+                    throw new FileNotFoundException("O atualizador Update.exe nao foi encontrado.", updateExecutable);
+
+                string jsonData = JsonSerializer.Serialize(updateInfo);
+                var startInfo = new ProcessStartInfo(updateExecutable)
+                {
+                    UseShellExecute = true,
+                    WorkingDirectory = AppContext.BaseDirectory
+                };
+                startInfo.ArgumentList.Add(jsonData);
+                startInfo.ArgumentList.Add("Producao.exe");
+
+                Process.Start(startInfo);
+                Application.Current.Shutdown();
+            }
+            catch (HttpRequestException ex)
+            {
+                // Log do erro ou tratamento de exceção
+                MessageBox.Show(
+                    $"Erro ao verificar atualizações: {ex.Message}",
+                    "Erro",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Erro ao verificar atualizações: {ex.Message}",
+                    "Erro",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
         }
 
         public void adicionarFilho(object filho, string title, string name)
         {
-            var doc = ExistDocumentInDocumentContainer(name);
+            var paneGroup = radDocking.FindChildByType<RadPaneGroup>();
+            if (paneGroup == null)
+            {
+                return;
+            }
+
+            var pane = ExistDocumentInDocumentContainer(paneGroup, name, title);
+            if (pane != null)
+            {
+                paneGroup.SelectedItem = pane;
+                pane.IsActive = true;
+                return;
+            }
+
+            var doc = filho as UserControl ?? filho as FrameworkElement;
             if (doc == null)
             {
-                doc = (FrameworkElement?)filho;
-                DocumentContainer.SetHeader(doc, title);
-                doc.Name = name.ToLower();
-                _mdi.Items.Add(doc);
+                return;
             }
-            else
+
+            doc.Name = name.ToLower();
+            pane = new RadPane
             {
-                //_mdi.RestoreDocument(doc as UIElement);
-                _mdi.ActiveDocument = doc;
-            }
+                Header = title,
+                Content = doc,
+                Tag = name.ToUpperInvariant(),
+                CanUserClose = true,
+                CanFloat = false
+            };
+
+            paneGroup.Items.Add(pane);
+            paneGroup.SelectedItem = pane;
+            pane.IsActive = true;
         }
 
-        private FrameworkElement ExistDocumentInDocumentContainer(string name_)
+        private static RadPane? ExistDocumentInDocumentContainer(RadPaneGroup paneGroup, string name_, string title)
         {
-            foreach (FrameworkElement element in _mdi.Items)
-            {
-                if (name_.ToLower() == element.Name)
-                {
-                    return element;
-                }
-            }
-            return null;
+            var normalizedName = name_.ToUpperInvariant();
+            return paneGroup.Items.OfType<RadPane>()
+                .FirstOrDefault(p =>
+                    string.Equals(p.Tag as string, normalizedName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(p.Header?.ToString(), title, StringComparison.OrdinalIgnoreCase));
         }
 
-        private void MenuItemAdv_Click(object sender, RoutedEventArgs e)
+        private void MenuItemAdv_Click(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewAprovado viewAprovado = new();
@@ -225,7 +366,7 @@ namespace Producao
             adicionarFilho(new ViewAprovado(), "PRODUÇÃO APROVADOS", "APROVADOS");
         }
 
-        private void OnChecklist_Click(object sender, RoutedEventArgs e)
+        private void OnChecklist_Click(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewCheckListNatal view = new();
@@ -239,7 +380,7 @@ namespace Producao
             adicionarFilho(new ViewCheckListNatal(), "CHECKLIST NATAL", "CHECKLIST_NATAL");
         }
 
-        private void OnRevisaoChecklistClick(object sender, RoutedEventArgs e)
+        private void OnRevisaoChecklistClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewCheckListRevisao view = new();
@@ -254,7 +395,7 @@ namespace Producao
 
         }
 
-        private void OnEtiquetaChecklistClick(object sender, RoutedEventArgs e)
+        private void OnEtiquetaChecklistClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewEtiquetaCheckList view = new();
@@ -268,7 +409,7 @@ namespace Producao
             adicionarFilho(new ViewEtiquetaCheckList(), "ETIQUETA CHECKLIST", "ETIQUETA_CHECKLIST");
         }
 
-        private void OnEtiquetaChecklistEmitidaClick(object sender, RoutedEventArgs e)
+        private void OnEtiquetaChecklistEmitidaClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewEtiquetaCheckListEmitida view = new();
@@ -282,7 +423,7 @@ namespace Producao
             adicionarFilho(new ViewEtiquetaCheckListEmitida(), "ETIQUETA CHECKLIST EMITIDAS", "ETIQUETA_CHECKLIST_EMITIDAS");
         }
 
-        private void OnCentralCriarModelo(object sender, RoutedEventArgs e)
+        private void OnCentralCriarModelo(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewCentralCriarModelo view = new();
@@ -295,7 +436,7 @@ namespace Producao
             adicionarFilho(new ViewCentralCriarModelo(), "CRIAR MODELO", "CRIAR_MODELO");
         }
 
-        private void OnCentralTabelaPa(object sender, RoutedEventArgs e)
+        private void OnCentralTabelaPa(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewCentralTabelaPA view = new();
@@ -308,7 +449,7 @@ namespace Producao
             adicionarFilho(new ViewCentralTabelaPA(), "TABELA ARVORE P.A", "TABELA_ARVORE_PA");
         }
 
-        private void OnCentralFatorConversao(object sender, RoutedEventArgs e)
+        private void OnCentralFatorConversao(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewCentralFatorConversao view = new();
@@ -321,7 +462,7 @@ namespace Producao
             adicionarFilho(new ViewCentralFatorConversao(), "TABELA FATOR CONVERSÃO", "TABELA_FATOR_CONVERSAO");
         }
 
-        private void OnCentralEmitirOs(object sender, RoutedEventArgs e)
+        private void OnCentralEmitirOs(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewCentralEmitirOs view = new();
@@ -334,7 +475,7 @@ namespace Producao
             adicionarFilho(new ViewCentralEmitirOs(), "CONTROLE ORDEM DE SERVIÇO", "CONTROLE_ORDEM_SERVICO");
         }
 
-        private void OnCentralStatusCheckList(object sender, RoutedEventArgs e)
+        private void OnCentralStatusCheckList(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewCentralStatusCheckList view = new();
@@ -348,7 +489,7 @@ namespace Producao
         }
 
 
-        private void OnCreateReceitaRequisicao(object sender, RoutedEventArgs e)
+        private void OnCreateReceitaRequisicao(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewReceitaRequisicao view = new();
@@ -361,7 +502,7 @@ namespace Producao
             adicionarFilho(new ViewReceitaRequisicao(), "RECEITA REQUISIÇÃO MATERIAL", "RECEITA_REQUISICAO_MATERIAL");
         }
 
-        private void OnCadastroProduto(object sender, RoutedEventArgs e)
+        private void OnCadastroProduto(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewCadastroProduto view = new();
@@ -374,7 +515,7 @@ namespace Producao
             adicionarFilho(new ViewCadastroProduto(), "CADASTRO DE PRODUTOS", "CADASTRO_PRODUTOS");
         }
 
-        private void OnCadastroEspanhol(object sender, RoutedEventArgs e)
+        private void OnCadastroEspanhol(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             CadastroDescricaoEspanhol view = new();
@@ -387,7 +528,7 @@ namespace Producao
             adicionarFilho(new CadastroDescricaoEspanhol(), "CADASTRO DE DESCRIÇÃO ESPANHOL", "CADASTRO_DESCRICAO_ESPANHOL");
         }
 
-        private void OnTodasDescricoes(object sender, RoutedEventArgs e)
+        private void OnTodasDescricoes(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             TodasDescricoes view = new();
@@ -401,7 +542,7 @@ namespace Producao
             adicionarFilho(new TodasDescricoes(), "TODAS DESCRIÇÕES CADASTRADAS", "TODAS_DESCRICOES_CADASTRADAS");
         }
 
-        private void OnEmitirOSServicoClick(object sender, RoutedEventArgs e)
+        private void OnEmitirOSServicoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             EmissaoServico view = new();
@@ -414,7 +555,7 @@ namespace Producao
             adicionarFilho(new EmissaoServico(), "EMISSÃO DE O.S. DE SERVIÇO", "EMISSAO_OS_SERVICO");
         }
 
-        private void OnEmitidasOSServicoClick(object sender, RoutedEventArgs e)
+        private void OnEmitidasOSServicoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             EmissaoServicoEmitidas view = new();
@@ -427,7 +568,7 @@ namespace Producao
             adicionarFilho(new EmissaoServicoEmitidas(), "O.S. DE SERVIÇO EMITIDAS", "OS_SERVICO_EMITIDAS");
         }
 
-        private void OnAlterarRequisicoes(object sender, RoutedEventArgs e)
+        private void OnAlterarRequisicoes(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             RequisicaoMaterialAlterar view = new();
@@ -441,7 +582,7 @@ namespace Producao
             adicionarFilho(new RequisicaoMaterialAlterar(), "ALTERAR REQUISIÇÕES DE MATERIAL", "ALTERAR_REQUISICOES_MATERIAL");
         }
 
-        private async void OnRequisicoesEmitidas(object sender, RoutedEventArgs e)
+        private async void OnRequisicoesEmitidas(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             RequisicaoMaterialEmitidas view = new();
@@ -457,26 +598,8 @@ namespace Producao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                //var data = await db.PendenciaProducaos.ToListAsync();
-                var data = await db.RequisicoesProducao.ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICOES_MATERIAIS_EMITIDAS.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\REQUISICOES_MATERIAIS_EMITIDAS.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync("SELECT * FROM producao.qry_requisicao_producao;");
+                ExportDataTableToExcelAndOpen(data, "REQUISICOES_MATERIAIS_EMITIDAS.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -487,7 +610,7 @@ namespace Producao
             }
         }
 
-        private void OnRequisicaClick(object sender, RoutedEventArgs e)
+        private void OnRequisicaClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             RequisicaoMaterialEmitir view = new();
@@ -500,7 +623,7 @@ namespace Producao
             adicionarFilho(new RequisicaoMaterialEmitir(), "EMITIR REQUISIÇÕES DE MATERIAL", "EMITIR_REQUISICOES_MATERIAL");
         }
 
-        private void OnSolicitarOSProdutoClick(object sender, RoutedEventArgs e)
+        private void OnSolicitarOSProdutoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             SolicitacaoOrdemServicoProduto view = new();
@@ -513,12 +636,12 @@ namespace Producao
             adicionarFilho(new SolicitacaoOrdemServicoProduto(), "SOLICITAR ORDEM DE SERVIÇO DE PRODUTO", "SOLICITAR_ORDEM_SERVICO_PRODUTO");
         }
 
-        private void OnSolicitarOSProdutoUnificadoClick(object sender, RoutedEventArgs e)
+        private void OnSolicitarOSProdutoUnificadoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new SolicitacaoOrdemServicoProdutoAgrupado(), "SOLICITAR ORDEM DE SERVIÇO DE PRODUTO UNIFICADO", "SOLICITAR_ORDEM_SERVICO_PRODUTO_UNIFICADO");
         }
 
-        private void OnEmitirOSProdutoClick(object sender, RoutedEventArgs e)
+        private void OnEmitirOSProdutoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             EmitirOrdemServicoProduto view = new();
@@ -531,7 +654,7 @@ namespace Producao
             adicionarFilho(new EmitirOrdemServicoProduto(), "EMITIR ORDEM DE SERVIÇO DE PRODUTO", "EMITIR_ORDEM_SERVICO_PRODUTO");
         }
 
-        private void OnAlterarSolicitacaoOSProdutoClick(object sender, RoutedEventArgs e)
+        private void OnAlterarSolicitacaoOSProdutoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             AlterarSolicitacaoOrdemServicoProduto view = new();
@@ -544,32 +667,14 @@ namespace Producao
             adicionarFilho(new AlterarSolicitacaoOrdemServicoProduto(), "ALTERAR SOLICITAR ORDEM DE SERVIÇO DE PRODUTO", "ALTERAR_SOLICITAR_ORDEM_SERVICO_PRODUTO");
         }
 
-        private async void OnPendenciaProducaoClick(object sender, RoutedEventArgs e)
+        private async void OnPendenciaProducaoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                //var data = await db.PendenciaProducaos.ToListAsync();
-                var data = await db.DetalhesPendenciaProducao.ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PENDENCIA_PRODUCAO.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PENDENCIA_PRODUCAO.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync("SELECT * FROM pcp.detalhes_pendencia_producao;");
+                ExportDataTableToExcelAndOpen(data, "PENDENCIA_PRODUCAO.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -580,32 +685,14 @@ namespace Producao
             }
         }
 
-        private async void OnPendenciaProducaoTreinamentoClick(object sender, RoutedEventArgs e)
+        private async void OnPendenciaProducaoTreinamentoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                //var data = await db.PendenciaProducaos.ToListAsync();
-                var data = await db.PendenciaProducaos.ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PENDENCIA_PRODUCAO_TREINAMENTO.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PENDENCIA_PRODUCAO_TREINAMENTO.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync("SELECT * FROM producao.qry_pendencia_producao;");
+                ExportDataTableToExcelAndOpen(data, "PENDENCIA_PRODUCAO_TREINAMENTO.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -616,7 +703,7 @@ namespace Producao
             }
         }
 
-        private void ControleGrupoClick(object sender, RoutedEventArgs e)
+        private void ControleGrupoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ControleGrupo view = new();
@@ -630,7 +717,7 @@ namespace Producao
             adicionarFilho(new ControleGrupo(), "CONTROLE POR GRUPO", "CONTROLE_POR_GRUPO");
         }
 
-        private void OnEntradaEstoqueClick(object sender, RoutedEventArgs e)
+        private void OnEntradaEstoqueClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             MovimentacaoEntrada view = new();
@@ -643,7 +730,7 @@ namespace Producao
             adicionarFilho(new MovimentacaoEntrada(), "MOVIMENTAÇÃO ENTRADA ESTOQUE", "MOVIMENTACAO_ENTRADA_ESTOQUE");
         }
 
-        private void OnSaidaEstoqueClick(object sender, RoutedEventArgs e)
+        private void OnSaidaEstoqueClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             MovimentacaoSaida view = new();
@@ -656,7 +743,7 @@ namespace Producao
             adicionarFilho(new MovimentacaoSaida(), "MOVIMENTAÇÃO SAÍDA ESTOQUE", "MOVIMENTACAO_SAIDA_ESTOQUE");
         }
 
-        private void OnBaixaRequisicaoClick(object sender, RoutedEventArgs e)
+        private void OnBaixaRequisicaoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             BaixaRequisicao view = new();
@@ -669,7 +756,7 @@ namespace Producao
             adicionarFilho(new BaixaRequisicao(), "BAIXA DE REQUISIÇÃO", "BAIXA_REQUISICAO");
         }
 
-        private void OnSaldoEstoqueClick(object sender, RoutedEventArgs e)
+        private void OnSaldoEstoqueClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             SaldoEstoque view = new();
@@ -682,7 +769,7 @@ namespace Producao
             adicionarFilho(new SaldoEstoque(), "SALDO DE ESTOQUE", "SALDO_ESTOQUE");
         }
 
-        private void OnRelatorioCCEClick(object sender, RoutedEventArgs e)
+        private void OnRelatorioCCEClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             RelatorioCCE view = new();
@@ -695,7 +782,7 @@ namespace Producao
             adicionarFilho(new RelatorioCCE(), "RELATÓRIO C.C.E", "RELATORIO_CCE");
         }
 
-        private void OnDigitarCCEClick(object sender, RoutedEventArgs e)
+        private void OnDigitarCCEClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             DigitacaoCCE view = new();
@@ -708,7 +795,7 @@ namespace Producao
             adicionarFilho(new DigitacaoCCE(), "CONTROLE ESTOQUE PROCESSADO", "CONTROLE_ESTOQUE_PROCESSADO");
         }
 
-        private void CompletarChecklistClick(object sender, RoutedEventArgs e)
+        private void CompletarChecklistClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewComplementoCheckListNatal view = new();
@@ -722,31 +809,14 @@ namespace Producao
             adicionarFilho(new ViewComplementoCheckListNatal(), "COMPLETAR CHECKLIST NATAL", "COMPLETAR_CHECKLIST_NATAL");
         }
 
-        private async void OnConsultaCCEClick(object sender, RoutedEventArgs e)
+        private async void OnConsultaCCEClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                var data = await db.DetalhesProcessamentoSemanas.ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CCE.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CCE.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync("SELECT * FROM producao.qry_detalhes_processamento_semana;");
+                ExportDataTableToExcelAndOpen(data, "CCE.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -757,7 +827,7 @@ namespace Producao
             }
         }
 
-        private void OnBaixaServisoClick(object sender, RoutedEventArgs e)
+        private void OnBaixaServisoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ViewComplementoCheckListNatal view = new();
@@ -771,7 +841,7 @@ namespace Producao
             adicionarFilho(new BaixaOrdemServico(), "BAIXA ORDEM DE SERVIÇO", "BAIXA_ORDEM_SERVICO");
         }
 
-        private void OnBaixaProdutoClick(object sender, RoutedEventArgs e)
+        private void OnBaixaProdutoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             BaixaOrdemServicoProduto view = new();
@@ -785,7 +855,7 @@ namespace Producao
             adicionarFilho(new BaixaOrdemServicoProduto(), "BAIXA ORDEM DE SERVIÇO PRODUTO", "BAIXA_ORDEM_SERVICO_PRODUTO");
         }
 
-        private async void OnEmitidasClick(object sender, RoutedEventArgs e)
+        private async void OnEmitidasClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
@@ -793,25 +863,8 @@ namespace Producao
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                    using DatabaseContext db = new();
-                    var data = await db.OrdemServicoEmitidas.ToListAsync();
-
-                    using ExcelEngine excelEngine = new();
-                    IApplication application = excelEngine.Excel;
-
-                    application.DefaultVersion = ExcelVersion.Xlsx;
-
-                    //Create a workbook
-                    IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorksheet worksheet = workbook.Worksheets[0];
-                    //worksheet.IsGridLinesVisible = false;
-                    worksheet.ImportData(data, 1, 1, true);
-
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\EMITIDAS.xlsx");
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\EMITIDAS.xlsx")
-                    {
-                        UseShellExecute = true
-                    });
+                    var data = await QueryDataTableAsync("SELECT * FROM producao.qry_os_emitidas;");
+                    ExportDataTableToExcelAndOpen(data, "EMITIDAS.xlsx");
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -827,7 +880,7 @@ namespace Producao
             }
         }
 
-        private async void OnConcluidasClick(object sender, RoutedEventArgs e)
+        private async void OnConcluidasClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
@@ -835,25 +888,8 @@ namespace Producao
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                    using DatabaseContext db = new();
-                    var data= await db.OrdemServicoEmitidas.Where(os => os.concluida_os_data != null).ToListAsync();
-
-                    using ExcelEngine excelEngine = new();
-                    IApplication application = excelEngine.Excel;
-
-                    application.DefaultVersion = ExcelVersion.Xlsx;
-
-                    //Create a workbook
-                    IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorksheet worksheet = workbook.Worksheets[0];
-                    //worksheet.IsGridLinesVisible = false;
-                    worksheet.ImportData(data, 1, 1, true);
-
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONCLUIDAS.xlsx");
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONCLUIDAS.xlsx")
-                    {
-                        UseShellExecute = true
-                    });
+                    var data = await QueryDataTableAsync("SELECT * FROM producao.qry_os_emitidas WHERE concluida_os_data IS NOT NULL;");
+                    ExportDataTableToExcelAndOpen(data, "CONCLUIDAS.xlsx");
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -869,7 +905,7 @@ namespace Producao
             }
         }
 
-        private async void OnNaoConcluidasClick(object sender, RoutedEventArgs e)
+        private async void OnNaoConcluidasClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
@@ -877,25 +913,8 @@ namespace Producao
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                    using DatabaseContext db = new();
-                    var data = await db.OrdemServicoEmitidas.Where(os => os.concluida_os_data == null).ToListAsync();
-
-                    using ExcelEngine excelEngine = new();
-                    IApplication application = excelEngine.Excel;
-
-                    application.DefaultVersion = ExcelVersion.Xlsx;
-
-                    //Create a workbook
-                    IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorksheet worksheet = workbook.Worksheets[0];
-                    //worksheet.IsGridLinesVisible = false;
-                    worksheet.ImportData(data, 1, 1, true);
-
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\NAO-CONCLUIDAS.xlsx");
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\NAO-CONCLUIDAS.xlsx")
-                    {
-                        UseShellExecute = true
-                    });
+                    var data = await QueryDataTableAsync("SELECT * FROM producao.qry_os_emitidas WHERE concluida_os_data IS NULL;");
+                    ExportDataTableToExcelAndOpen(data, "NAO-CONCLUIDAS.xlsx");
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -911,7 +930,7 @@ namespace Producao
             }
         }
 
-        private async void OnCanceladasClick(object sender, RoutedEventArgs e)
+        private async void OnCanceladasClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
@@ -919,25 +938,8 @@ namespace Producao
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                    using DatabaseContext db = new();
-                    var data = await db.OrdemServicoEmitidas.Where(os => os.cancelada_os == "-1").ToListAsync();
-
-                    using ExcelEngine excelEngine = new();
-                    IApplication application = excelEngine.Excel;
-
-                    application.DefaultVersion = ExcelVersion.Xlsx;
-
-                    //Create a workbook
-                    IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorksheet worksheet = workbook.Worksheets[0];
-                    //worksheet.IsGridLinesVisible = false;
-                    worksheet.ImportData(data, 1, 1, true);
-
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CANCELADAS.xlsx");
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CANCELADAS.xlsx")
-                    {
-                        UseShellExecute = true
-                    });
+                    var data = await QueryDataTableAsync("SELECT * FROM producao.qry_os_emitidas WHERE cancelada_os = @cancelada;", new { cancelada = "-1" });
+                    ExportDataTableToExcelAndOpen(data, "CANCELADAS.xlsx");
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -953,7 +955,7 @@ namespace Producao
             }
         }
 
-        private void OnProgramacaoProducaoClick(object sender, RoutedEventArgs e)
+        private void OnProgramacaoProducaoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             ProgramacaoProducao view = new();
@@ -967,48 +969,37 @@ namespace Producao
             adicionarFilho(new ProgramacaoProducao(), "PROGRAMAÇÃO DE PRODUÇÃO", "PROGRAMACAO_PRODUCAO");
         }
 
-        private void _mdi_CloseButtonClick(object sender, CloseButtonEventArgs e)
-        {
-            var tab = (DocumentContainer)sender;
-            _mdi.Items.Remove(tab.ActiveDocument);
-        }
-
-        private void _mdi_CloseAllTabs(object sender, CloseTabEventArgs e)
-        {
-            _mdi.Items.Clear();
-        }
-
-        private void OnImprimirEtiquetaControlado(object sender, RoutedEventArgs e)
+        private void OnImprimirEtiquetaControlado(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new ImprimirEtiqueta(), "IMPRESSÃO ETIQUETA CONTROLADO", "IMPRESSAO_ETIQUETA_CONTROLADO");
         }
 
-        private void OnVinculoRequisicao(object sender, RoutedEventArgs e)
+        private void OnVinculoRequisicao(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new VincularRequisicao(), "VINCULAR ETIQUETA A REQUISIÇÃO", "VINCULAR_ETIQUETA_REQUISICAO");
         }
 
-        private void OnCadastroPecaConstrucao(object sender, RoutedEventArgs e)
+        private void OnCadastroPecaConstrucao(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new CadastroPeca(), "CADASTRO PEÇAS CONSTRUÇÃO", "CADASTRO_PECAS_CONSTRUCAO");
         }
 
-        private void OnCadastroConstrucao(object sender, RoutedEventArgs e)
+        private void OnCadastroConstrucao(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new EtiquetaConstrucao(), "CADASTRO DE CONSTRUÇÃO SHOPPING", "CADASTRO_CONSTRUCAO_SHOPPING");
         }
 
-        private void OnLiberarProdutoBloqueadoClick(object sender, RoutedEventArgs e)
+        private void OnLiberarProdutoBloqueadoClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new DesbloqueioAcertoEstoque(), "LIBERA PRODUTO BLOQUEADO", "LIBERA_PRODUTO_BLOQUEADO");
         }
 
-        private void OnOpenMemorial(object sender, RoutedEventArgs e)
+        private void OnOpenMemorial(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new ViewMemorial(), "MEMORIAL", "MEMORIAL");
         }
 
-        private async void OnPlanejamentoEstoqueClick(object sender, RoutedEventArgs e)
+        private async void OnPlanejamentoEstoqueClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
@@ -1016,25 +1007,8 @@ namespace Producao
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                    using DatabaseContext db = new();
-                    var data = await db.PlanejamentoEstoques.ToListAsync();
-
-                    using ExcelEngine excelEngine = new();
-                    IApplication application = excelEngine.Excel;
-
-                    application.DefaultVersion = ExcelVersion.Xlsx;
-
-                    //Create a workbook
-                    IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorksheet worksheet = workbook.Worksheets[0];
-                    //worksheet.IsGridLinesVisible = false;
-                    worksheet.ImportData(data, 1, 1, true);
-
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PLANEJAMENTO_ESTOQUE.xlsx");
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PLANEJAMENTO_ESTOQUE.xlsx")
-                    {
-                        UseShellExecute = true
-                    });
+                    var data = await QueryDataTableAsync("SELECT * FROM producao.pcp_planejamento_estoque;");
+                    ExportDataTableToExcelAndOpen(data, "PLANEJAMENTO_ESTOQUE.xlsx");
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -1050,32 +1024,14 @@ namespace Producao
             }
         }
 
-        private async void OnAnaliseCliente(object sender, RoutedEventArgs e)
+        private async void OnAnaliseCliente(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                //var data = await db.PendenciaProducaos.ToListAsync();
-                var data = await db.BaseAnaliseClientes.ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ANALISE_CLIENTE.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ANALISE_CLIENTE.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync("SELECT * FROM producao.qrybaseanalisecliente1b;");
+                ExportDataTableToExcelAndOpen(data, "ANALISE_CLIENTE.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1086,32 +1042,14 @@ namespace Producao
             }
         }
 
-        private async void OnAnalisePlanilha(object sender, RoutedEventArgs e)
+        private async void OnAnalisePlanilha(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                //var data = await db.PendenciaProducaos.ToListAsync();
-                var data = await db.BaseAnalisePlans.ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ANALISE_PLANILHA.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ANALISE_PLANILHA.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync("SELECT * FROM producao.qrybaseanaliseplan;");
+                ExportDataTableToExcelAndOpen(data, "ANALISE_PLANILHA.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1122,37 +1060,21 @@ namespace Producao
             }
         }
 
-        private void OnKitSolucaoCheckList(object sender, RoutedEventArgs e)
+        private void OnKitSolucaoCheckList(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new ViewKitSolucao(), "CHECKLIST KIT SOLUÇÃO", "CHECKLIST_KIT_SOLUCAO");
         }
 
-        private async void OnQueryKitsolucaoGeral(object sender, RoutedEventArgs e)
+        private async void OnQueryKitsolucaoGeral(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                //var data = await db.PendenciaProducaos.ToListAsync();
-                var data = await db.KitSolicaoGeral.Where(c => c.local_shoppings == "KIT SOLUÇÃO").ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\KITSOLUCAO_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\KITSOLUCAO_GERAL.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync(
+                    "SELECT * FROM kitsolucao.query_kitsolicao_geral WHERE local_shoppings = @local;",
+                    new { local = "KIT SOLUÇÃO" });
+                ExportDataTableToExcelAndOpen(data, "KITSOLUCAO_GERAL.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1163,47 +1085,31 @@ namespace Producao
             }
         }
 
-        private void OnControleGeral(object sender, RoutedEventArgs e)
+        private void OnControleGeral(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new ViewControleGeralSolicitacao(), "CONTROLE GERAL DE SOLICITAÇÕES", "CONTROLE_GERAL_SOLICITACOES");
         }
 
-        private void OnProdutosShopping(object sender, RoutedEventArgs e)
+        private void OnProdutosShopping(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new ViewProdutoShopping(), "PRODUTO SHOPPING", "PRODUTO_SHOPPING");
         }
 
-        private void OnKitManutencaoCheckList(object sender, RoutedEventArgs e)
+        private void OnKitManutencaoCheckList(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new ViewKitManutencao(), "CHECKLIST KIT MANUTENÇÃO", "CHECKLIST_KIT_MANUTENCAO");
         }
 
-        private async void OnQueryKitManutencaoGeral(object sender, RoutedEventArgs e)
+        private async void OnQueryKitManutencaoGeral(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                //var data = await db.PendenciaProducaos.ToListAsync();
-                var data = await db.KitSolicaoGeral.Where(c => c.local_shoppings == "KIT MANUTENÇÃO").ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\KITSOLUCAO_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\KITSOLUCAO_GERAL.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync(
+                    "SELECT * FROM kitsolucao.query_kitsolicao_geral WHERE local_shoppings = @local;",
+                    new { local = "KIT MANUTENÇÃO" });
+                ExportDataTableToExcelAndOpen(data, "KITMANUTENCAO_GERAL.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1230,7 +1136,7 @@ namespace Producao
                         BaseSettings.Database = e.PromptResult;
                         txtDataBase.Text = BaseSettings.Database;
                         BaseSettings.connectionString = $"Host={BaseSettings.Host};Database={BaseSettings.Database};Username={BaseSettings.Username};Password={BaseSettings.Password}";
-                        _mdi.Items.Clear();
+                        documentGroup.Items.Clear();
                     }
                 }
             });
@@ -1242,7 +1148,7 @@ namespace Producao
             {
                 BaseSettings.Database = e.PromptResult;
                 txtDataBase.Text = BaseSettings.Database;
-                _mdi.Items.Clear();
+                documentGroup.Items.Clear();
             }
                 
             //var message = "Hello " + result + "!";
@@ -1250,7 +1156,7 @@ namespace Producao
 
         
 
-        private void MenuItemAdv_Click_1(object sender, RoutedEventArgs e)
+        private void MenuItemAdv_Click_1(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*
             var alert = new RadDesktopAlert
@@ -1267,12 +1173,12 @@ namespace Producao
             */
         }
 
-        private void OnRetornoControlado(object sender, RoutedEventArgs e)
+        private void OnRetornoControlado(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new ControladoRecebimento(), "RECEBIMENTO DE CONTROLADO", "RECEBIMENTO_CONTROLADO");
         }
 
-        private void OnRelatorioSigla(object sender, RoutedEventArgs e)
+        private void OnRelatorioSigla(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             RadWindow.Prompt(
                 new DialogParameters
@@ -1292,95 +1198,16 @@ namespace Producao
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                    using DatabaseContext db = new();
-                    var data = await db.ProdutoControladoRecebimento.Where(c => c.sigla == result).ToListAsync();
+                    var data = await QueryListAsync<ProdutoControladoRecebimentoModel>(
+                        "SELECT * FROM expedicao.view_produtos_controlas_recebimento WHERE sigla = @sigla;",
+                        new { sigla = result });
 
-                    using ExcelEngine excelEngine = new();
-                    IApplication application = excelEngine.Excel;
-
-                    application.DefaultVersion = ExcelVersion.Xlsx;
-
-                    //Create a workbook
-                    IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorksheet worksheet = workbook.Worksheets[0];
-
-                    worksheet.Range["A1"].Text = $"CONTROLADOS RETORNO SIGLA - {result}";
-                    worksheet.Range["A1:F1"].Merge();
-                    worksheet.Range["A1:F1"].CellStyle.Font.Bold = true;
-                    worksheet.Range["A1:F1"].CellStyle.Font.Size = 20;
-                    worksheet.Range["A1:F1"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                    worksheet.Range["A1:F1"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
-
-                    IStyle headerStyle = workbook.Styles.Add("HeaderStyle");
-                    headerStyle.BeginUpdate();
-                    headerStyle.Font.Bold = true;
-                    headerStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    headerStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                    headerStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    headerStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    headerStyle.EndUpdate();
-
-                    IStyle bodyStyle = workbook.Styles.Add("bodyStyle");
-                    bodyStyle.BeginUpdate();
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.EndUpdate();
-
-                    worksheet.Range["A3"].Text = "COD.";
-                    worksheet.Range["B3"].Text = "PLANILHA";
-                    worksheet.Range["C3"].Text = "DESCIÇÃO";
-                    worksheet.Range["D3"].Text = "UNID.";
-                    worksheet.Range["E3"].Text = "EXPEDIDO";
-                    worksheet.Range["F3"].Text = "RETORNO";
-
-                    worksheet.Rows[2].CellStyle = headerStyle;
-
-                    int i = 3;
-                    foreach (var row in data)
-                    {
-                        i++;
-                        worksheet.Range[$"A{i}"].Number = System.Convert.ToDouble(row.codcompladicional);
-                        worksheet.Range[$"A{i}"].CellStyle = bodyStyle;
-
-                        worksheet.Range[$"B{i}"].Text = row.planilha;
-                        worksheet.Range[$"B{i}"].CellStyle = bodyStyle;
-
-                        worksheet.Range[$"C{i}"].Text = row.descricao;
-                        worksheet.Range[$"C{i}"].CellStyle = bodyStyle;
-
-                        worksheet.Range[$"D{i}"].Text = row.unidade;
-                        worksheet.Range[$"D{i}"].CellStyle = bodyStyle;
-
-                        worksheet.Range[$"E{i}"].Number = System.Convert.ToDouble(row.solucao_manutencao) + System.Convert.ToDouble(row.expedido);
-                        worksheet.Range[$"E{i}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"E{i}"].NumberFormat = "0.00"; //"#,##0.00"; 
-
-                        worksheet.Range[$"F{i}"].Text = "";
-                        worksheet.Range[$"F{i}"].CellStyle = bodyStyle;
-
-                    }
-
-                    worksheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
-                    worksheet.PageSetup.FooterMargin = 0;
-                    worksheet.PageSetup.HeaderMargin = 0;
-                    worksheet.PageSetup.LeftMargin = 0;
-                    worksheet.PageSetup.RightMargin = 0;
-                    worksheet.PageSetup.TopMargin = 0;
-                    worksheet.PageSetup.BottomMargin = 0;
-                    worksheet.PageSetup.CenterHorizontally = true;
-                    worksheet.PageSetup.CenterVertically = false;
-
-                    worksheet.PageSetup.PrintTitleRows = "$1:$3";
-
-                    worksheet.UsedRange.AutofitColumns();
-
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CONTROLADO_{result}.xlsx");
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CONTROLADO_{result}.xlsx")
-                    {
-                        UseShellExecute = true
-                    });
+                    ExportControladoRetornoToExcelAndOpen(
+                        data,
+                        $"CONTROLADOS RETORNO SIGLA - {result}",
+                        "PLANILHA",
+                        row => row.planilha,
+                        $"RELATORIO_CONTROLADO_{result}.xlsx");
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -1392,7 +1219,7 @@ namespace Producao
             }
         }
 
-        private void OnRelatorioPlanilha(object sender, RoutedEventArgs e)
+        private void OnRelatorioPlanilha(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             RadWindow.Prompt(
                 new DialogParameters
@@ -1412,95 +1239,19 @@ namespace Producao
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                    using DatabaseContext db = new();
-                    var data = await db.ProdutoControladoRecebimento.Where(c => c.planilha.Contains(result) && !c.sigla.Contains("SROOM")).ToListAsync();
+                    var data = await QueryListAsync<ProdutoControladoRecebimentoModel>(
+                        @"SELECT *
+                          FROM expedicao.view_produtos_controlas_recebimento
+                          WHERE planilha LIKE @planilha
+                            AND (sigla IS NULL OR sigla NOT LIKE @sigla);",
+                        new { planilha = $"%{result}%", sigla = "%SROOM%" });
 
-                    using ExcelEngine excelEngine = new();
-                    IApplication application = excelEngine.Excel;
-
-                    application.DefaultVersion = ExcelVersion.Xlsx;
-
-                    //Create a workbook
-                    IWorkbook workbook = application.Workbooks.Create(1);
-                    IWorksheet worksheet = workbook.Worksheets[0];
-
-                    worksheet.Range["A1"].Text = $"CONTROLADOS RETORNO PLANILHA - {result}";
-                    worksheet.Range["A1:F1"].Merge();
-                    worksheet.Range["A1:F1"].CellStyle.Font.Bold = true;
-                    worksheet.Range["A1:F1"].CellStyle.Font.Size = 20;
-                    worksheet.Range["A1:F1"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                    worksheet.Range["A1:F1"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
-
-                    IStyle headerStyle = workbook.Styles.Add("HeaderStyle");
-                    headerStyle.BeginUpdate();
-                    headerStyle.Font.Bold = true;
-                    headerStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    headerStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                    headerStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    headerStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    headerStyle.EndUpdate();
-
-                    IStyle bodyStyle = workbook.Styles.Add("bodyStyle");
-                    bodyStyle.BeginUpdate();
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                    bodyStyle.EndUpdate();
-
-                    worksheet.Range["A3"].Text = "COD.";
-                    worksheet.Range["B3"].Text = "SIGLA";
-                    worksheet.Range["C3"].Text = "DESCIÇÃO";
-                    worksheet.Range["D3"].Text = "UNID.";
-                    worksheet.Range["E3"].Text = "EXPEDIDO";
-                    worksheet.Range["F3"].Text = "RETORNO";
-
-                    worksheet.Rows[2].CellStyle = headerStyle;
-
-                    int i = 3;
-                    foreach (var row in data)
-                    {
-                        i++;
-                        worksheet.Range[$"A{i}"].Number = System.Convert.ToDouble(row.codcompladicional);
-                        worksheet.Range[$"A{i}"].CellStyle = bodyStyle;
-
-                        worksheet.Range[$"B{i}"].Text = row.sigla;
-                        worksheet.Range[$"B{i}"].CellStyle = bodyStyle;
-
-                        worksheet.Range[$"C{i}"].Text = row.descricao;
-                        worksheet.Range[$"C{i}"].CellStyle = bodyStyle;
-
-                        worksheet.Range[$"D{i}"].Text = row.unidade;
-                        worksheet.Range[$"D{i}"].CellStyle = bodyStyle;
-
-                        worksheet.Range[$"E{i}"].Number = System.Convert.ToDouble(row.solucao_manutencao) + System.Convert.ToDouble(row.expedido);
-                        worksheet.Range[$"E{i}"].CellStyle = bodyStyle;
-                        worksheet.Range[$"E{i}"].NumberFormat = "0.00"; //"#,##0.00"; 
-
-                        worksheet.Range[$"F{i}"].Text = "";
-                        worksheet.Range[$"F{i}"].CellStyle = bodyStyle;
-
-                    }
-
-                    worksheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
-                    worksheet.PageSetup.FooterMargin = 0;
-                    worksheet.PageSetup.HeaderMargin = 0;
-                    worksheet.PageSetup.LeftMargin = 0;
-                    worksheet.PageSetup.RightMargin = 0;
-                    worksheet.PageSetup.TopMargin = 0;
-                    worksheet.PageSetup.BottomMargin = 0;
-                    worksheet.PageSetup.CenterHorizontally = true;
-                    worksheet.PageSetup.CenterVertically = false;
-
-                    worksheet.PageSetup.PrintTitleRows = "$1:$3";
-
-                    worksheet.UsedRange.AutofitColumns();
-
-                    workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CONTROLADO_{result}.xlsx");
-                    Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\RELATORIO_CONTROLADO_{result}.xlsx")
-                    {
-                        UseShellExecute = true
-                    });
+                    ExportControladoRetornoToExcelAndOpen(
+                        data,
+                        $"CONTROLADOS RETORNO PLANILHA - {result}",
+                        "SIGLA",
+                        row => row.sigla,
+                        $"RELATORIO_CONTROLADO_{result}.xlsx");
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -1512,15 +1263,11 @@ namespace Producao
             }
         }
 
-        private async void OnHistoricoChecklistClick(object sender, RoutedEventArgs e)
+        private async void OnHistoricoChecklistClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-
-                using DatabaseContext db = new();
-                //var data = await db.PendenciaProducaos.ToListAsync();
-                //var data = await db.HistoricoCheckList.Where(h => h.ano != Convert.ToInt16(BaseSettings.Database)).ToListAsync();
 
                 const string sql = @"
                     SELECT ano, sigla, tema, ordem, item_memorial, local_shoppings, obs, orient_montagem, orient_desmont, qry3descricoes.planilha, qtd_chk, qry3descricoes.codcompladicional, qry3descricoes.descricao_completa, qtd_comple, m3 AS m3_media_produto_unitario, m3 * qtd_comple::numeric(12,2) AS m3_media_produto_total
@@ -1532,23 +1279,7 @@ namespace Producao
                 await using var conn = new NpgsqlConnection(BaseSettings.connectionString);
                 await conn.OpenAsync();
                 var data = await conn.QueryAsync<HistoricoCheckListExcelDTO>(sql);
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data.ToList(), 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\HISTORICO-CHECK-LIST.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\HISTORICO-CHECK-LIST.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                ExportToExcelAndOpen(data.ToList(), "HISTORICO-CHECK-LIST.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1566,8 +1297,6 @@ namespace Producao
 
             try
             {
-                var appSettings = ConfigurationManager.GetSection("appSettings") as NameValueCollection;
-                BaseSettings.Username = appSettings[0];
                 txtUsername.Text = BaseSettings.Username;
             }
             catch (Exception ex)
@@ -1592,37 +1321,21 @@ namespace Producao
             */
         }
 
-        private void OnKitDesmontagemCheckList(object sender, RoutedEventArgs e)
+        private void OnKitDesmontagemCheckList(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new ViewKitDesmontagem(), "CHECKLIST KIT DESMONTAGEM", "CHECKLIST_KIT_DESMONTAGEM");
         }
 
-        private async void OnQueryKitDesmontagemGeral(object sender, RoutedEventArgs e)
+        private async void OnQueryKitDesmontagemGeral(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                //var data = await db.PendenciaProducaos.ToListAsync();
-                var data = await db.KitSolicaoGeral.Where(c => c.local_shoppings == "KIT DESMONTAGEM").ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\KITDESMONTAGEM_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\KITDESMONTAGEM_GERAL.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync(
+                    "SELECT * FROM kitsolucao.query_kitsolicao_geral WHERE local_shoppings = @local;",
+                    new { local = "KIT DESMONTAGEM" });
+                ExportDataTableToExcelAndOpen(data, "KITDESMONTAGEM_GERAL.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1633,41 +1346,96 @@ namespace Producao
             }
         }
 
-        private void OnRetornoEtiquetaManualClick(object sender, RoutedEventArgs e)
+        private static void ExportKitToXlsx<T>(IEnumerable<T> data, string caminhoArquivo)
+        {
+            var workbook = new Telerik.Windows.Documents.Spreadsheet.Model.Workbook();
+            var worksheet = workbook.Worksheets.Add();
+            worksheet.Name = "Consulta";
+
+            var properties = typeof(T).GetProperties();
+
+            for (var column = 0; column < properties.Length; column++)
+            {
+                worksheet.Cells[0, column].SetValueAsText(properties[column].Name);
+            }
+
+            var row = 1;
+            foreach (var item in data)
+            {
+                for (var column = 0; column < properties.Length; column++)
+                {
+                    var value = properties[column].GetValue(item);
+                    var cell = worksheet.Cells[row, column];
+
+                    switch (value)
+                    {
+                        case null:
+                            cell.SetValueAsText(string.Empty);
+                            break;
+                        case DateTime dateTime:
+                            cell.SetValueAsText(dateTime.ToString("dd/MM/yyyy HH:mm:ss"));
+                            break;
+                        case DateOnly dateOnly:
+                            cell.SetValueAsText(dateOnly.ToString("dd/MM/yyyy"));
+                            break;
+                        case byte byteValue:
+                            cell.SetValue(byteValue);
+                            break;
+                        case short shortValue:
+                            cell.SetValue(shortValue);
+                            break;
+                        case int intValue:
+                            cell.SetValue(intValue);
+                            break;
+                        case long longValue:
+                            cell.SetValue((double)longValue);
+                            break;
+                        case decimal decimalValue:
+                            cell.SetValue((double)decimalValue);
+                            break;
+                        case float floatValue:
+                            cell.SetValue((double)floatValue);
+                            break;
+                        case double doubleValue:
+                            cell.SetValue(doubleValue);
+                            break;
+                        case bool boolValue:
+                            cell.SetValueAsText(boolValue ? "SIM" : "NÃO");
+                            break;
+                        default:
+                            cell.SetValueAsText(value.ToString() ?? string.Empty);
+                            break;
+                    }
+                }
+
+                row++;
+            }
+
+            worksheet.Cells[0, 0, 0, Math.Max(properties.Length - 1, 0)].SetIsBold(true);
+
+            using var output = File.Open(caminhoArquivo, FileMode.Create);
+            new Telerik.Windows.Documents.Spreadsheet.FormatProviders.OpenXml.Xlsx.XlsxFormatProvider()
+                .Export(workbook, output, TimeSpan.FromSeconds(30));
+        }
+
+        private void OnRetornoEtiquetaManualClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new ControladoEtiquetaRetornoManual(), "CONTOLADO RETORNO MANUAL", "CONTOLADO_RETORNO_MANUAL");
         }
 
-        private void OnEmitirOsDesbaiamento(object sender, RoutedEventArgs e)
+        private void OnEmitirOsDesbaiamento(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new EmitirOSDesbaiamento(), "EMITIR ORDEM DE SERVIÇO DE DESBAIAMENTO", "EMITIR_ORDEM_SERVICO_DESBAIAMENTO");
         }
 
-        private async void OnConsultaGeralClick(object sender, RoutedEventArgs e)
+        private async void OnConsultaGeralClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using DatabaseContext db = new();
-                var data = await db.qryGeralRequisicaos.ToListAsync();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(data, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONTROLADO_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONTROLADO_GERAL.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                var data = await QueryDataTableAsync("SELECT * FROM producao.qry_geral_requisicao;");
+                ExportDataTableToExcelAndOpen(data, "CONTROLADO_GERAL.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1678,46 +1446,11 @@ namespace Producao
             }
         }
 
-        private async void OnConsultaReceitaRequisicao(object sender, RoutedEventArgs e)
+        private async void OnConsultaReceitaRequisicao(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-
-                //using DatabaseContext db = new();
-                //var data = await db.qryGeralRequisicaos.ToListAsync();
-                /*
-                var resultado = await db.RequisicaoReceitas
-                    .Join(
-                        db.Descricoes,
-                        a => a.codcompladicional_produto,
-                        b => b.codcompladicional,
-                        (a, b) => new { ModeloA = a, ModeloB = b })
-                    .Join(
-                        db.Descricoes,
-                        ab => ab.ModeloA.codcompladicional_produto,
-                        c => c.codcompladicional,
-                        (ab, c) => new { ab.ModeloA, ab.ModeloB, ModeloC = c })
-                    .Select(joinResult => new
-                    {
-                        joinResult.ModeloA.codcompladicional_produto,
-
-                        joinResult.ModeloB.planilha,
-                        joinResult.ModeloB.descricao_completa,
-                        joinResult.ModeloB.unidade,
-
-                        joinResult.ModeloA.codcompladicional_receita,
-                        planilha_receita = joinResult.ModeloC.planilha,
-                        descricao_completa_receita = joinResult.ModeloC.descricao_completa,
-                        unidade_receita = joinResult.ModeloC.unidade,
-
-                        joinResult.ModeloA.quantidade,
-                        joinResult.ModeloA.inserido_por,
-                        joinResult.ModeloA.inserido_em
-                    })
-                    //.Where(t => t.planilha == planilha)
-                    .ToListAsync();
-                */
 
                 string sql = @"
                     SELECT 
@@ -1741,23 +1474,7 @@ namespace Producao
                 connection.Open();
 
                 var resultado = connection.Query<RequisicaoReceitaDTO>(sql).ToList();
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                worksheet.ImportData(resultado, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_RECEITA_GERAL.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_RECEITA_GERAL.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                ExportToExcelAndOpen(resultado, "CONSULTA_RECEITA_GERAL.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1768,32 +1485,32 @@ namespace Producao
             }
         }
 
-        private void OnCargaEletrica(object sender, RoutedEventArgs e)
+        private void OnCargaEletrica(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new CargaEletrica(), "CARGA ELÉTRICA APROXIMADA", "CARGA_ELETRICA");
         }
 
-        private void OnEstabilidade(object sender, RoutedEventArgs e)
+        private void OnEstabilidade(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new Estabilidade(), "RELATÓRIO DE ESTABILIDADE", "ESTABILIDADE");
         }
 
-        private void OnInflamabilidade(object sender, RoutedEventArgs e)
+        private void OnInflamabilidade(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new Inflamabilidade(), "RELATÓRIO DE INFLAMABILIDADE", "INFLAMABILIDADE");
         }
 
-        private void OnOpenRelPlanClick(object sender, RoutedEventArgs e)
+        private void OnOpenRelPlanClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new Relplan(), "RELPLAN", "RELPLAN");
         }
 
-        private void OnAreasTemas(object sender, RoutedEventArgs e)
+        private void OnAreasTemas(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new AreaTema(), "ÁREAS TEMAS", "AREAS_TEMAS");
         }
 
-        private async void OnConsultaEntradaEstoqueClick(object sender, RoutedEventArgs e)
+        private async void OnConsultaEntradaEstoqueClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
@@ -1819,11 +1536,9 @@ namespace Producao
                     ORDER BY planilha, descricao_completa;
                 ";
 
-                using var connection = new NpgsqlConnection(BaseSettings.connectionString);
-                connection.Open();
-
-                //var resultado = connection.Query<Object>(sql).ToList();
-                var resultado = connection.Query(sql).ToList();
+                await using var connection = new NpgsqlConnection(BaseSettings.connectionString);
+                await connection.OpenAsync();
+                var resultado = (await connection.QueryAsync(sql)).ToList();
                 DataTable table = new();
 
                 // Define colunas com tipos específicos
@@ -1850,31 +1565,13 @@ namespace Producao
                     foreach (DataColumn col in table.Columns)
                     {
                         // Verifica se a chave existe no dicionário antes de atribuir
-                        novaLinha[col.ColumnName] = dict.TryGetValue(col.ColumnName, out var valor) && valor != null
-                            ? valor
-                            : DBNull.Value;
+                        dict.TryGetValue(col.ColumnName, out var valor);
+                        novaLinha[col.ColumnName] = ConvertDataTableValue(valor, col.DataType);
                     }
 
                     table.Rows.Add(novaLinha);
                 }
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                //worksheet.ImportData(resultado, 1, 1, true);
-                worksheet.ImportDataTable(table, true, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_MOVEMENTACAO_ENTRADA.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_MOVEMENTACAO_ENTRADA.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                ExportDataTableToExcelAndOpen(table, "CONSULTA_MOVEMENTACAO_ENTRADA.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1885,7 +1582,7 @@ namespace Producao
             }
         }
 
-        private async void OnConsultaSaidaEstoqueClick(object sender, RoutedEventArgs e)
+        private async void OnConsultaSaidaEstoqueClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             try
             {
@@ -1914,11 +1611,9 @@ namespace Producao
                     ORDER BY planilha, descricao_completa;
                 ";
 
-                using var connection = new NpgsqlConnection(BaseSettings.connectionString);
-                connection.Open();
-
-                //var resultado = connection.Query<Object>(sql).ToList();
-                var resultado = connection.Query(sql).ToList();
+                await using var connection = new NpgsqlConnection(BaseSettings.connectionString);
+                await connection.OpenAsync();
+                var resultado = (await connection.QueryAsync(sql)).ToList();
                 DataTable table = new();
 
                 // Define colunas com tipos específicos
@@ -1931,6 +1626,7 @@ namespace Producao
                 table.Columns.Add("saida_data", typeof(DateTime));
                 table.Columns.Add("saida_por", typeof(string));
                 table.Columns.Add("codigo_saida", typeof(int));
+                table.Columns.Add("observacao", typeof(string));
                 table.Columns.Add("local_galpao", typeof(string));
                 table.Columns.Add("num_requisicao", typeof(int));
                 table.Columns.Add("caminho", typeof(string));
@@ -1947,31 +1643,13 @@ namespace Producao
                     foreach (DataColumn col in table.Columns)
                     {
                         // Verifica se a chave existe no dicionário antes de atribuir
-                        novaLinha[col.ColumnName] = dict.TryGetValue(col.ColumnName, out var valor) && valor != null
-                            ? valor
-                            : DBNull.Value;
+                        dict.TryGetValue(col.ColumnName, out var valor);
+                        novaLinha[col.ColumnName] = ConvertDataTableValue(valor, col.DataType);
                     }
 
                     table.Rows.Add(novaLinha);
                 }
-
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-
-                application.DefaultVersion = ExcelVersion.Xlsx;
-
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
-                IWorksheet worksheet = workbook.Worksheets[0];
-                //worksheet.IsGridLinesVisible = false;
-                //worksheet.ImportData(resultado, 1, 1, true);
-                worksheet.ImportDataTable(table, true, 1, 1, true);
-
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_MOVEMENTACAO_ENTRADA.xlsx");
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\CONSULTA_MOVEMENTACAO_ENTRADA.xlsx")
-                {
-                    UseShellExecute = true
-                });
+                ExportDataTableToExcelAndOpen(table, "CONSULTA_MOVEMENTACAO_SAIDA.xlsx");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -1982,14 +1660,42 @@ namespace Producao
             }
         }
 
-        private void OnProdutosCusto(object sender, RoutedEventArgs e)
+        private void OnProdutosCusto(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new CustoProduto(), "CUSTO PRODUTO", "CUSTO_PRODUTO");
         }
 
-        private void OnOpenControlePlantaClick(object sender, RoutedEventArgs e)
+        private void OnOpenControlePlantaClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             adicionarFilho(new Planta(), "CONTROLE PLANTAS", "CONTROLE_PLANTA");
         }
+
+        private async void OnAtualizarSistemaClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
+        {
+            var menuItem = sender as RadMenuItem;
+            if (menuItem != null)
+                menuItem.IsEnabled = false;
+
+            try
+            {
+                await CheckForUpdatesAsync();
+            }
+            finally
+            {
+                if (menuItem != null)
+                    menuItem.IsEnabled = true;
+            }
+        }
+
+        private void OnSobreSistemaClick(object sender, Telerik.Windows.RadRoutedEventArgs e)
+        {
+            MessageBox.Show(
+                $"Sistema Integrado de Gerenciamento - Produção\n\nVersão atual: {CURRENT_VERSION}",
+                "Sobre o sistema",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
     }
 }
+

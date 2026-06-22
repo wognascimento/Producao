@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using ClosedXML.Excel;
+using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-using Syncfusion.Windows.Tools.Controls;
-using Syncfusion.XlsIO;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,6 +14,8 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.OrdemServico.Produto
 {
@@ -37,8 +38,8 @@ namespace Producao.Views.OrdemServico.Produto
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ProgramacaoProducaoViewModel vm = (ProgramacaoProducaoViewModel)DataContext;
-                vm.Locais = await Task.Run(vm.GetLocalicacoesAsync);
-                vm.Programacoes = await Task.Run(vm.GetProgramacaoItensAsync);
+                vm.Locais = await vm.GetLocalicacoesAsync();
+                vm.Programacoes = await vm.GetProgramacaoItensAsync();
 
                 txtFila.Text = vm.Programacoes.Where(p => p.programacao_status == "FILA/M.O").Count().ToString(); //DCount("[num_os]", "qry_programacao_producao_global_producao", "[programacao_status] = 'FILA/M.O'")
                 txtDiretoria.Text = vm.Programacoes.Where(p => p.programacao_status == "ESPAÇO FÍSICO").Count().ToString();//DCount("[num_os]", "qry_programacao_producao_global_producao", "[programacao_status] = 'ESPAÇO FÍSICO'")
@@ -61,13 +62,18 @@ namespace Producao.Views.OrdemServico.Produto
 
         private async void LocaisSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var comboBox = (ComboBoxAdv)sender; //= { Syncfusion.Windows.Tools.Controls.ComboBoxAdv Items.Count: 5}
+            var comboBox = (RadComboBox)sender;
             var local = (SetorProducaoModel)comboBox.SelectedItem;
+            if (local is null)
+            {
+                return;
+            }
+
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ProgramacaoProducaoViewModel vm = (ProgramacaoProducaoViewModel)DataContext;
-                vm.Setores = await Task.Run(() => vm.GetSetorsAsync(local.localizacao));
+                vm.Setores = await vm.GetSetorsAsync(local.localizacao);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -80,41 +86,33 @@ namespace Producao.Views.OrdemServico.Produto
         private void SetoresSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             //SelectedItems = Count = 2
-            var comboBox = (ComboBoxAdv)sender; //= { Syncfusion.Windows.Tools.Controls.ComboBoxAdv Items.Count: 5}
-            var setores = comboBox.SelectedItems;
-
-            /*
-             * 'System.Collections.ObjectModel.ObservableCollection`1[System.Object]' 
-             * 'System.Collections.Generic.List`1[Producao.SetorModel]'.'
-            */
+            var comboBox = (RadComboBox)sender;
+            var setor = comboBox.SelectedItem as SetorModel;
         }
 
-        private void OnAddNewRowInitiating(object sender, Syncfusion.UI.Xaml.Grid.AddNewRowInitiatingEventArgs e)
+        private void OnAddNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
 
         }
 
-        private void OnCurrentCellDropDownSelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellDropDownSelectionChangedEventArgs e)
-        {
-
-        }
-
-        private void OnRowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
             //UpdateProgramacaoAsync(ProdutoServicoModel produtoServico)
 
         }
 
-        private async void OnRowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private async void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
             try
             {
-                // RowData = { Producao.DataBase.Model.ProgramacaoProducaoModel}
-                ProgramacaoProducaoModel data = (ProgramacaoProducaoModel)e.RowData;
+                if (e.EditOperationType == GridViewEditOperationType.None || e.Row.Item is not ProgramacaoProducaoModel data)
+                {
+                    return;
+                }
+
                 ProgramacaoProducaoViewModel vm = (ProgramacaoProducaoViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                await Task.Run(
-                    () => vm.UpdateProgramacaoAsync(
+                await vm.UpdateProgramacaoAsync(
                         new TGlobalModel
                         {
                             num_os = data.num_os, 
@@ -123,7 +121,7 @@ namespace Producao.Views.OrdemServico.Produto
                             programacao_inserido_por = Environment.UserName, 
                             programacao_inserido_data = DateTime.Now
                         })
-                    );
+                    ;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -139,104 +137,65 @@ namespace Producao.Views.OrdemServico.Produto
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ProgramacaoProducaoViewModel vm = (ProgramacaoProducaoViewModel)DataContext;
-                var filteredResult = programacao.View.Records.Select(recordentry => recordentry.Data);
-                var itens = programacao.View.Records.Count;
+                var filteredResult = programacao.Items.OfType<ProgramacaoProducaoModel>().ToList();
+                var itens = filteredResult.Count;
 
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-                application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = application.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
-                IWorksheet worksheet = workbook.Worksheets[0];
-
-                IStyle headerStyle;
-                IStyle bodyStyle;
-
-                bodyStyle = workbook.Styles.Add("BodyStyle");
-                bodyStyle.BeginUpdate();
-                bodyStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                bodyStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                bodyStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                bodyStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                bodyStyle.Borders[ExcelBordersIndex.EdgeTop].Color = ExcelKnownColors.Grey_25_percent;
-                bodyStyle.Borders[ExcelBordersIndex.EdgeBottom].Color = ExcelKnownColors.Grey_25_percent;
-                bodyStyle.Borders[ExcelBordersIndex.EdgeLeft].Color = ExcelKnownColors.Grey_25_percent;
-                bodyStyle.Borders[ExcelBordersIndex.EdgeRight].Color = ExcelKnownColors.Grey_25_percent;
-                bodyStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                bodyStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                bodyStyle.Font.Bold = true;
-                bodyStyle.WrapText = true;
-                bodyStyle.EndUpdate();
-
-                headerStyle = workbook.Styles.Add("headerStyle");
-                headerStyle.BeginUpdate();
-                headerStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
-                headerStyle.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
-                headerStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                headerStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                headerStyle.Borders[ExcelBordersIndex.EdgeTop].Color = ExcelKnownColors.Grey_25_percent;
-                headerStyle.Borders[ExcelBordersIndex.EdgeBottom].Color = ExcelKnownColors.Grey_25_percent;
-                headerStyle.Borders[ExcelBordersIndex.EdgeLeft].Color = ExcelKnownColors.Grey_25_percent;
-                headerStyle.Borders[ExcelBordersIndex.EdgeRight].Color = ExcelKnownColors.Grey_25_percent;
-                headerStyle.Font.Size = 8;
-                headerStyle.HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                headerStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                //headerStyle.Font.FontName = "Calibri (Detalhe)";
-                headerStyle.WrapText = true;
-                //headerStyle.ShrinkToFit = true;
-                headerStyle.EndUpdate();
+                var filePath = BaseSettings.ResolveImpressosPath("PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
+                using var workbook = new XLWorkbook(BaseSettings.ResolveModeloPath("PROGRAMACAO_PROGRAMACAO_MODELO.xlsx"));
+                var worksheet = workbook.Worksheet(1);
 
                 int _l = 9;
 
                 foreach (ProgramacaoProducaoModel item in filteredResult)
                 {
 
-                    worksheet.Range[$"B{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"B{_l}"].Number = item.programacao_ordem.GetValueOrDefault(); //item.programacao_ordem.Value;
+                    ApplyHeaderStyle(worksheet.Cell(_l, 2));
+                    worksheet.Cell(_l, 2).Value = item.programacao_ordem.GetValueOrDefault(); //item.programacao_ordem.Value;
 
-                    worksheet.Range[$"C{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"C{_l}"].DateTime = item.data_de_expedicao.GetValueOrDefault();
+                    ApplyHeaderStyle(worksheet.Cell(_l, 3));
+                    worksheet.Cell(_l, 3).Value = item.data_de_expedicao.GetValueOrDefault();
                     
-                    worksheet.Range[$"D{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"D{_l}"].Value = item.cliente_os;
+                    ApplyHeaderStyle(worksheet.Cell(_l, 4));
+                    worksheet.Cell(_l, 4).Value = item.cliente_os ?? string.Empty;
                     
-                    worksheet.Range[$"E{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"E{_l}"].Number = item.cod_compl_adicional.GetValueOrDefault();
+                    ApplyHeaderStyle(worksheet.Cell(_l, 5));
+                    worksheet.Cell(_l, 5).Value = item.cod_compl_adicional.GetValueOrDefault();
                     
-                    worksheet.Range[$"F{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"F{_l}"].Value = item.planilha;
+                    ApplyHeaderStyle(worksheet.Cell(_l, 6));
+                    worksheet.Cell(_l, 6).Value = item.planilha ?? string.Empty;
                     
-                    worksheet.Range[$"G{_l}:L{_l}"].Merge();
-                    worksheet.Range[$"G{_l}:L{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"G{_l}:L{_l}"].Value = item.descricao_completa;
-                    worksheet.Range[$"G{_l}:L{_l}"].RowHeight = 26;
+                    var descricaoRange = worksheet.Range(_l, 7, _l, 12).Merge();
+                    ApplyHeaderStyle(descricaoRange);
+                    descricaoRange.Value = item.descricao_completa ?? string.Empty;
+                    worksheet.Row(_l).Height = 26;
 
-                    worksheet.Range[$"M{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"M{_l}"].Number = item.num_os.GetValueOrDefault();
+                    ApplyHeaderStyle(worksheet.Cell(_l, 13));
+                    worksheet.Cell(_l, 13).Value = item.num_os.GetValueOrDefault();
                     
-                    worksheet.Range[$"N{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"N{_l}"].Number = item.quantidade_os.GetValueOrDefault();
+                    ApplyHeaderStyle(worksheet.Cell(_l, 14));
+                    worksheet.Cell(_l, 14).Value = item.quantidade_os.GetValueOrDefault();
 
-                    worksheet.Range[$"O{_l}:P{_l}"].Merge();
-                    worksheet.Range[$"O{_l}:P{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"O{_l}:P{_l}"].Value = item.programacao_status;
+                    var statusRange = worksheet.Range(_l, 15, _l, 16).Merge();
+                    ApplyHeaderStyle(statusRange);
+                    statusRange.Value = item.programacao_status ?? string.Empty;
 
-                    worksheet.Range[$"Q{_l}:R{_l}"].Merge();
-                    worksheet.Range[$"Q{_l}:R{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"Q{_l}:R{_l}"].Value = item.programacao_observacao;
+                    var observacaoRange = worksheet.Range(_l, 17, _l, 18).Merge();
+                    ApplyHeaderStyle(observacaoRange);
+                    observacaoRange.Value = item.programacao_observacao ?? string.Empty;
 
                     //worksheet.Range[$"R{_l}:S{_l}"].Merge();
-                    worksheet.Range[$"S{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"S{_l}"].Text = item.meta_peca_hora;
+                    ApplyHeaderStyle(worksheet.Cell(_l, 19));
+                    worksheet.Cell(_l, 19).Value = item.meta_peca_hora ?? string.Empty;
                     
-                    worksheet.Range[$"T{_l}"].CellStyle = headerStyle;
-                    worksheet.Range[$"T{_l}"].Number = item.ht.GetValueOrDefault();
+                    ApplyHeaderStyle(worksheet.Cell(_l, 20));
+                    worksheet.Cell(_l, 20).Value = item.ht.GetValueOrDefault();
 
                     _l++;
                 }
 
-                workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
+                workbook.SaveAs(filePath);
                 
-                Process.Start(new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PROGRAMACAO_PROGRAMACAO_MODELO.xlsx")
+                Process.Start(new ProcessStartInfo(filePath)
                 {
                     UseShellExecute = true
                 });
@@ -250,6 +209,28 @@ namespace Producao.Views.OrdemServico.Produto
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
 
+        }
+
+        private static void ApplyHeaderStyle(IXLCell cell)
+        {
+            ApplyHeaderStyle(cell.Style);
+        }
+
+        private static void ApplyHeaderStyle(IXLRange range)
+        {
+            ApplyHeaderStyle(range.Style);
+        }
+
+        private static void ApplyHeaderStyle(IXLStyle style)
+        {
+            style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            style.Border.InsideBorder = XLBorderStyleValues.Thin;
+            style.Border.OutsideBorderColor = XLColor.FromArgb(191, 191, 191);
+            style.Border.InsideBorderColor = XLColor.FromArgb(191, 191, 191);
+            style.Font.FontSize = 8;
+            style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+            style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+            style.Alignment.WrapText = true;
         }
     }
 
@@ -292,6 +273,23 @@ namespace Producao.Views.OrdemServico.Produto
         {
             get { return _programacoes; }
             set { _programacoes = value; RaisePropertyChanged("Programacoes"); }
+        }
+
+        private ObservableCollection<string> _distribuirOS =
+        [
+            "FILA/M.O",
+            "EM ANDAMENTO",
+            "EMBALAGEM/EXPEDIÇÃO",
+            "ESPAÇO FÍSICO",
+            "INDEFINIDO",
+            "PROJETOS",
+            "FALTA MATERIAL INTERNO / TRANSF",
+            "FALTA MATERIAL EXTERNO / COMPRAS"
+        ];
+        public ObservableCollection<string> DistribuirOS
+        {
+            get { return _distribuirOS; }
+            set { _distribuirOS = value; RaisePropertyChanged("DistribuirOS"); }
         }
 
         public async Task<ObservableCollection<SetorProducaoModel>> GetLocalicacoesAsync()

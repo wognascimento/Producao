@@ -2,6 +2,8 @@
 using Producao.DataBase.Model;
 using System;
 
+using System.Diagnostics;
+
 namespace Producao
 {
     public class DatabaseContext : DbContext
@@ -141,7 +143,6 @@ namespace Producao
                 $"user id={BaseSettings.Username};" +
                 $"password={BaseSettings.Password};" +
                 $"database={BaseSettings.Database};" //+
-                //$"Pooling=false;" +
                 //$"Timeout=300;" +
                 //$"CommandTimeout=300;"
                 );
@@ -151,13 +152,13 @@ namespace Producao
                 $"user id={BaseSettings.Username};" +
                 $"password={BaseSettings.Password};" +
                 $"database={BaseSettings.Database};" +
-                $"Pooling=false;" +
                 $"Timeout=300;" +
                 $"CommandTimeout=300;" +
                 $"Application Name=SIG Producao <{BaseSettings.Database}>;" ,
                 options => { options.EnableRetryOnFailure(); }
                 );
-            optionsBuilder.EnableSensitiveDataLogging();
+            if (Debugger.IsAttached)
+                optionsBuilder.EnableSensitiveDataLogging();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

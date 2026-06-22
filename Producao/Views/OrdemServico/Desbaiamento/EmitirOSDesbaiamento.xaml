@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Producao.Views.OrdemServico.Desbaiamento"
-             xmlns:app="clr-namespace:Producao" xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:app="clr-namespace:Producao"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
 
@@ -16,42 +17,30 @@
 
     <Grid>
 
-        <syncfusion:SfDataGrid
-            ShowRowHeader="True"
+        <telerik:RadGridView
             AutoGenerateColumns="False"
-            AllowFiltering="True"
-            ColumnSizer="SizeToHeader"
+            IsFilteringAllowed="True"
+            ShowGroupPanel="False"
+            GroupRenderMode="Flat"
             ItemsSource="{Binding Itens}"
-            AllowResizingHiddenColumns="True" 
-            AllowResizingColumns="True" 
-            SelectionUnit="Row"
+            CanUserResizeColumns="True" 
             SelectionMode="Extended"
-            GridCopyOption="CopyData,IncludeHeaders" 
-            RowValidated="SfDataGrid_RowValidated" 
-            AddNewRowPosition="Bottom" >
-<!--
-            <syncfusion:SfDataGrid.RecordContextMenu>
-                <ContextMenu Style="{x:Null}">
+            CanUserInsertRows="True"
+            NewRowPosition="Bottom"
+            RowEditEnded="RadGridView_RowEditEnded" >
 
-                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsBaixaOrdemServicoProduto.CancelarOS}}"
-                              CommandParameter="{Binding}"
-                              Header="Imprimir"/>
-
-                </ContextMenu>
-            </syncfusion:SfDataGrid.RecordContextMenu>
--->
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridTextColumn  MappingName="coddetalhescompl" DisplayBinding="{Binding coddetalhescompl, Converter={StaticResource ConverterNumber}}" HeaderText="COD.DET"/>
-                <syncfusion:GridTextColumn  MappingName="quantidade" DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}" HeaderText="QTDE"/>
-                <syncfusion:GridTextColumn  MappingName="codvol" ColumnSizer="SizeToHeader" AllowEditing="True" HeaderText="VOL(s)"/>
-                <syncfusion:GridDateTimeColumn  MappingName="data" ColumnSizer="SizeToHeader" AllowEditing="True" HeaderText="DATA"/>
-                <syncfusion:GridTextColumn  MappingName="resp" HeaderText="RESP" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridTextColumn  MappingName="solicitante" HeaderText="SOLICITANTE" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridTextColumn  MappingName="setor" HeaderText="SETOR" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridTextColumn  MappingName="obs" HeaderText="OBS" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridTextColumn  MappingName="n_os_desbaiamento" HeaderText="Nº O.S" DisplayBinding="{Binding n_os_desbaiamento, Converter={StaticResource ConverterNumber}}"/>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="COD.DET" DataMemberBinding="{Binding coddetalhescompl, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="QTDE" DataMemberBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="VOL(s)" DataMemberBinding="{Binding codvol}"/>
+                <telerik:GridViewDataColumn Header="DATA" DataMemberBinding="{Binding data, StringFormat={}{0:dd/MM/yyyy}}"/>
+                <telerik:GridViewDataColumn Header="RESP" DataMemberBinding="{Binding resp}"/>
+                <telerik:GridViewDataColumn Header="SOLICITANTE" DataMemberBinding="{Binding solicitante}"/>
+                <telerik:GridViewDataColumn Header="SETOR" DataMemberBinding="{Binding setor}"/>
+                <telerik:GridViewDataColumn Header="OBS" DataMemberBinding="{Binding obs}"/>
+                <telerik:GridViewDataColumn Header="Nº O.S" DataMemberBinding="{Binding n_os_desbaiamento, Converter={StaticResource ConverterNumber}}" IsReadOnly="True"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
     </Grid>
 

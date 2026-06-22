@@ -1,22 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
-using Syncfusion.UI.Xaml.Grid;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Telerik.Windows.Controls;
 
 namespace Producao.Views.Controlado
 {
@@ -37,7 +29,7 @@ namespace Producao.Views.Controlado
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ControladoRecebimentoViewModel vm = (ControladoRecebimentoViewModel)DataContext;
-                vm.Produtos = await Task.Run(vm.GetProdutosAsync);
+                vm.Produtos = await vm.GetProdutosAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -47,14 +39,17 @@ namespace Producao.Views.Controlado
             }
         }
 
-        private async void SfDataGrid_RowValidated(object sender, Syncfusion.UI.Xaml.Grid.RowValidatedEventArgs e)
+        private async void RadGridView_RowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-            var sfdatagrid = sender as SfDataGrid;
             ControladoRecebimentoViewModel vm = (ControladoRecebimentoViewModel)DataContext;
             try
             {
+                if (e.Row?.Item is not ControladoRetornoGeralModel data)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                ControladoRetornoGeralModel data = (ControladoRetornoGeralModel)e.RowData;
                 vm.Retorno = new()
                 {
                     id_aprovado = data.id_aprovado,
@@ -64,8 +59,7 @@ namespace Producao.Views.Controlado
                     atualizado_em = DateTime.Now,
                 };
 
-                await Task.Run(() => vm.SaveRetornoAsync(vm.Retorno));
-                sfdatagrid.View.Refresh();
+                await vm.SaveRetornoAsync(vm.Retorno);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)

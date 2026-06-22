@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              xmlns:app="clr-namespace:Producao" 
              xmlns:local="clr-namespace:Producao.Views.Estoque" 
              mc:Ignorable="d" 
@@ -18,47 +18,29 @@
 
     <Grid>
 
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
            x:Name="itens" 
            Grid.Row="1"
            Grid.Column="0"
            Grid.ColumnSpan="3"
            AutoGenerateColumns="False" 
-           AllowResizingColumns="True"
-           AllowDraggingColumns="True"
-           AllowFiltering="True"
-           ColumnSizer="AutoWithLastColumnFill"
-           ShowRowHeader="True" 
-           ItemsSource="{Binding Itens}" CurrentCellValueChanged="itens_CurrentCellValueChanged">
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn 
-                    MappingName="codigo" 
-                    DisplayBinding="{Binding codigo, Converter={StaticResource ConverterNumber}}"
-                    ColumnSizer="SizeToCells"/>
-                <syncfusion:GridNumericColumn 
-                    MappingName="cod_movimentacao" 
-                    DisplayBinding="{Binding cod_movimentacao, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToCells"/>
-                <syncfusion:GridTextColumn MappingName="processo" ColumnSizer="SizeToCells"/>
-                <syncfusion:GridNumericColumn 
-                    MappingName="codcompladicional" 
-                    DisplayBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToCells"/>
-                <syncfusion:GridTextColumn MappingName="planilha" ColumnSizer="SizeToCells"/>
-                <syncfusion:GridTextColumn MappingName="descricao_completa"/>
-                <syncfusion:GridTextColumn MappingName="unidade" ColumnSizer="SizeToCells"/>
-                <syncfusion:GridNumericColumn 
-                    MappingName="quantidade"
-                    DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}" 
-                    ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridCheckBoxColumn 
-                    MappingName="bloqueado" 
-                    DisplayBinding="{Binding bloqueado, Converter={StaticResource ConverterBoolen}}"
-                    ValueBinding="{Binding bloqueado, Converter={StaticResource ConverterBoolen}}"
-                    ColumnSizer="SizeToHeader" 
-                    AllowEditing="True"/>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+           CanUserInsertRows="False"
+           ShowGroupPanel="False"
+           IsFilteringAllowed="True"
+           ItemsSource="{Binding Itens}"
+           RowEditEnded="itens_RowEditEnded">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding codigo}" Header="CÓDIGO" IsReadOnly="True" Width="90" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding cod_movimentacao}" Header="MOVIMENTO" IsReadOnly="True" Width="100" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding processo}" Header="PROCESSO" IsReadOnly="True" Width="100" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding codcompladicional}" Header="PRODUTO" IsReadOnly="True" Width="95" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding planilha}" Header="PLANILHA" IsReadOnly="True" Width="100" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding descricao_completa}" Header="DESCRIÇÃO" IsReadOnly="True" Width="*" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding unidade}" Header="UNID." IsReadOnly="True" Width="70" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding quantidade}" Header="QUANTIDADE" DataFormatString="{}{0:N2}" IsReadOnly="True" Width="100" />
+                <telerik:GridViewCheckBoxColumn DataMemberBinding="{Binding desbloqueado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" EditTriggers="CellClick" Header="LIBERAR" Width="80" />
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
     </Grid>
     

@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.Data;
-using Syncfusion.UI.Xaml.Grid;
-using Syncfusion.XlsIO;
+using Microsoft.EntityFrameworkCore;
+using Producao.Views.CentralModelos.Compat;
+using Producao.Views.OrdemServico;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,6 +11,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.OrdemServico.Produto
 {
@@ -36,8 +37,8 @@ namespace Producao.Views.OrdemServico.Produto
 
                 AlterarSolicitacaoOrdemServicoProdutoViewModel vm = (AlterarSolicitacaoOrdemServicoProdutoViewModel)DataContext;
                 vm.ObsOSs = new ObservableCollection<ObsOsModel>();
-                vm.Setores = await Task.Run(vm.GetSetorsAsync);
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
+                vm.Setores = await vm.GetSetorsAsync();
+                vm.Siglas = await vm.GetSiglasAsync();
                 //vm.SelectObsOSs = new ObservableCollection<ObsOsModel>();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -59,7 +60,7 @@ namespace Producao.Views.OrdemServico.Produto
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                     string text = ((TextBox)sender).Text;
-                    vm.OrdemServico = await Task.Run(() => vm.GetOrdemServicoAsync(long.Parse(text)));
+                    vm.OrdemServico = await vm.GetOrdemServicoAsync(long.Parse(text));
                     if (vm.OrdemServico == null)
                     {
                         MessageBox.Show("O.S não encontrada", "Busca de produto");
@@ -73,7 +74,7 @@ namespace Producao.Views.OrdemServico.Produto
                     txtDescricaoAdicional.Text = vm.OrdemServico.descricao_adicional;
                     txtComplementoAdicional.Text = vm.OrdemServico.complementoadicional;
                     txtQuantidade.Text = vm.OrdemServico.quantidade.ToString();
-                    vm.ObsOSs = await Task.Run(() => vm.GetCaminhosOSAsync(long.Parse(text)));
+                    vm.ObsOSs = await vm.GetCaminhosOSAsync(long.Parse(text));
                     
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -86,25 +87,36 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private void caminhos_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
+        private void caminhos_AddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
             AlterarSolicitacaoOrdemServicoProdutoViewModel vm = (AlterarSolicitacaoOrdemServicoProdutoViewModel)DataContext;
-            ((ObsOsModel)e.NewObject).num_os_produto = vm.OrdemServico?.num_os_produto;
-            ((ObsOsModel)e.NewObject).cod_compl_adicional = vm.OrdemServico?.cod_compl_adicional;
-            ((ObsOsModel)e.NewObject).cancelar = false;
+            e.NewObject = new ObsOsModel
+            {
+                num_os_produto = vm.OrdemServico?.num_os_produto,
+                cod_compl_adicional = vm.OrdemServico?.cod_compl_adicional,
+                cancelar = false
+            };
         }
 
-        private async void caminhos_RowValidated(object sender, RowValidatedEventArgs e)
+        private async void caminhos_RowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
         {
-            var sfdatagrid = sender as SfDataGrid;
+            if (e.EditAction != GridViewEditAction.Commit)
+                return;
+
             AlterarSolicitacaoOrdemServicoProdutoViewModel vm = (AlterarSolicitacaoOrdemServicoProdutoViewModel)DataContext;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                ObsOsModel data = (ObsOsModel)e.RowData;
+                ObsOsModel data = (ObsOsModel)e.Row.Item;
+                if (data.codigo_setor.HasValue)
+                    data.setor_caminho = vm.Setores?.FirstOrDefault(s => s.codigo_setor == data.codigo_setor)?.setor;
+
+                if (!ValidarCaminho(data))
+                    return;
+
                 data.solicitado_por = Environment.UserName;
                 data.solicitado_data = DateTime.Now;
-                vm.ObsOs = await Task.Run(() => vm.SaveProdutoOsAsync(data));
+                vm.ObsOs = await vm.SaveProdutoOsAsync(data);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -117,60 +129,40 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
-        private void caminhos_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+        private static bool ValidarCaminho(ObsOsModel rowData)
         {
-            ObsOsModel rowData = (ObsOsModel)e.RowData;
             if (!rowData.num_os_produto.HasValue)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("num_caminho", "Não foi criado O.S para incluir o(s) caminho(s).");
-                e.ErrorMessages.Add("codigo_setor", "Não foi criado O.S para incluir o(s) caminho(s).");
-                e.ErrorMessages.Add("orientacao_caminho", "Não foi criado O.S para incluir o(s) caminho(s).");
-                e.ErrorMessages.Add("distribuir_os", "Não foi criado O.S para incluir o(s) caminho(s).");
-                e.ErrorMessages.Add("cliente", "Não foi criado O.S para incluir o(s) caminho(s).");
+                MessageBox.Show("Não foi criado O.S para incluir o(s) caminho(s).");
+                return false;
             }
             else if (!rowData.num_caminho.HasValue)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("num_caminho", "Informe a ordem do caminho da O.S.");
+                MessageBox.Show("Informe a ordem do caminho da O.S.");
+                return false;
             }
             else if (!rowData.codigo_setor.HasValue)
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("codigo_setor", "Seleciona o Setor da O.S.");
+                MessageBox.Show("Seleciona o Setor da O.S.");
+                return false;
             }
             else if (rowData.orientacao_caminho == "")
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("orientacao_caminho", "Informe uma orientação para o Setor.");
+                MessageBox.Show("Informe uma orientação para o Setor.");
+                return false;
             }
             else if (rowData.orientacao_caminho == "")
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("distribuir_os", "Informe como será distribuida a O.S.");
+                MessageBox.Show("Informe como será distribuida a O.S.");
+                return false;
             }
             else if (rowData.cliente == "")
             {
-                e.IsValid = false;
-                e.ErrorMessages.Add("cliente", "Informe o cliente da O.S.");
+                MessageBox.Show("Informe o cliente da O.S.");
+                return false;
             }
-        }
 
-        private void caminhos_CurrentCellDropDownSelectionChanged(object sender, CurrentCellDropDownSelectionChangedEventArgs e)
-        {
-            int rowIndex = caminhos.ResolveToRecordIndex(e.RowColumnIndex.RowIndex);
-            ObsOsModel record;
-
-            if (rowIndex == -1)
-                record = (ObsOsModel)caminhos.View.CurrentAddItem;
-            //record = new();
-            else
-                record = (ObsOsModel)(caminhos.View.Records[rowIndex] as RecordEntry).Data;
-
-            if (e.RowColumnIndex.ColumnIndex == 2)
-            {
-                record.setor_caminho = ((SetorModel)e.SelectedItem).setor; 
-            }
+            return true;
         }
 
         private async void OnPrintClick(object sender, RoutedEventArgs e)
@@ -195,229 +187,118 @@ namespace Producao.Views.OrdemServico.Produto
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                using ExcelEngine excelEngine = new();
-                IApplication application = excelEngine.Excel;
-                application.DefaultVersion = ExcelVersion.Xlsx;
-                IWorkbook workbook = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\ORDEM_SERVICO_MODELO.xlsx");
-                IWorksheet worksheet = workbook.Worksheets[0];
-
-                IWorkbook wbPt = excelEngine.Excel.Workbooks.Open(@$"{BaseSettings.CaminhoSistema}\Modelos\PERMISSAO_TRABALHO.xlsx");
-                IWorksheet wsPt = wbPt.Worksheets[0];
-
-
-                var servicos = await Task.Run(() => vm.GetOsEmitidas(vm.OrdemServico.num_os_produto, list));
-
-                IRange range = worksheet[27, 23, 53, 23];
-                if (servicos.Count == 1)
-                    worksheet.ShowRange(range, false);
-
-                var pagina = 1;
-                var tot = 0;
-                foreach (var servico in servicos)
-                {
-
-                    if (pagina == 1)
-                    {
-                        /*
-                        worksheet.Range["E2"].Text = servico.cliente;
-                        worksheet.Range["G2"].Text = servico.num_os_produto.ToString();
-                        worksheet.Range["I2"].Text = servico.num_os_servico.ToString();
-                        worksheet.Range["B4"].Text = servico.tipo;
-                        worksheet.Range["D4"].Text = $"{servico.data_inicio:dd/MM/yy}";
-                        worksheet.Range["F4"].Text = $"{servico.data_fim:dd/MM/yy}";
-                        worksheet.Range["B5"].Text = servico.setor_caminho;
-                        worksheet.Range["F5"].Text = servico.solicitado_por;
-                        worksheet.Range["G4"].Text = $"META HT: {servico.meta_peca_hora}";
-                        worksheet.Range["B6"].Text = servico.planilha;
-                        worksheet.Range["B7"].Text = servico.descricao_completa;
-                        worksheet.Range["G7"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
-                        worksheet.Range["B9"].Text = servico.quantidade.ToString();
-                        worksheet.Range["D9"].Text = servico.nivel.ToString();
-                        worksheet.Range["B10"].Text = servico.setor_caminho_proximo;
-                        worksheet.Range["B11"].Text = servico.tema;
-                        worksheet.Range["A13"].Text = servico.orientacao_caminho;
-                        worksheet.Range["A17"].Text = servico.acabamento_construcao;
-                        worksheet.Range["A19"].Text = servico.acabamento_fibra;
-                        worksheet.Range["A21"].Text = servico.acabamento_moveis;
-                        worksheet.Range["A23"].Text = servico.laco;
-                        worksheet.Range["A25"].Text = servico.obs_iluminacao;
-                        */
-
-
-                        worksheet.Range["E2"].Text = servico.cliente;
-                        worksheet.Range["G2"].Text = servico.num_os_produto.ToString();
-                        worksheet.Range["I2"].Text = servico.num_os_servico.ToString();
-                        worksheet.Range["B4"].Text = servico.tipo;
-                        worksheet.Range["D4"].Text = $"{servico.data_inicio:dd/MM/yy}";
-                        worksheet.Range["B5"].Text = servico.setor_caminho;
-                        worksheet.Range["F5"].Text = servico.solicitado_por;
-                        worksheet.Range["G4"].Text = $"META HT: {servico.meta_peca_hora}";
-                        worksheet.Range["B6"].Text = servico.planilha;
-                        worksheet.Range["F6"].Text = Convert.ToString(servico.cod_compl_adicional);
-                        worksheet.Range["B7"].Text = servico.descricao_completa;
-                        worksheet.Range["G7"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
-                        worksheet.Range["B9"].Text = Convert.ToString(servico.quantidade);
-                        worksheet.Range["D9"].Text = Convert.ToString(servico?.nivel);
-                        worksheet.Range["B10"].Text = servico.setor_caminho_proximo;
-                        worksheet.Range["B11"].Text = servico.tema;
-                        worksheet.Range["A13"].Text = servico.orientacao_caminho;
-                        worksheet.Range["A23"].Text = servico.laco;
-                        worksheet.Range["A25"].Text = servico.obs_iluminacao;
-
-
-                        var setores = await Task.Run(() => vm.GetServicos(vm.OrdemServico.num_os_produto));
-                        var idexSetor = 9;
-                        foreach (var setor in setores)
-                        {
-                            worksheet.Range[$"G{idexSetor}"].Text = setor.setor_caminho;
-                            idexSetor++;
-                            if (idexSetor == 17)
-                                break;
-                        }
-
-                        pagina = 2;
-                        worksheet.ShowRange(range, false);
-                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
-                        tot++;
-
-                        if (tot == servicos.Count)
-                        {
-
-                            Process.Start(
-                                new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
-                                {
-                                    Verb = "Print",
-                                    UseShellExecute = true,
-                                }
-                            );
-
-                            if (servico.pt == true)
-                            {
-                                wsPt.Range["G1"].Number = (double)servico.num_os_servico;
-                                wbPt.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx");
-
-                                Process.Start(
-                                    new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx")
-                                    {
-                                        Verb = "Print",
-                                        UseShellExecute = true,
-                                    }
-                                );
-
-                            }
-
-                        }
-                    }
-                    else if (pagina == 2)
-                    {
-                        /*
-                        worksheet.Range["E30"].Text = servico.cliente;
-                        worksheet.Range["G30"].Text = servico.num_os_produto.ToString();
-                        worksheet.Range["I30"].Text = servico.num_os_servico.ToString();
-                        worksheet.Range["B32"].Text = servico.tipo;
-                        worksheet.Range["D32"].Text = $"{servico.data_inicio:dd/MM/yy}";
-                        worksheet.Range["F32"].Text = $"{servico.data_fim:dd/MM/yy}";
-                        worksheet.Range["B33"].Text = servico.setor_caminho;
-                        worksheet.Range["F33"].Text = servico.solicitado_por;
-                        worksheet.Range["G32"].Text = $"META HT: {servico.meta_peca_hora}";
-                        worksheet.Range["B34"].Text = servico.planilha;
-                        worksheet.Range["B35"].Text = servico.descricao_completa;
-                        worksheet.Range["G35"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
-                        worksheet.Range["B37"].Text = servico.quantidade.ToString();
-                        worksheet.Range["D37"].Text = servico.nivel.ToString();
-                        worksheet.Range["B38"].Text = servico.setor_caminho_proximo;
-                        worksheet.Range["B39"].Text = servico.tema;
-                        worksheet.Range["A41"].Text = servico.orientacao_caminho;
-                        worksheet.Range["A45"].Text = servico.acabamento_construcao;
-                        worksheet.Range["A47"].Text = servico.acabamento_fibra;
-                        worksheet.Range["A49"].Text = servico.acabamento_moveis;
-                        worksheet.Range["A51"].Text = servico.laco;
-                        worksheet.Range["A53"].Text = servico.obs_iluminacao;
-                        */
-
-
-                        worksheet.Range["E29"].Text = servico.cliente;
-                        worksheet.Range["G29"].Text = servico.num_os_produto.ToString();
-                        worksheet.Range["I29"].Text = servico.num_os_servico.ToString();
-                        worksheet.Range["B31"].Text = servico.tipo;
-                        worksheet.Range["D31"].Text = $"{servico.data_inicio:dd/MM/yy}";
-                        worksheet.Range["B32"].Text = servico.setor_caminho;
-                        worksheet.Range["F32"].Text = servico.solicitado_por;
-                        worksheet.Range["G31"].Text = $"META HT: {servico.meta_peca_hora}";
-                        worksheet.Range["B33"].Text = servico.planilha;
-                        worksheet.Range["F33"].Text = Convert.ToString(servico.cod_compl_adicional);
-                        worksheet.Range["B34"].Text = servico.descricao_completa;
-                        worksheet.Range["G34"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
-                        worksheet.Range["B36"].Text = Convert.ToString(servico.quantidade);
-                        worksheet.Range["D36"].Text = Convert.ToString(servico?.nivel);
-                        worksheet.Range["B37"].Text = servico.setor_caminho_proximo;
-                        worksheet.Range["B38"].Text = servico.tema;
-                        worksheet.Range["A40"].Text = servico.orientacao_caminho;
-                        worksheet.Range["A50"].Text = servico.laco;
-                        worksheet.Range["A52"].Text = servico.obs_iluminacao;
-
-
-                        var setores = await Task.Run(() => vm.GetServicos(vm.OrdemServico.num_os_produto));
-                        var idexSetor = 37;
-                        foreach (var setor in setores)
-                        {
-                            worksheet.Range[$"G{idexSetor}"].Text = setor.setor_caminho;
-                            idexSetor++;
-                            if (idexSetor == 17)
-                                break;
-                        }
-
-                        pagina = 1;
-                        tot++;
-                        worksheet.ShowRange(range, true);
-                        workbook.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx");
-                        Process.Start(
-                            new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\ORDEM_SERVICO_MODELO.xlsx")
-                            {
-                                Verb = "Print",
-                                UseShellExecute = true,
-                            });
-
-
-                        if (servico.pt == true)
-                        {
-                            wsPt.Range["G2"].Number = (double)servico.num_os_servico;
-                            wbPt.SaveAs(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx");
-
-                            Process.Start(
-                                new ProcessStartInfo(@$"{BaseSettings.CaminhoSistema}\Impressos\PERMISSAO_TRABALHO.xlsx")
-                                {
-                                    Verb = "Print",
-                                    UseShellExecute = true,
-                                }
-                            );
-
-                        }
-
-                    }
-                }
+                var servicos = await vm.GetOsEmitidas(vm.OrdemServico.num_os_produto, list);
+                var printer = new OrdemServicoModeloPrinter();
+                await printer.ImprimirAsync(servicos, async numOsProduto => await vm.GetServicos(numOsProduto));
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-
-                //worksheet.ShowRange(range, false);
-                /*
-                workbook.SaveAs(@"Impressos\ORDEM_SERVICO_MODELO.xlsx");
-                worksheet.Clear();
-                workbook.Close();
-
-                Process.Start(
-                    new ProcessStartInfo(@"Impressos\ORDEM_SERVICO_MODELO.xlsx")
-                    {
-                        Verb = "Print",
-                        UseShellExecute = true,
-                    });
-                */
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private static void PreencherBlocoSuperior(
+            IWorksheet worksheet,
+            OsEmissaoProducaoImprimirModel servico,
+            IEnumerable<ProdutoServicoModel> setores)
+        {
+            worksheet.Range["E2"].Text = servico.cliente;
+            worksheet.Range["G2"].Text = servico.num_os_produto.ToString();
+            worksheet.Range["I2"].Text = servico.num_os_servico.ToString();
+            worksheet.Range["B4"].Text = servico.tipo;
+            worksheet.Range["D4"].Text = $"{servico.data_inicio:dd/MM/yy}";
+            worksheet.Range["B5"].Text = servico.setor_caminho;
+            worksheet.Range["F5"].Text = servico.solicitado_por;
+            worksheet.Range["G4"].Text = $"META HT: {servico.meta_peca_hora}";
+            worksheet.Range["B6"].Text = servico.planilha;
+            worksheet.Range["F6"].Text = Convert.ToString(servico.cod_compl_adicional);
+            worksheet.Range["B7"].Text = servico.descricao_completa;
+            worksheet.Range["G7"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
+            worksheet.Range["B9"].Text = Convert.ToString(servico.quantidade);
+            worksheet.Range["D9"].Text = Convert.ToString(servico.nivel);
+            worksheet.Range["B10"].Text = servico.setor_caminho_proximo;
+            worksheet.Range["B11"].Text = servico.tema;
+            worksheet.Range["A13"].Text = servico.orientacao_caminho;
+            worksheet.Range["A23"].Text = servico.laco;
+            worksheet.Range["A25"].Text = servico.obs_iluminacao;
+            PreencherSetores(worksheet, setores, 9, 17);
+        }
+
+        private static void PreencherBlocoInferior(
+            IWorksheet worksheet,
+            OsEmissaoProducaoImprimirModel servico,
+            IEnumerable<ProdutoServicoModel> setores)
+        {
+            worksheet.Range["E29"].Text = servico.cliente;
+            worksheet.Range["G29"].Text = servico.num_os_produto.ToString();
+            worksheet.Range["I29"].Text = servico.num_os_servico.ToString();
+            worksheet.Range["B31"].Text = servico.tipo;
+            worksheet.Range["D31"].Text = $"{servico.data_inicio:dd/MM/yy}";
+            worksheet.Range["B32"].Text = servico.setor_caminho;
+            worksheet.Range["F32"].Text = servico.solicitado_por;
+            worksheet.Range["G31"].Text = $"META HT: {servico.meta_peca_hora}";
+            worksheet.Range["B33"].Text = servico.planilha;
+            worksheet.Range["F33"].Text = Convert.ToString(servico.cod_compl_adicional);
+            worksheet.Range["B34"].Text = servico.descricao_completa;
+            worksheet.Range["G34"].Text = $"{servico.data_de_expedicao:dd/MM/yy}";
+            worksheet.Range["B36"].Text = Convert.ToString(servico.quantidade);
+            worksheet.Range["D36"].Text = Convert.ToString(servico.nivel);
+            worksheet.Range["B37"].Text = servico.setor_caminho_proximo;
+            worksheet.Range["B38"].Text = servico.tema;
+            worksheet.Range["A40"].Text = servico.orientacao_caminho;
+            worksheet.Range["A50"].Text = servico.laco;
+            worksheet.Range["A52"].Text = servico.obs_iluminacao;
+            PreencherSetores(worksheet, setores, 37, 45);
+        }
+
+        private static void PreencherSetores(IWorksheet worksheet, IEnumerable<ProdutoServicoModel> setores, int primeiraLinha, int linhaLimite)
+        {
+            var linha = primeiraLinha;
+            foreach (var setor in setores)
+            {
+                worksheet.Range[$"G{linha}"].Text = setor.setor_caminho;
+                linha++;
+                if (linha == linhaLimite)
+                    break;
+            }
+        }
+
+        private void ImprimirPermissaoTrabalhoSeNecessario(ExcelEngine excelEngine, OsEmissaoProducaoImprimirModel servico)
+        {
+            if (servico.pt != true)
+                return;
+
+            using IWorkbook wbPt = excelEngine.Excel.Workbooks.Open(BaseSettings.ResolveModeloPath("PERMISSAO_TRABALHO.xlsx"));
+            IWorksheet wsPt = wbPt.Worksheets[0];
+            wsPt.Range["G1"].Number = (double)servico.num_os_servico;
+            var caminhoPt = BaseSettings.ResolveImpressosPath($"PERMISSAO_TRABALHO_{servico.num_os_servico}.xlsx");
+            wbPt.SaveAs(caminhoPt);
+            Process.Start(new ProcessStartInfo(caminhoPt)
+            {
+                Verb = "Print",
+                UseShellExecute = true,
+            });
+        }
+
+        private static void SelecionarAbasParaImpressao(IWorkbook workbook, IWorksheet ordemServico, IWorksheet requisicao)
+        {
+            ordemServico.TabSelected = true;
+            ordemServico.TabActive = true;
+            requisicao.TabSelected = true;
+
+            workbook.Worksheets[2].Hide();
+        }
+
+        private static void ConfigurarImpressao(IWorksheet worksheet, string areaImpressao)
+        {
+            worksheet.PageSetup.PrintArea = areaImpressao;
+            worksheet.PageSetup.CenterHorizontally = true;
+            worksheet.PageSetup.CenterVertically = false;
+            worksheet.PageSetup.FitToPagesWide = 1;
+            worksheet.PageSetup.FitToPagesTall = 1;
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)

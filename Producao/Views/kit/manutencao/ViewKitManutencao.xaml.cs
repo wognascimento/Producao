@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Producao.DataBase.Model;
 using Producao.Views.kit.solucao;
-using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -10,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.kit.manutencao
 {
@@ -18,6 +19,8 @@ namespace Producao.Views.kit.manutencao
     /// </summary>
     public partial class ViewKitManutencao : UserControl
     {
+        private bool inicializado;
+
         public ViewKitManutencao()
         {
             InitializeComponent();
@@ -26,11 +29,15 @@ namespace Producao.Views.kit.manutencao
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            if (inicializado)
+                return;
+
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ViewKitManutencaoViewModel vm = (ViewKitManutencaoViewModel)DataContext;
                 vm.Siglas = await Task.Run(vm.GetSiglasAsync);
+                inicializado = true;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -40,7 +47,7 @@ namespace Producao.Views.kit.manutencao
             }
         }
 
-        private async void OnSiglaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private async void OnSiglaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
@@ -56,56 +63,55 @@ namespace Producao.Views.kit.manutencao
             }
         }
 
-        private void SfDataGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
+        private void RadGridView_AddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
             ViewKitManutencaoViewModel vm = (ViewKitManutencaoViewModel)DataContext;
 
-            ((OsKitSolucaoModel)e.NewObject).data_emissao = DateTime.Now;
-            ((OsKitSolucaoModel)e.NewObject).data_solicitacao = DateTime.Now;
-            ((OsKitSolucaoModel)e.NewObject).t_os_mont = vm.Sigla.num_os;
-            ((OsKitSolucaoModel)e.NewObject).tipo_manutencao = "0";
-            ((OsKitSolucaoModel)e.NewObject).shopping = vm.Sigla.cliente;
+            e.NewObject = new OsKitSolucaoModel
+            {
+                data_emissao = DateTime.Now,
+                data_solicitacao = DateTime.Now,
+                t_os_mont = vm.Sigla?.num_os,
+                tipo_manutencao = "0",
+                shopping = vm.Sigla?.cliente
+            };
         }
 
-        private void SfDataGrid_RowValidating(object sender, RowValidatingEventArgs e)
+        private void RadGridView_RowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-            OsKitSolucaoModel rowData = (OsKitSolucaoModel)e.RowData;
+            if (e.EditOperationType == GridViewEditOperationType.None || e.Row.Item is not OsKitSolucaoModel rowData)
+                return;
+
             if (!rowData.t_os_mont.HasValue)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("data_emissao", "Erro ao selecionar sigla.");
-                e.ErrorMessages.Add("solicitante", "Erro ao selecionar sigla.");
-                e.ErrorMessages.Add("concluir_ate", "Erro ao selecionar sigla.");
-                e.ErrorMessages.Add("atendente", "Erro ao selecionar sigla.");
-                e.ErrorMessages.Add("data_solicitacao", "Erro ao selecionar sigla.");
-                e.ErrorMessages.Add("noite_montagem", "Erro ao selecionar sigla.");
-                e.ErrorMessages.Add("obs_de_envio", "Erro ao selecionar sigla.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Erro ao selecionar sigla.", PropertyName = string.Empty });
             }
             else if (rowData.solicitante == null)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("solicitante", "Informa o Solicitante.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informa o Solicitante.", PropertyName = "solicitante" });
             }
             else if (rowData.atendente == null)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("atendente", "Informa o Atendente.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informa o Atendente.", PropertyName = "atendente" });
             }
             else if (rowData.noite_montagem == null)
             {
                 e.IsValid = false;
-                e.ErrorMessages.Add("noite_montagem", "Informa a Noite de Montagem.");
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informa a Noite de Montagem.", PropertyName = "noite_montagem" });
             }
         }
 
-        private async void SfDataGrid_RowValidated(object sender, RowValidatedEventArgs e)
+        private async void RadGridView_RowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
             try
             {
-                var sfdatagrid = sender as SfDataGrid;
                 ViewKitManutencaoViewModel vm = (ViewKitManutencaoViewModel)DataContext;
 
-                OsKitSolucaoModel data = (OsKitSolucaoModel)e.RowData;
+                if (e.Row.Item is not OsKitSolucaoModel data)
+                    return;
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 /*
@@ -183,12 +189,18 @@ namespace Producao.Views.kit.manutencao
             rowDetalhesCommand = new RelayCommand(DetalhesCanExecute);
         }
 
-        public async void DetalhesCanExecute(object obj)
+        public void DetalhesCanExecute(object obj)
         {
-            //GRIobj = { Syncfusion.UI.Xaml.Grid.SfDataGrid}
-            var sfdatagrid = obj as SfDataGrid;
+            var osKit = obj as OsKitSolucaoModel ?? OsKit;
 
-            ((MainWindow)Application.Current.MainWindow).adicionarFilho(new ViewDetalhesKitManutencao(OsKit), $"DETALHES KIT MANUTENÇÃO {OsKit.os}", "DETALHES_KIT_MANUTENCAO");
+            if (osKit == null)
+            {
+                MessageBox.Show("A linha não foi totalmente inserida.", "Atenção", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            OsKit = osKit;
+            ((MainWindow)Application.Current.MainWindow).adicionarFilho(new ViewDetalhesKitManutencao(osKit), $"DETALHES KIT MANUTENÇÃO {osKit.os}", "DETALHES_KIT_MANUTENCAO");
         }
 
         public async Task<ObservableCollection<TblServicoModel>> GetSiglasAsync()
@@ -247,7 +259,7 @@ namespace Producao.Views.kit.manutencao
                     db.Entry(kit).CurrentValues.SetValues(osKit);
                     db.Update(osKit);
                 }
-                db.SaveChangesAsync();
+                await db.SaveChangesAsync();
             }
             catch (Exception)
             {

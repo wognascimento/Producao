@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.CadastroProduto;
 
@@ -45,13 +47,16 @@ public partial class CustoProduto : UserControl
         }
     }
 
-    private async void itens_RowValidating(object sender, Syncfusion.UI.Xaml.Grid.RowValidatingEventArgs e)
+    private async void itens_RowValidated(object sender, GridViewRowValidatedEventArgs e)
     {
         try
         {
             CustoProdutoViewModel vm = (CustoProdutoViewModel)DataContext;
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-            await vm.AtualizarCustoProdutoAsync((CustoProdutoDTO)e.RowData);
+            if (e.Row?.Item is CustoProdutoDTO data)
+            {
+                await vm.AtualizarCustoProdutoAsync(data);
+            }
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
@@ -136,23 +141,29 @@ public class CustoProdutoViewModel : INotifyPropertyChanged
     {
         try
         {
-            using DatabaseContext db = new();
-            var custoExistente = await db.CustoDescs.FindAsync(custoDTO.codcompladicional);
-            var custoNovo = custoExistente;
-            custoNovo.codcompladicional = custoDTO.codcompladicional;
-            custoNovo.tipocusto = custoDTO.tipocusto;
-            custoNovo.custo = custoDTO.custo_atual;
-            custoNovo.custo_recuperacao = custoDTO.custo_rec_atual;
-            custoNovo.process = custoDTO.process_atual;
-            custoNovo.alteradopor = Environment.UserName;
-            custoNovo.dataaltera = DateTime.Now.Date;
+            const string sql = @"
+                INSERT INTO comercial.tblcustodescadicional
+                    (codcompladicional, tipocusto, custo, custo_recuperacao, process, alteradopor, dataaltera)
+                VALUES
+                    (@codcompladicional, @tipocusto, @custo_atual, @custo_rec_atual, @process_atual, @alteradopor, CURRENT_DATE)
+                ON CONFLICT (codcompladicional) DO UPDATE SET
+                    tipocusto = EXCLUDED.tipocusto,
+                    custo = EXCLUDED.custo,
+                    custo_recuperacao = EXCLUDED.custo_recuperacao,
+                    process = EXCLUDED.process,
+                    alteradopor = EXCLUDED.alteradopor,
+                    dataaltera = EXCLUDED.dataaltera;";
 
-            if (custoExistente == null)
-                db.CustoDescs.Add(custoNovo);
-            else
-                db.Entry(custoExistente).CurrentValues.SetValues(custoNovo);
-
-            await db.SaveChangesAsync();
+            using var connection = new NpgsqlConnection(BaseSettings.ConnectionString);
+            await connection.ExecuteAsync(sql, new
+            {
+                custoDTO.codcompladicional,
+                custoDTO.tipocusto,
+                custoDTO.custo_atual,
+                custoDTO.custo_rec_atual,
+                custoDTO.process_atual,
+                alteradopor = Environment.UserName
+            });
         }
         catch (Exception ex)
         {

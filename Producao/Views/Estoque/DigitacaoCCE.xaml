@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              xmlns:local="clr-namespace:Producao.Views.Estoque"
              xmlns:app="clr-namespace:Producao" 
              mc:Ignorable="d" 
@@ -27,40 +27,35 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <syncfusion:SfTextInputLayout
+        <telerik:RadWatermarkTextBox
+            x:Name="tbCodproduto"
             Grid.Row="0"
             Grid.Column="0"
-            InputViewPadding="4" 
-            HintFloatMode="Float" 
-            Hint="INFORME A SEMANA" 
-            CharCountVisibility="Collapsed" 
-            HelperTextVisibility="Collapsed" Margin="0,-5,0,5">
+            WatermarkContent="INFORME A SEMANA"
+            PreviewKeyDown="OnBuscarLancamentoSemana"
+            Margin="0,0,0,5" />
 
-            <syncfusion:SfTextBoxExt 
-                x:Name="tbCodproduto" 
-                PreviewKeyDown="OnBuscarLancamentoSemana"/>
-
-        </syncfusion:SfTextInputLayout>
-
-        <syncfusion:SfDataGrid
+        <telerik:RadGridView
             x:Name="itens" 
             Grid.Row="1"
             Grid.Column="0"
             Grid.ColumnSpan="3"
             AutoGenerateColumns="False" 
-            AllowResizingColumns="True"
-            AllowDraggingColumns="True"
-            AllowFiltering="True"
-            ColumnSizer="AutoWithLastColumnFill"
-            ShowRowHeader="True" 
-            ItemsSource="{Binding Itens}" RowValidated="itens_RowValidated" AddNewRowPosition="Top" AllowEditing="True" AddNewRowInitiating="itens_AddNewRowInitiating">
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridNumericColumn MappingName="cod_compladicional" DisplayBinding="{Binding cod_compladicional, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToHeader" HeaderText="COD"/>
-                <syncfusion:GridNumericColumn MappingName="quantidade" AllowEditing="True" DisplayBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}" ColumnSizer="SizeToHeader"/>
-                <syncfusion:GridDateTimeColumn MappingName="digitado_data" ColumnSizer="SizeToHeader" AllowEditing="False"/>
-                <syncfusion:GridTextColumn MappingName="digitado_por" ColumnSizer="SizeToHeader" AllowEditing="False"/>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+            CanUserInsertRows="True"
+            GroupRenderMode="Flat"
+            NewRowPosition="Top"
+            ShowGroupPanel="False"
+            IsFilteringAllowed="True"
+            ItemsSource="{Binding Itens}"
+            RowEditEnded="itens_RowEditEnded"
+            AddingNewDataItem="itens_AddingNewDataItem">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding cod_compladicional}" Header="COD" Width="110" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding quantidade}" Header="QUANTIDADE" DataFormatString="{}{0:N2}" Width="120" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding digitado_data}" Header="DIGITADO EM" DataFormatString="{}{0:dd/MM/yyyy HH:mm}" IsReadOnly="True" Width="150" />
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding digitado_por}" Header="DIGITADO POR" IsReadOnly="True" Width="140" />
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
 
     </Grid>
