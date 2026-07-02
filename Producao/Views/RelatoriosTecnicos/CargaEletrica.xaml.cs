@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.Generic;
@@ -42,14 +43,14 @@ namespace Producao.Views.RelatoriosTecnicos
                 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 CargaEletricaViewModel vm = (CargaEletricaViewModel)DataContext;
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
+                vm.Siglas = await vm.GetSiglasAsync();
                 
                 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -70,12 +71,12 @@ namespace Producao.Views.RelatoriosTecnicos
                 }
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Itens = await Task.Run(async () => await vm.GetFechaAsync(vm?.Sigla?.sigla));
+                vm.Itens = await vm.GetFechaAsync(vm?.Sigla?.sigla);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -93,7 +94,7 @@ namespace Producao.Views.RelatoriosTecnicos
                 if (e.Cell.Column.UniqueName == "cargaeletrica_led")
                 {
                     var propostaDimensao = grid.Items.CurrentEditItem as ViewFechaModel; //grid.CurrentItem = {Producao.ViewFechaModel}
-                    await Task.Run(() => vm.CargaelEtricaAsync(propostaDimensao));
+                    await vm.CargaelEtricaAsync(propostaDimensao);
                 }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -115,6 +116,7 @@ namespace Producao.Views.RelatoriosTecnicos
 
                 var workbook = new Workbook();
                 var worksheet = workbook.Worksheets.Add();
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.Name = "Carga Elétrica";
                 worksheet.WorksheetPageSetup.FitToPages = false;
                 worksheet.WorksheetPageSetup.ScaleFactor = new Size(0.97, 0.97);
@@ -202,7 +204,7 @@ namespace Producao.Views.RelatoriosTecnicos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -226,6 +228,11 @@ namespace Producao.Views.RelatoriosTecnicos
 
     public class CargaEletricaViewModel : INotifyPropertyChanged
     {
+        private static NpgsqlConnection CreateConnection()
+        {
+            return new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -247,16 +254,12 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                //var data = await db.Siglas.OrderBy(c => c.sigla_serv).ToListAsync();
-                var data = await db.Siglas
-                    .GroupBy(item => new { item.sigla, item.nome })
-                    .OrderBy(group => group.Key.sigla) // Ordenar os grupos pela sigla
-                    .Select(group => new ClientesModel
-                    {
-                        sigla = group.Key.sigla,
-                        nome = group.Key.nome
-                    }).ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<ClientesModel>(
+                    @"SELECT sigla, nome
+                      FROM producao.view_sigla_chkgeral
+                      GROUP BY sigla, nome
+                      ORDER BY sigla;");
                 return new ObservableCollection<ClientesModel>(data);
             }
             catch (Exception)
@@ -269,11 +272,14 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ViewFechas
-                    .OrderBy(c => c.item)
-                    .Where(c => c.sigla == sigla && c.descricao != "Terceirizado") //SeImed([bloco_revisao]=0 Ou [bloco_revisao]=10 Ou [item] Como "*B";1;0)
-                    .ToListAsync();
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<ViewFechaModel>(
+                    @"SELECT *
+                      FROM comercial.proposta_view_fecha
+                      WHERE sigla = @sigla
+                        AND descricao <> 'Terceirizado'
+                      ORDER BY item;",
+                    new { sigla });
                 return new ObservableCollection<ViewFechaModel>(data);
             }
             catch (Exception)
@@ -286,18 +292,19 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.propostaDimensoes.FindAsync(propostaDimensao.coddimensao);
-                //var comple = await db.ComplementoCheckLists.FirstOrDefaultAsync(p => p.codcompl == compChkList.codcompl);
-                if (data != null)
-                {
-                    if (data.cargaeletrica_led.HasValue)
+                if (propostaDimensao?.coddimensao == null)
+                    return;
+
+                using var conn = CreateConnection();
+                await conn.ExecuteAsync(
+                    @"UPDATE comercial.proposta_dimensaodescricaocomercial
+                      SET cargaeletrica_led = @cargaeletrica_led
+                      WHERE coddimensao = @coddimensao;",
+                    new
                     {
-                        data.cargaeletrica_led = propostaDimensao.cargaeletrica_led;
-                        db.Entry(data).Property(p => p.cargaeletrica_led).IsModified = true;
-                    }
-                    await db.SaveChangesAsync();
-                }
+                        propostaDimensao.cargaeletrica_led,
+                        propostaDimensao.coddimensao
+                    });
 
             }
             catch (Exception)

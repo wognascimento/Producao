@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -33,7 +34,7 @@ namespace Producao.Views.Planilha
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -52,7 +53,7 @@ namespace Producao.Views.Planilha
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -75,7 +76,7 @@ namespace Producao.Views.Planilha
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -123,9 +124,10 @@ namespace Producao.Views.Planilha
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ControlePlanilhaGrupos
-                    .ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<ControlePlanilhaGrupoModel>(
+                    @"SELECT *
+                      FROM producao.view_controle_planilha_grupo;");
                 return new ObservableCollection<ControlePlanilhaGrupoModel>(data);
             }
             catch (Exception)
@@ -138,9 +140,16 @@ namespace Producao.Views.Planilha
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ControlePlanilhaGrupos.SingleUpdateAsync(controle);
-                await db.SaveChangesAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                await conn.ExecuteAsync(
+                    @"UPDATE producao.tbldetalhescomplemento
+                      SET obs_planilheiro = @obs_planilheiro,
+                          resp_prod = @resp_prod,
+                          status_producao = @status_producao,
+                          os = @os,
+                          enviado_baia = @enviado_baia
+                      WHERE coddetalhescompl = @coddetalhescompl;",
+                    controle);
                 return controle;
             }
             catch (Exception)

@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_controlado_etiqueta_retorno", Schema = "producao")]
     public class QryControladoEtiquetaRetornoModel
     {

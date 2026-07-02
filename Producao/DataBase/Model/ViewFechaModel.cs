@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("proposta_view_fecha", Schema = "comercial")]
     public class ViewFechaModel
     {

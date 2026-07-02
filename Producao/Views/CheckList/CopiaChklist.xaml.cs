@@ -1,6 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Dapper;
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.DataBase.Model.Dto;
 using System;
@@ -40,14 +39,14 @@ public partial class CopiaChklist : UserControl
 
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+        catch (PostgresException pgEx)
         {
             MessageBox.Show($"Erro do banco: {pgEx.MessageText}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erro inesperado: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            Producao.ErrorDialog.Show(ex, "Erro inesperado");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
     }
@@ -65,14 +64,14 @@ public partial class CopiaChklist : UserControl
 
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+        catch (PostgresException pgEx)
         {
             MessageBox.Show($"Erro do banco: {pgEx.MessageText}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erro inesperado: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            Producao.ErrorDialog.Show(ex, "Erro inesperado");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
     }
@@ -91,14 +90,14 @@ public partial class CopiaChklist : UserControl
             rgViewItens.IsBusy = false;
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+        catch (PostgresException pgEx)
         {
             MessageBox.Show($"Erro do banco: {pgEx.MessageText}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erro inesperado: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            Producao.ErrorDialog.Show(ex, "Erro inesperado");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
     }
@@ -126,14 +125,14 @@ public partial class CopiaChklist : UserControl
             MessageBox.Show("Itens copiados com sucesso!", "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+        catch (PostgresException pgEx)
         {
             MessageBox.Show($"Erro do banco: {pgEx.MessageText}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erro inesperado: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            Producao.ErrorDialog.Show(ex, "Erro inesperado");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
 

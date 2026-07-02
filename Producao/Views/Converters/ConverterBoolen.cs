@@ -11,30 +11,35 @@ namespace Producao
             if (value == null)
                 return false;
 
-            switch (value.ToString().Trim())
+            if (value is bool booleano)
+                return booleano;
+
+            switch (value.ToString()?.Trim().ToUpperInvariant())
             {
                 case "-1":
-                    return true;
                 case "1":
+                case "TRUE":
+                case "SIM":
                     return true;
                 case "0":
+                case "FALSE":
+                case "NAO":
+                case "NÃO":
                     return false;
             }
-            return false;
-            
 
+            return false;
         }
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            switch (value)
-            {
-                case true:
-                    return "-1";
-                case false:
-                    return "0";
-            }
-            return "0";
+            var marcado = value is true;
+            var destino = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+            if (destino == typeof(bool))
+                return marcado;
+
+            return marcado ? "-1" : "0";
         }
     }
 }

@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.Views.PopUp;
 using Producao.Views.CentralModelos.Compat;
@@ -54,7 +53,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -119,7 +118,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -159,7 +158,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -179,6 +178,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 application.DefaultVersion = ExcelVersion.Xlsx;
                 IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("REQUISICAO_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.Range["C2"].Number = Convert.ToDouble(requi?.num_requisicao);
                 worksheet.Range["E2"].DateTime = Convert.ToDateTime(requi?.data);
                 worksheet.Range["C3"].Text = requi?.alterado_por;
@@ -248,7 +248,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             
@@ -265,7 +265,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -280,7 +280,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -294,7 +294,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -356,12 +356,12 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (FormatException ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
 
@@ -390,7 +390,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
             }
         }
@@ -430,12 +430,12 @@ namespace Producao.Views.OrdemServico.Requisicao
                 }
                 catch (FormatException ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -493,7 +493,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -527,7 +527,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -557,7 +557,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -586,16 +586,17 @@ namespace Producao.Views.OrdemServico.Requisicao
                 vm.QryRequisicaoDetalhes = await vm.GetRequisicaoDetalhesAsync(vm.Requisicao.num_requisicao);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
-            catch(DbUpdateException ex)
+            catch (PostgresException ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.InnerException.Message, ((PostgresException)ex.InnerException).MessageText);
+                Producao.ErrorDialog.Show(ex, "Erro do banco");
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
     }
 }
+

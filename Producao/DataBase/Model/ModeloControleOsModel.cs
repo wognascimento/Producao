@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_modelo_controle_os", Schema = "modelos")]
     public class ModeloControleOsModel
     {

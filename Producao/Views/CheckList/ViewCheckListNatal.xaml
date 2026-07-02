@@ -37,6 +37,7 @@
             <StackPanel Orientation="Horizontal" >
                 <telerik:RadComboBox x:Name="cbSiglaShopping"
                                      Width="260"
+                                     Margin="0,0,2,2"
                                      EmptyText="Shopping"
                                      IsEditable="True"
                                      IsFilteringEnabled="True"
@@ -46,9 +47,10 @@
                                      
                                      DisplayMemberPath="sigla_serv"
                                      SelectedValuePath="id_aprovado"
-                                     SelectionChanged="OnSiglaSelectionChanged"/>
+                                     SelectionChanged="OnSiglaSelectionChanged" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
                 <telerik:RadWatermarkTextBox Width="460"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="Tema"
                                              IsEnabled="False"
                                              Text="{Binding Sigla.tema}"/>
@@ -57,14 +59,17 @@
             <StackPanel Orientation="Horizontal">
                 <telerik:RadWatermarkTextBox x:Name="tbId"
                                              Width="150"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="ID"
                                              Text="{Binding ComplementoCheckList.ordem}"/>
                 <telerik:RadWatermarkTextBox x:Name="tbItem"
                                              Width="100"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="ITEM"
                                              Text="{Binding ComplementoCheckList.item_memorial}"/>
                 <telerik:RadWatermarkTextBox x:Name="tbLocalShopping"
                                              Width="470"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="LOCAL DO SHOPPING"
                                              Text="{Binding ComplementoCheckList.local_shoppings}"/>
             </StackPanel>
@@ -72,6 +77,7 @@
             <StackPanel Orientation="Horizontal" >
                 <telerik:RadComboBox x:Name="cbPlanilha"
                                      Width="260"
+                                     Margin="0,0,2,2"
                                      EmptyText="PLANILHA"
                                      IsEditable="True"
                                      IsFilteringEnabled="True"
@@ -80,10 +86,11 @@
                                      SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      DisplayMemberPath="planilha"
                                      SelectedValuePath="planilha"
-                                     SelectionChanged="OnPlanilhaSelectionChanged"/>
+                                     SelectionChanged="OnPlanilhaSelectionChanged" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
                 <telerik:RadComboBox x:Name="cbDescricao"
                                      Width="460"
+                                     Margin="0,0,2,2"
                                      EmptyText="DESCRIÇÃO"
                                      IsEditable="True"
                                      IsFilteringEnabled="True"
@@ -93,10 +100,11 @@
                                      SelectedValue="{Binding ComplementoCheckList.codproduto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      DisplayMemberPath="descricao"
                                      SelectedValuePath="codigo"
-                                     SelectionChanged="OnDescricaoSelectionChanged"/>
+                                     SelectionChanged="OnDescricaoSelectionChanged" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
                 <telerik:RadWatermarkTextBox x:Name="txtCorPredomitante"
                                              Width="300"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="COR PREDOMINANTE"
                                              Text="{Binding Sigla.cor_predominante}"
                                              IsEnabled="False"/>
@@ -105,6 +113,7 @@
             <StackPanel Orientation="Horizontal" >
                 <telerik:RadComboBox x:Name="cbDescricaoAdicional"
                                      Width="610"
+                                     Margin="0,0,2,2"
                                      EmptyText="DESCRIÇÃO ADICIONAL"
                                      IsEditable="True"
                                      IsFilteringEnabled="True"
@@ -113,15 +122,17 @@
                                      SelectedItem="{Binding DescAdicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      SelectedValue="{Binding ComplementoCheckList.coduniadicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      DisplayMemberPath="descricao_adicional"
-                                     SelectedValuePath="coduniadicional"/>
+                                     SelectedValuePath="coduniadicional" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
                 <telerik:RadNumericUpDown x:Name="tbQtde"
                                           Width="110"
+                                          Margin="0,0,2,2"
                                           NullValue="{x:Null}"
                                           Value="{Binding ComplementoCheckList.qtd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                 <telerik:RadWatermarkTextBox x:Name="txtPa"
                                              Width="300"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="P A"
                                              Text="{Binding Sigla.pa}"
                                              IsEnabled="False"/>
@@ -130,10 +141,12 @@
             <StackPanel Orientation="Horizontal" >
                 <telerik:RadWatermarkTextBox x:Name="tbOrientacaoProducao"
                                              Width="720"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="ORIENTAÇÃO DE PRODUÇÃO"
                                              Text="{Binding ComplementoCheckList.obs}"/>
                 <telerik:RadWatermarkTextBox x:Name="txtLaco"
                                              Width="300"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="LAÇO"
                                              Text="{Binding Sigla.laco}"
                                              IsEnabled="False"/>
@@ -142,10 +155,12 @@
             <StackPanel Orientation="Horizontal" >
                 <telerik:RadWatermarkTextBox x:Name="tbOrientacaoMontagem"
                                              Width="720"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="ORIENTAÇÃO DE MONTAGEM"
                                              Text="{Binding ComplementoCheckList.orient_montagem}"/>
                 <telerik:RadWatermarkTextBox x:Name="txtObsIluminacao"
                                              Width="300"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="OBS ILUMINAÇÃO"
                                              Text="{Binding Sigla.obs_iluminacao}"
                                              IsEnabled="False"/>
@@ -154,44 +169,46 @@
             <StackPanel Orientation="Horizontal" >
                 <telerik:RadWatermarkTextBox x:Name="tbOrientacaoDesmontagem"
                                              Width="720"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="ORIENTAÇÃO DE DESMONTAGEM"
                                              Text="{Binding ComplementoCheckList.orient_desmont}"/>
                 <telerik:RadWatermarkTextBox x:Name="txtMlampLed"
                                              Width="300"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="MLAMP/LED"
                                              Text="{Binding Sigla.iluminacao}"
                                              IsEnabled="False"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
-                <telerik:RadButton Click="OnLimparClick">
+                <telerik:RadButton Click="OnLimparClick" Margin="0,0,2,2">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/icones/icons8-vassoura-40.png" Width="20" Height="20" Margin="0,0,5,0"/>
-                        <TextBlock Text="LIMPAR" VerticalAlignment="Center"/>
+                        <TextBlock Text="LIMPAR" VerticalAlignment="Center" Margin="0,0,2,2"/>
                     </StackPanel>
                 </telerik:RadButton>
-                <telerik:RadButton Click="OnAdicionar_Click">
+                <telerik:RadButton Click="OnAdicionar_Click" Margin="0,0,2,2">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/icones/icons8-adicionar-propriedade-40.png" Width="20" Height="20" Margin="0,0,5,0"/>
-                        <TextBlock Text="ADICIONAR" VerticalAlignment="Center"/>
+                        <TextBlock Text="ADICIONAR" VerticalAlignment="Center" Margin="0,0,2,2"/>
                     </StackPanel>
                 </telerik:RadButton>
-                <telerik:RadButton Click="OnEditClick">
+                <telerik:RadButton Click="OnEditClick" Margin="0,0,2,2">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/icones/icons8-editar-propriedade-40.png" Width="20" Height="20" Margin="0,0,5,0"/>
-                        <TextBlock Text="EDITAR" VerticalAlignment="Center"/>
+                        <TextBlock Text="EDITAR" VerticalAlignment="Center" Margin="0,0,2,2"/>
                     </StackPanel>
                 </telerik:RadButton>
-                <telerik:RadButton Click="OnPrintClick">
+                <telerik:RadButton Click="OnPrintClick" Margin="0,0,2,2">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/icones/icons8-impressão-40.png" Width="20" Height="20" Margin="0,0,5,0"/>
-                        <TextBlock Text="IMPRIMIR" VerticalAlignment="Center"/>
+                        <TextBlock Text="IMPRIMIR" VerticalAlignment="Center" Margin="0,0,2,2"/>
                     </StackPanel>
                 </telerik:RadButton>
-                <telerik:RadButton Click="OnCopyClick">
+                <telerik:RadButton Click="OnCopyClick" Margin="0,0,2,2">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/icones/icons8-auto-deskew-100.png" Width="20" Height="20" Margin="0,0,5,0"/>
-                        <TextBlock Text="COPIAR" VerticalAlignment="Center"/>
+                        <TextBlock Text="COPIAR" VerticalAlignment="Center" Margin="0,0,2,2"/>
                     </StackPanel>
                 </telerik:RadButton>
             </StackPanel>
@@ -279,7 +296,7 @@
                         <DataTemplate>
                             <telerik:RadButton Content="{Binding num_os_produto, Converter={StaticResource NameButtonConverter}}"
                                                Command="{Binding DataContext.RowDataCommand, ElementName=dgComplemento}"
-                                               CommandParameter="{Binding ElementName=chklist}"/>
+                                               CommandParameter="{Binding ElementName=chklist}" Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>

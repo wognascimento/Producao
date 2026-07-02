@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao.DataBase.Model
 {
-    [Keyless]
     [Table("qry_impressao", Schema = "producao")]
     public class QryImpressaoModel
     {

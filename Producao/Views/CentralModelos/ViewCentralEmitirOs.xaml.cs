@@ -1,7 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.Views.CentralModelos.Compat;
 using Producao.Views.OrdemServico;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -34,12 +36,12 @@ namespace Producao.Views.CentralModelos
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Itens = await Task.Run(vm.GetItensAsync);
+                vm.Itens = await vm.GetItensAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -52,12 +54,12 @@ namespace Producao.Views.CentralModelos
                 try
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    vm.Itens = await Task.Run(vm.GetItensAsync);
+                    vm.Itens = await vm.GetItensAsync();
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -76,6 +78,23 @@ namespace Producao.Views.CentralModelos
 
     public class ViewCentralEmitirOsViewModel : INotifyPropertyChanged
     {
+        static ViewCentralEmitirOsViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
+
+        private static async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            return await conn.QueryFirstOrDefaultAsync<T>(sql, param);
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -129,37 +148,23 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ModeloGerarOs.Where(
-                    p => p.planilha == "ADEREÇO" || 
-                    p.planilha == "CACHO" || 
-                    p.planilha == "DECESP" || 
-                    p.planilha == "ENF AÉREO" || 
-                    p.planilha == "ENF PISO" || 
-                    p.planilha == "FESTÃO DECOR" || 
-                    p.planilha == "FIADA" || 
-                    p.planilha == "GUIR P" || 
-                    p.planilha == "KIT ENF ARV P" || 
-                    p.planilha == "KIT ENF CACHO" || 
-                    p.planilha == "KIT ENF FESTÃO" || 
-                    p.planilha == "KIT ENF GUIR G" || 
-                    p.planilha == "KIT ENF GUIR P" || 
-                    p.planilha == "KIT ENF PA" || 
-                    p.planilha == "KIT ENF PÓRT" || 
-                    p.planilha == "KIT ENF TOP" || 
-                    p.planilha == "KIT ENF WALL TREE" || 
-                    p.planilha == "KIT FITAS" || 
-                    p.planilha == "MÓVEIS" || 
-                    p.planilha == "PONTEIRA" || 
-                    p.planilha == "TOPIÁRIA" || 
-                    p.planilha == "VASO" || 
-                    p.planilha == "WALL TREE" ||
-                    p.planilha == "FUNDO DE CENA" ||
-                    p.planilha == "MARC L" ||
-                    p.planilha == "PÓRTICO" ||
-                    p.planilha == "TRENÓ" ||
-                    p.planilha == "TRILHA")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qry_modelos_gerar_os
+                    WHERE planilha = ANY(@planilhas);
+                    """;
+                var data = await QueryAsync<ModeloGerarOsModel>(sql, new
+                {
+                    planilhas = new[]
+                    {
+                        "ADEREÇO", "CACHO", "DECESP", "ENF AÉREO", "ENF PISO", "FESTÃO DECOR",
+                        "FIADA", "GUIR P", "KIT ENF ARV P", "KIT ENF CACHO", "KIT ENF FESTÃO",
+                        "KIT ENF GUIR G", "KIT ENF GUIR P", "KIT ENF PA", "KIT ENF PÓRT",
+                        "KIT ENF TOP", "KIT ENF WALL TREE", "KIT FITAS", "MÓVEIS", "PONTEIRA",
+                        "TOPIÁRIA", "VASO", "WALL TREE", "FUNDO DE CENA", "MARC L", "PÓRTICO",
+                        "TRENÓ", "TRILHA"
+                    }
+                });
                 return new ObservableCollection<ModeloGerarOsModel>(data);
             }
             catch (Exception)
@@ -172,8 +177,13 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.TabelaConversoes.FindAsync(codcompleadicional);
+                const string sql = """
+                    SELECT *
+                    FROM modelos.tbl_conversao
+                    WHERE codcompleadicional = @codcompleadicional
+                    LIMIT 1;
+                    """;
+                var data = await QueryFirstOrDefaultAsync<ModeloTabelaConversaoModel>(sql, new { codcompleadicional });
                 return data;
             }
             catch (Exception)
@@ -186,8 +196,13 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.DistribuicaoPAs.Where(d =>  d.id_modelo == id_modelo && d.cliente == cliente).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qry_detalhes_modelo_distribuicao_pa_excel
+                    WHERE id_modelo = @id_modelo
+                      AND cliente = @cliente;
+                    """;
+                var data = await QueryAsync<DistribuicaoPAModel>(sql, new { id_modelo, cliente });
                 return new ObservableCollection<DistribuicaoPAModel>(data);
             }
             catch (Exception)
@@ -200,8 +215,12 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ImprimirOsS.Where(i => i.num_os_produto == num_os_produto).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry_os_emissao_producao_imprimir
+                    WHERE num_os_produto = @num_os_produto;
+                    """;
+                var data = await QueryAsync<OsEmissaoProducaoImprimirModel>(sql, new { num_os_produto });
                 return new ObservableCollection<OsEmissaoProducaoImprimirModel>(data);
             }
             catch (Exception)
@@ -214,8 +233,12 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ProdutoServicos.Where(i => i.num_os_produto == num_os_produto).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tbl_produtos_servico
+                    WHERE num_os_produto = @num_os_produto;
+                    """;
+                var data = await QueryAsync<ProdutoServicoModel>(sql, new { num_os_produto });
                 return new ObservableCollection<ProdutoServicoModel>(data);
             }
             catch (Exception)
@@ -228,12 +251,14 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.ProdutoOs
-                    .Where(p => p.cod_compl_adicional == codcompladicional)
-                    .OrderByDescending(p => p.num_os_produto)
-                    .Select(p => p.num_os_produto)
-                    .FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT num_os_produto
+                    FROM producao.tbl_produto_os
+                    WHERE cod_compl_adicional = @codcompladicional
+                    ORDER BY num_os_produto DESC
+                    LIMIT 1;
+                    """;
+                return await QueryFirstOrDefaultAsync<long?>(sql, new { codcompladicional });
             }
             catch (Exception)
             {
@@ -245,8 +270,13 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.qryModelos.Where(r => r.id_modelo == idModelo).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qrymodelos
+                    WHERE id_modelo = @idModelo
+                    LIMIT 1;
+                    """;
+                var data = await QueryFirstOrDefaultAsync<QryModeloModel>(sql, new { idModelo });
                 return data;
             }
             catch (Exception)
@@ -259,9 +289,16 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                //var data = await db.ProdutoServicos.Where(r => r.id_modelo == idModelo && r.cliente == Sigla).LastOrDefaultAsync();
-                var data = await db.ProdutoServicos.OrderBy(e => e.num_os_servico).LastOrDefaultAsync(r => r.id_modelo == idModelo && r.cliente == Sigla && r.cancelada_os != "-1");
+                const string sql = """
+                    SELECT *
+                    FROM producao.tbl_produtos_servico
+                    WHERE id_modelo = @idModelo
+                      AND cliente = @Sigla
+                      AND COALESCE(cancelada_os, '') <> '-1'
+                    ORDER BY num_os_servico DESC
+                    LIMIT 1;
+                    """;
+                var data = await QueryFirstOrDefaultAsync<ProdutoServicoModel>(sql, new { idModelo, Sigla });
                 return data;
             }
             catch (Exception)
@@ -274,8 +311,13 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ReqDetalhes.Where(r => r.num_os_produto == num_os_produto && r.quantidade > 0).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qry_req_detalhes
+                    WHERE num_os_produto = @num_os_produto
+                      AND quantidade > 0;
+                    """;
+                var data = await QueryAsync<ReqDetalhesModel>(sql, new { num_os_produto });
                 return new ObservableCollection<ReqDetalhesModel>(data);
             }
             catch (Exception)
@@ -289,8 +331,12 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.DetalhesModeloFitas.Where(r => r.id_modelo == idModelo).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qrydetalhesmodelo_fitas
+                    WHERE id_modelo = @idModelo;
+                    """;
+                var data = await QueryAsync<DetalhesModeloFitasModel>(sql, new { idModelo });
                 return new ObservableCollection<DetalhesModeloFitasModel>(data);
             }
             catch (Exception)
@@ -303,8 +349,13 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ReqDetalhes.Where(r => r.id_modelo == idModelo && r.quantidade > 0).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qry_req_detalhes
+                    WHERE id_modelo = @idModelo
+                      AND quantidade > 0;
+                    """;
+                var data = await QueryAsync<ReqDetalhesModel>(sql, new { idModelo });
                 return new ObservableCollection<ReqDetalhesModel>(data);
             }
             catch (Exception)
@@ -352,7 +403,7 @@ namespace Producao.Views.CentralModelos
             {
                 try
                 {
-                    var conversao = await Task.Run(() => vm.GetConversaoAsync(record.codcompladicional));
+                    var conversao = await vm.GetConversaoAsync(record.codcompladicional);
                     if (conversao == null)
                     {
                         MessageBox.Show("Não existe fator de calculo para este produto.");
@@ -381,7 +432,7 @@ namespace Producao.Views.CentralModelos
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
                
             }
@@ -414,7 +465,7 @@ namespace Producao.Views.CentralModelos
             try
             {
                 ViewCentralEmitirOsViewModel vm = (ViewCentralEmitirOsViewModel)grid.DataContext;
-                var numOsProduto = await Task.Run(() => vm.GetUltimaOrdemServicoProdutoAsync(item.codcompladicional));
+                var numOsProduto = await vm.GetUltimaOrdemServicoProdutoAsync(item.codcompladicional);
                 if (!numOsProduto.HasValue)
                 {
                     MessageBox.Show("Nao foi encontrada O.S emitida para este modelo.", "Reimprimir O.S");
@@ -422,7 +473,7 @@ namespace Producao.Views.CentralModelos
                     return;
                 }
 
-                var servicos = await Task.Run(() => vm.GetOsEmitidas(numOsProduto));
+                var servicos = await vm.GetOsEmitidas(numOsProduto);
                 var printer = new OrdemServicoModeloPrinter();
                 await printer.ImprimirAsync(servicos, async numOsProduto => await vm.GetServicos(numOsProduto));
 
@@ -431,7 +482,7 @@ namespace Producao.Views.CentralModelos
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -474,6 +525,7 @@ namespace Producao.Views.CentralModelos
                 //Create a workbook
                 IWorkbook workbook = application.Workbooks.Create(1);
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.IsGridLinesVisible = false;
 
                 IStyle headerStyle;
@@ -583,7 +635,7 @@ namespace Producao.Views.CentralModelos
                 //Adding border to highlight the used range
                 worksheet.UsedRange.BorderAround();
 
-                vm.Distribuicao = await Task.Run(async () => await vm.GetDistribuicoesAsync(item.id_modelo, item.sigla));
+                vm.Distribuicao = await vm.GetDistribuicoesAsync(item.id_modelo, item.sigla);
                 int linha = 5;
                 foreach (DistribuicaoPAModel dist in vm.Distribuicao)
                 {
@@ -744,7 +796,7 @@ namespace Producao.Views.CentralModelos
 
                 worksheet.Rows[1].CellStyle = bodyStyle;
 
-                await Task.Run(async () => await vm.GetChkGeralRelatorioAsync());
+                await vm.GetChkGeralRelatorioAsync();
                 worksheet.ImportData(vm.ChkGeralRelatorios, 3, 1, false);
 
                 worksheet.Range[$"A3:H{vm.ChkGeralRelatorios.Count + 2}"].CellStyle = headerStyle;
@@ -773,10 +825,10 @@ namespace Producao.Views.CentralModelos
                 //worksheet.PageSetup.PrintTitleColumns = "$A:$H";
                 //worksheet.PageSetup.PrintTitleRows = "$1:$2";
                 worksheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
-                worksheet.PageSetup.LeftMargin = 0.0;
-                worksheet.PageSetup.RightMargin = 0.0;
-                worksheet.PageSetup.TopMargin = 0.0;
-                worksheet.PageSetup.BottomMargin = 0.5;
+                worksheet.PageSetup.LeftMargin = Producao.Utils.PrintPageSetupHelper.LeftMargin;
+                worksheet.PageSetup.RightMargin = Producao.Utils.PrintPageSetupHelper.RightMargin;
+                worksheet.PageSetup.TopMargin = Producao.Utils.PrintPageSetupHelper.TopMargin;
+                worksheet.PageSetup.BottomMargin = Producao.Utils.PrintPageSetupHelper.BottomMargin;
                 worksheet.PageSetup.RightFooter = "&P";
                 worksheet.PageSetup.LeftFooter = "&D";
                 worksheet.PageSetup.CenterVertically = true;
@@ -796,7 +848,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -824,16 +876,16 @@ namespace Producao.Views.CentralModelos
                 var dados = grid.SelectedItem as ModeloGerarOsModel;
                 ViewCentralEmitirOsViewModel vm = (ViewCentralEmitirOsViewModel)grid.DataContext;
 
-                QryModeloModel Modelo = await Task.Run(() => vm.GetModeloAsync(dados.id_modelo));
-                var ultimaOS = await Task.Run(() => vm.GetUltimaOSModeloClienteAsync(dados.id_modelo, dados.sigla));
-                //vm.ReqDetalhes = await Task.Run(() => vm.GetItensControleAsync(Modelo.id_modelo));
-                vm.ControleDetalhes = await Task.Run(() => vm.GetItensControleOldAsync(Modelo.id_modelo));
+                QryModeloModel Modelo = await vm.GetModeloAsync(dados.id_modelo);
+                var ultimaOS = await vm.GetUltimaOSModeloClienteAsync(dados.id_modelo, dados.sigla);
+                vm.ControleDetalhes = await vm.GetItensControleOldAsync(Modelo.id_modelo);
 
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
                 IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("RECEITA_CENTRAL_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.Range["A1"].Text = "CENTRAL DE MODELOS - CONTROLE";
                 worksheet.Range["C2"].Number = Convert.ToDouble( Modelo.id_modelo );
                 worksheet.Range["C3"].Text = Modelo.planilha;
@@ -913,10 +965,11 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
 
     }
 }
+

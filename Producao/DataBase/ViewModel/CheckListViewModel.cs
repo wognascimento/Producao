@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
 using Npgsql;
 using Producao.Views.OrdemServico.Requisicao;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -16,6 +17,28 @@ namespace Producao
 {
     public class CheckListViewModel : INotifyPropertyChanged
     {
+        static CheckListViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private sealed class LocalShoppingRow
+        {
+            public string? local_shoppings { get; set; }
+        }
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
+
+        private static async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            return await conn.QueryFirstOrDefaultAsync<T>(sql, param);
+        }
+
         private ObservableCollection<SiglaChkListModel> _siglas;
         public ObservableCollection<SiglaChkListModel> Siglas
         {
@@ -392,8 +415,6 @@ namespace Producao
             Siglas = new ObservableCollection<SiglaChkListModel>();
             Planilhas = new ObservableCollection<RelplanModel>();
 
-            //Task.Run(async () => { Siglas = await GetSiglasAsync(); });
-            //Task.Run(async () => { Planilhas = await GetPlanilhasAsync(); });
 
             rowDataCommand = new RelayCommand(ChangeCanExecute);
         }
@@ -401,8 +422,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.SetorProducaos.OrderBy(c => c.setor).Where(c => c.inativo.Equals("0")).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tbl_setor
+                    WHERE inativo = '0'
+                    ORDER BY setor;
+                    """;
+                var data = await QueryAsync<SetorProducaoModel>(sql);
                 return new ObservableCollection<SetorProducaoModel>(data);
             }
             catch (Exception)
@@ -424,7 +450,7 @@ namespace Producao
                     return;
                 }
 
-                this.SetoresProducao = await Task.Run(GetSetoresAsync);
+                this.SetoresProducao = await GetSetoresAsync();
                 var window = new Window();
                 var stackPanel = new StackPanel { Orientation = Orientation.Vertical };
                 var comboSetor = new RadComboBox
@@ -452,8 +478,8 @@ namespace Producao
                             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                             return;
                         }
-                        var produtoServico = await Task.Run(() => CriateOsChklistAsync(SetorProducao)); 
-                        var tGlobal = await Task.Run(() => GetTGlobalAsync(produtoServico.num_os_servico)); 
+                        var produtoServico = await CriateOsChklistAsync(SetorProducao); 
+                        var tGlobal = await GetTGlobalAsync(produtoServico.num_os_servico); 
                         window.Close();
                         //RequisicaoMaterial detailsWindow = new RequisicaoMaterial(produtoServico);
                         RequisicaoMaterial detailsWindow = new RequisicaoMaterial(tGlobal);
@@ -463,12 +489,12 @@ namespace Producao
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message);
+                        Producao.ErrorDialog.Show(ex, "Erro");
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     } 
                 };
 
-                var produtoServico = await Task.Run(async () => await GetProdutoServicoAsync(CheckListGeralComplemento.coddetalhescompl));
+                var produtoServico = await GetProdutoServicoAsync(CheckListGeralComplemento.coddetalhescompl);
                 
                 if (produtoServico == null)
                 {
@@ -488,10 +514,10 @@ namespace Producao
                 }
                 else
                 {
-                    var tGlobal = await Task.Run(() => GetTGlobalAsync(produtoServico.num_os_servico));
-                    Requisicao = await Task.Run(() => GetRequisicaoAsync(produtoServico.num_os_servico));
+                    var tGlobal = await GetTGlobalAsync(produtoServico.num_os_servico);
+                    Requisicao = await GetRequisicaoAsync(produtoServico.num_os_servico);
                     Requisicao ??= await CriateRequisicaoChklistAsync(produtoServico.num_os_servico, CheckListGeralComplemento.codcompladicional);
-                    QryRequisicaoDetalhes = await Task.Run(() => GetRequisicaoDetalhesAsync(Requisicao.num_requisicao));
+                    QryRequisicaoDetalhes = await GetRequisicaoDetalhesAsync(Requisicao.num_requisicao);
                     //RequisicaoMaterial detailsWindow = new RequisicaoMaterial(produtoServico); //ProdutoServico
                     RequisicaoMaterial detailsWindow = new RequisicaoMaterial(tGlobal); //ProdutoServico
                     detailsWindow.Owner = Window.GetWindow((DependencyObject)obj);  //(Window)obj;
@@ -503,7 +529,7 @@ namespace Producao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             
@@ -512,90 +538,125 @@ namespace Producao
 
         public async Task<ProdutoServicoModel> CriateOsChklistAsync(SetorProducaoModel setorProducao)
         {
-            
-            using DatabaseContext db = new();
-            var strategy = db.Database.CreateExecutionStrategy();
             ProdutoServicoModel produtoServico = new();
-            await strategy.ExecuteAsync(async () => 
+            await using var conn = CreateConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+            try
             {
-                using var transaction = db.Database.BeginTransaction();
-                try
+                var produtoOs = new ProdutoOsModel
                 {
-                    var produtoOs = new ProdutoOsModel
+                    tipo = "PEÇA NOVA",
+                    planilha = CheckListGeral.planilha,
+                    cod_produto = CheckListGeral.codigo,
+                    cod_desc_adicional = CheckListGeral.coduniadicional,
+                    cod_compl_adicional = CheckListGeralComplemento.codcompladicional,
+                    quantidade = 0,
+                    data_emissao = DateTime.Now,
+                    responsavel_emissao = Environment.UserName,
+                    solicitado_por = Environment.UserName
+                };
+
+                produtoOs.num_os_produto = await conn.ExecuteScalarAsync<long>(
+                    """
+                    INSERT INTO producao.tbl_produto_os
+                        (tipo, planilha, cod_produto, cod_desc_adicional, cod_compl_adicional, quantidade, data_emissao, responsavel_emissao, solicitado_por)
+                    VALUES
+                        (@tipo, @planilha, @cod_produto, @cod_desc_adicional, @cod_compl_adicional, @quantidade, @data_emissao, @responsavel_emissao, @solicitado_por)
+                    RETURNING num_os_produto;
+                    """,
+                    produtoOs,
+                    transaction);
+
+                produtoServico = new ProdutoServicoModel
+                {
+                    num_os_produto = produtoOs.num_os_produto,
+                    tipo = produtoOs.tipo,
+                    codigo_setor = setorProducao.codigo_setor,
+                    setor_caminho = $"{setorProducao.setor} - {setorProducao.galpao}",
+                    quantidade = produtoOs.quantidade,
+                    data_inicio = DateTime.Now,
+                    data_fim = DateTime.Now.AddDays(1),
+                    cliente = Sigla.sigla_serv,
+                    tema = Sigla.tema,
+                    orientacao_caminho = "OS DESTINADA A REQUISIÇÃO DE MATERIAL PARA A PLANILHA",
+                    codigo_setor_proximo = 39,
+                    setor_caminho_proximo = "FINAL - TODOS",
+                    fase = "PRODUÇÃO",
+                    responsavel_emissao_os = Environment.UserName,
+                    emitida_por = Environment.UserName,
+                    emitida_data = DateTime.Now,
+                    retrabalho = "NÃO",
+                    impresso = "-1",
+                    cod_detalhe_compl = CheckListGeralComplemento.coddetalhescompl
+                };
+
+                produtoServico.num_os_servico = await conn.ExecuteScalarAsync<long>(
+                    """
+                    INSERT INTO producao.tbl_produtos_servico
+                        (num_os_produto, tipo, codigo_setor, setor_caminho, quantidade, data_inicio, data_fim, cliente, tema, orientacao_caminho,
+                         codigo_setor_proximo, setor_caminho_proximo, fase, responsavel_emissao_os, emitida_por, emitida_data, retrabalho, impresso, cod_detalhe_compl)
+                    VALUES
+                        (@num_os_produto, @tipo, @codigo_setor, @setor_caminho, @quantidade, @data_inicio, @data_fim, @cliente, @tema, @orientacao_caminho,
+                         @codigo_setor_proximo, @setor_caminho_proximo, @fase, @responsavel_emissao_os, @emitida_por, @emitida_data, @retrabalho, @impresso, @cod_detalhe_compl)
+                    RETURNING num_os_servico;
+                    """,
+                    produtoServico,
+                    transaction);
+
+                var requisicao = new RequisicaoModel
+                {
+                    num_os_servico = produtoServico.num_os_servico,
+                    data = DateTime.Now,
+                    alterado_por = Environment.UserName
+                };
+
+                requisicao.num_requisicao = await conn.ExecuteScalarAsync<long>(
+                    """
+                    INSERT INTO producao.t_requisicao
+                        (num_os_servico, data, alterado_por)
+                    VALUES
+                        (@num_os_servico, @data, @alterado_por)
+                    RETURNING num_requisicao;
+                    """,
+                    requisicao,
+                    transaction);
+
+                var receita = await conn.QueryAsync<RequisicaoReceitaModel>(
+                    "SELECT * FROM producao.tbl_requisicao_receita WHERE codcompladicional_produto = @cod_compl_adicional;",
+                    new { produtoOs.cod_compl_adicional },
+                    transaction);
+
+                foreach (var item in receita)
+                {
+                    var ReqDetalhe = new DetalheRequisicaoModel
                     {
-                        tipo = "PEÇA NOVA",
-                        planilha = CheckListGeral.planilha,
-                        cod_produto = CheckListGeral.codigo,
-                        cod_desc_adicional = CheckListGeral.coduniadicional,
-                        cod_compl_adicional = CheckListGeralComplemento.codcompladicional,
-                        quantidade = 0,
-                        data_emissao = DateTime.Now,
-                        responsavel_emissao = Environment.UserName,
-                        solicitado_por = Environment.UserName
-                    };
-                    await db.ProdutoOs.AddAsync(produtoOs);
-                    await db.SaveChangesAsync();
-                    produtoServico = new ProdutoServicoModel
-                    {
-                        num_os_produto = produtoOs.num_os_produto,
-                        tipo = produtoOs.tipo,
-                        codigo_setor = setorProducao.codigo_setor,
-                        setor_caminho = $"{setorProducao.setor} - {setorProducao.galpao}",
-                        quantidade = produtoOs.quantidade,
-                        data_inicio = DateTime.Now,
-                        data_fim = DateTime.Now.AddDays(1),
-                        cliente = Sigla.sigla_serv,
-                        tema = Sigla.tema,
-                        orientacao_caminho = "OS DESTINADA A REQUISIÇÃO DE MATERIAL PARA A PLANILHA",
-                        codigo_setor_proximo = 39,
-                        setor_caminho_proximo = "FINAL - TODOS",
-                        fase = "PRODUÇÃO",
-                        responsavel_emissao_os = Environment.UserName,
-                        emitida_por = Environment.UserName,
-                        emitida_data = DateTime.Now,
-                        retrabalho = "NÃO",
-                        impresso = "-1",
-                        cod_detalhe_compl = CheckListGeralComplemento.coddetalhescompl
-                    };
-                    await db.ProdutoServicos.AddAsync(produtoServico);
-                    await db.SaveChangesAsync();
-                    var requisicao = new RequisicaoModel
-                    {
-                        num_os_servico = produtoServico.num_os_servico,
+                        cod_det_req = null,
+                        num_requisicao = requisicao.num_requisicao,
+                        codcompladicional = item.codcompladicional_receita,
+                        quantidade = item.quantidade * CheckListGeralComplemento.qtd,
                         data = DateTime.Now,
                         alterado_por = Environment.UserName
-
                     };
-                    await db.Requisicoes.AddAsync(requisicao);
-                    await db.SaveChangesAsync();
-                    var receita = await db.RequisicaoReceitas.Where(r => r.codcompladicional_produto == produtoOs.cod_compl_adicional).ToListAsync();
-                    foreach (var item in receita)
-                    {
-                        var ReqDetalhe = new DetalheRequisicaoModel
-                        {
-                            cod_det_req = null,
-                            num_requisicao = requisicao.num_requisicao,
-                            codcompladicional = item.codcompladicional_receita,
-                            quantidade = item.quantidade * CheckListGeralComplemento.qtd,
-                            data = DateTime.Now,
-                            alterado_por = Environment.UserName
-                        };
-                        await db.RequisicaoDetalhes.AddAsync(ReqDetalhe);
-                        await db.SaveChangesAsync();
 
-                    }
-
-                    transaction.Commit();
-
-                   
-                }
-                catch (Exception)
-                {
-                    transaction.Rollback();
-                    throw;
+                    await conn.ExecuteAsync(
+                        """
+                        INSERT INTO producao.t_detalhes_req
+                            (num_requisicao, codcompladicional, quantidade, data, alterado_por)
+                        VALUES
+                            (@num_requisicao, @codcompladicional, @quantidade, @data, @alterado_por);
+                        """,
+                        ReqDetalhe,
+                        transaction);
                 }
 
-            });
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
             return produtoServico;
         }
@@ -603,45 +664,66 @@ namespace Producao
 
         public async Task<RequisicaoModel> CriateRequisicaoChklistAsync(long? num_os_servico, long? cod_compl_adicional)
         {
-            using DatabaseContext db = new();
-            var strategy = db.Database.CreateExecutionStrategy();
             RequisicaoModel requisicao = new();
-            await strategy.ExecuteAsync(async () =>
+            await using var conn = CreateConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+            try
             {
-                using var transaction = db.Database.BeginTransaction();
-                try
+                requisicao = new RequisicaoModel
                 {
-                    requisicao = new RequisicaoModel
+                    num_os_servico = num_os_servico,
+                    data = DateTime.Now,
+                    alterado_por = Environment.UserName
+                };
+
+                requisicao.num_requisicao = await conn.ExecuteScalarAsync<long>(
+                    """
+                    INSERT INTO producao.t_requisicao
+                        (num_os_servico, data, alterado_por)
+                    VALUES
+                        (@num_os_servico, @data, @alterado_por)
+                    RETURNING num_requisicao;
+                    """,
+                    requisicao,
+                    transaction);
+
+                var receita = await conn.QueryAsync<RequisicaoReceitaModel>(
+                    "SELECT * FROM producao.tbl_requisicao_receita WHERE codcompladicional_produto = @cod_compl_adicional;",
+                    new { cod_compl_adicional },
+                    transaction);
+
+                foreach (var item in receita)
+                {
+                    var ReqDetalhe = new DetalheRequisicaoModel
                     {
-                        num_os_servico = num_os_servico,
+                        cod_det_req = null,
+                        num_requisicao = requisicao.num_requisicao,
+                        codcompladicional = item.codcompladicional_receita,
+                        quantidade = item.quantidade * CheckListGeralComplemento.qtd,
                         data = DateTime.Now,
                         alterado_por = Environment.UserName
                     };
-                    await db.Requisicoes.AddAsync(requisicao);
-                    await db.SaveChangesAsync();
-                    var receita = await db.RequisicaoReceitas.Where(r => r.codcompladicional_produto == cod_compl_adicional).ToListAsync();
-                    foreach (var item in receita)
-                    {
-                        var ReqDetalhe = new DetalheRequisicaoModel
-                        {
-                            cod_det_req = null,
-                            num_requisicao = requisicao.num_requisicao,
-                            codcompladicional = item.codcompladicional_receita,
-                            quantidade = item.quantidade * CheckListGeralComplemento.qtd,
-                            data = DateTime.Now,
-                            alterado_por = Environment.UserName
-                        };
-                        await db.RequisicaoDetalhes.AddAsync(ReqDetalhe);
-                        await db.SaveChangesAsync();
-                    }
-                    transaction.Commit();
+
+                    await conn.ExecuteAsync(
+                        """
+                        INSERT INTO producao.t_detalhes_req
+                            (num_requisicao, codcompladicional, quantidade, data, alterado_por)
+                        VALUES
+                            (@num_requisicao, @codcompladicional, @quantidade, @data, @alterado_por);
+                        """,
+                        ReqDetalhe,
+                        transaction);
                 }
-                catch (Exception)
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-            });
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+
             return requisicao;
         }
 
@@ -651,12 +733,41 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                db.Entry(ProdutoOs).State = ProdutoOs.num_os_produto == null ?
-                                   EntityState.Added :
-                                   EntityState.Modified;
+                await using var conn = CreateConnection();
+                if (ProdutoOs.num_os_produto is null or 0)
+                {
+                    ProdutoOs.num_os_produto = await conn.ExecuteScalarAsync<long>(
+                        """
+                        INSERT INTO producao.tbl_produto_os
+                            (tipo, planilha, cod_produto, cod_desc_adicional, cod_compl_adicional, quantidade, data_emissao, responsavel_emissao, id_modelo, solicitado_por, codigo_saida, cliente)
+                        VALUES
+                            (@tipo, @planilha, @cod_produto, @cod_desc_adicional, @cod_compl_adicional, @quantidade, @data_emissao, @responsavel_emissao, @id_modelo, @solicitado_por, @codigo_saida, @cliente)
+                        RETURNING num_os_produto;
+                        """,
+                        ProdutoOs);
+                }
+                else
+                {
+                    await conn.ExecuteAsync(
+                        """
+                        UPDATE producao.tbl_produto_os
+                        SET tipo = @tipo,
+                            planilha = @planilha,
+                            cod_produto = @cod_produto,
+                            cod_desc_adicional = @cod_desc_adicional,
+                            cod_compl_adicional = @cod_compl_adicional,
+                            quantidade = @quantidade,
+                            data_emissao = @data_emissao,
+                            responsavel_emissao = @responsavel_emissao,
+                            id_modelo = @id_modelo,
+                            solicitado_por = @solicitado_por,
+                            codigo_saida = @codigo_saida,
+                            cliente = @cliente
+                        WHERE num_os_produto = @num_os_produto;
+                        """,
+                        ProdutoOs);
+                }
 
-                await db.SaveChangesAsync();
                 return ProdutoOs;
             }
             catch (Exception)
@@ -669,12 +780,82 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                db.Entry(ProdutoServico).State = ProdutoServico.num_os_servico == null ?
-                                   EntityState.Added :
-                                   EntityState.Modified;
+                await using var conn = CreateConnection();
+                if (ProdutoServico.num_os_servico is null or 0)
+                {
+                    ProdutoServico.num_os_servico = await conn.ExecuteScalarAsync<long>(
+                        """
+                        INSERT INTO producao.tbl_produtos_servico
+                            (num_os_produto, tipo, codigo_setor, setor_caminho, quantidade, data_inicio, data_fim, cliente, tema, orientacao_caminho,
+                             codigo_setor_proximo, setor_caminho_proximo, fase, responsavel_emissao_os, emitida_por, emitida_data, meta_data, turno,
+                             ajuste_projeto, cancelada_os, retrabalho, recebido_setor_data, concluida_os_data, impresso, cod_detalhe_compl, id_modelo,
+                             alterado_por, alterado_data, status, data_status, status_por, motivo_cancelamento, aprovado, aprovado_por, aprovado_em,
+                             programacao_ordem, programacao_status, programacao_observacao, programacao_inserido_por, programacao_inserido_data,
+                             meta_lider, pagina, pt)
+                        VALUES
+                            (@num_os_produto, @tipo, @codigo_setor, @setor_caminho, @quantidade, @data_inicio, @data_fim, @cliente, @tema, @orientacao_caminho,
+                             @codigo_setor_proximo, @setor_caminho_proximo, @fase, @responsavel_emissao_os, @emitida_por, @emitida_data, @meta_data, @turno,
+                             @ajuste_projeto, @cancelada_os, @retrabalho, @recebido_setor_data, @concluida_os_data, @impresso, @cod_detalhe_compl, @id_modelo,
+                             @alterado_por, @alterado_data, @status, @data_status, @status_por, @motivo_cancelamento, @aprovado, @aprovado_por, @aprovado_em,
+                             @programacao_ordem, @programacao_status, @programacao_observacao, @programacao_inserido_por, @programacao_inserido_data,
+                             @meta_lider, @pagina, @pt)
+                        RETURNING num_os_servico;
+                        """,
+                        ProdutoServico);
+                }
+                else
+                {
+                    await conn.ExecuteAsync(
+                        """
+                        UPDATE producao.tbl_produtos_servico
+                        SET num_os_produto = @num_os_produto,
+                            tipo = @tipo,
+                            codigo_setor = @codigo_setor,
+                            setor_caminho = @setor_caminho,
+                            quantidade = @quantidade,
+                            data_inicio = @data_inicio,
+                            data_fim = @data_fim,
+                            cliente = @cliente,
+                            tema = @tema,
+                            orientacao_caminho = @orientacao_caminho,
+                            codigo_setor_proximo = @codigo_setor_proximo,
+                            setor_caminho_proximo = @setor_caminho_proximo,
+                            fase = @fase,
+                            responsavel_emissao_os = @responsavel_emissao_os,
+                            emitida_por = @emitida_por,
+                            emitida_data = @emitida_data,
+                            meta_data = @meta_data,
+                            turno = @turno,
+                            ajuste_projeto = @ajuste_projeto,
+                            cancelada_os = @cancelada_os,
+                            retrabalho = @retrabalho,
+                            recebido_setor_data = @recebido_setor_data,
+                            concluida_os_data = @concluida_os_data,
+                            impresso = @impresso,
+                            cod_detalhe_compl = @cod_detalhe_compl,
+                            id_modelo = @id_modelo,
+                            alterado_por = @alterado_por,
+                            alterado_data = @alterado_data,
+                            status = @status,
+                            data_status = @data_status,
+                            status_por = @status_por,
+                            motivo_cancelamento = @motivo_cancelamento,
+                            aprovado = @aprovado,
+                            aprovado_por = @aprovado_por,
+                            aprovado_em = @aprovado_em,
+                            programacao_ordem = @programacao_ordem,
+                            programacao_status = @programacao_status,
+                            programacao_observacao = @programacao_observacao,
+                            programacao_inserido_por = @programacao_inserido_por,
+                            programacao_inserido_data = @programacao_inserido_data,
+                            meta_lider = @meta_lider,
+                            pagina = @pagina,
+                            pt = @pt
+                        WHERE num_os_servico = @num_os_servico;
+                        """,
+                        ProdutoServico);
+                }
 
-                await db.SaveChangesAsync();
                 return ProdutoServico;
             }
             catch (Exception)
@@ -687,10 +868,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ProdutoServicos
-                    .Where(p => p.cod_detalhe_compl == coddetalhescompl)
-                    .FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tbl_produtos_servico
+                    WHERE cod_detalhe_compl = @coddetalhescompl
+                    LIMIT 1;
+                    """;
+                var data = await QueryFirstOrDefaultAsync<ProdutoServicoModel>(sql, new { coddetalhescompl });
                 return data;
             }
             catch (Exception)
@@ -703,8 +887,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Globais.FindAsync(num_os);
+                const string sql = """
+                    SELECT *
+                    FROM ht.t_global
+                    WHERE num_os = @num_os
+                    LIMIT 1;
+                    """;
+                var data = await QueryFirstOrDefaultAsync<TGlobalModel>(sql, new { num_os });
                 return data;
             }
             catch (Exception)
@@ -717,8 +906,12 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.RequisicaoReceitas.Where(r => r.codcompladicional_produto == codcompladicional).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tbl_requisicao_receita
+                    WHERE codcompladicional_produto = @codcompladicional;
+                    """;
+                var data = await QueryAsync<RequisicaoReceitaModel>(sql, new { codcompladicional });
                 return new ObservableCollection<RequisicaoReceitaModel>(data);
             }
             catch (Exception)
@@ -731,12 +924,33 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                db.Entry(Requisicao).State = Requisicao.num_requisicao == null ?
-                                   EntityState.Added :
-                                   EntityState.Modified;
+                await using var conn = CreateConnection();
+                if (Requisicao.num_requisicao is null or 0)
+                {
+                    Requisicao.num_requisicao = await conn.ExecuteScalarAsync<long>(
+                        """
+                        INSERT INTO producao.t_requisicao
+                            (num_os_servico, data, alterado_por, concluida)
+                        VALUES
+                            (@num_os_servico, @data, @alterado_por, @concluida)
+                        RETURNING num_requisicao;
+                        """,
+                        Requisicao);
+                }
+                else
+                {
+                    await conn.ExecuteAsync(
+                        """
+                        UPDATE producao.t_requisicao
+                        SET num_os_servico = @num_os_servico,
+                            data = @data,
+                            alterado_por = @alterado_por,
+                            concluida = @concluida
+                        WHERE num_requisicao = @num_requisicao;
+                        """,
+                        Requisicao);
+                }
 
-                await db.SaveChangesAsync();
                 return Requisicao;
             }
             catch (Exception)
@@ -749,12 +963,44 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                db.Entry(RequisicaoDetalhe).State = RequisicaoDetalhe.cod_det_req == null ?
-                                   EntityState.Added :
-                                   EntityState.Modified;
+                await using var conn = CreateConnection();
+                if (RequisicaoDetalhe.cod_det_req is null or 0)
+                {
+                    RequisicaoDetalhe.cod_det_req = await conn.ExecuteScalarAsync<long>(
+                        """
+                        INSERT INTO producao.t_detalhes_req
+                            (num_requisicao, quantidade, data, alterado_por, ok, data_ok, ok_expedido, observacao, voltagem, local_shop, complemento_chk, codcompladicional, volume, dividir_qtd_volume, agupar)
+                        VALUES
+                            (@num_requisicao, @quantidade, @data, @alterado_por, @ok, @data_ok, @ok_expedido, @observacao, @voltagem, @local_shop, @complemento_chk, @codcompladicional, @volume, @dividir_qtd_volume, @agupar)
+                        RETURNING cod_det_req;
+                        """,
+                        RequisicaoDetalhe);
+                }
+                else
+                {
+                    await conn.ExecuteAsync(
+                        """
+                        UPDATE producao.t_detalhes_req
+                        SET num_requisicao = @num_requisicao,
+                            quantidade = @quantidade,
+                            data = @data,
+                            alterado_por = @alterado_por,
+                            ok = @ok,
+                            data_ok = @data_ok,
+                            ok_expedido = @ok_expedido,
+                            observacao = @observacao,
+                            voltagem = @voltagem,
+                            local_shop = @local_shop,
+                            complemento_chk = @complemento_chk,
+                            codcompladicional = @codcompladicional,
+                            volume = @volume,
+                            dividir_qtd_volume = @dividir_qtd_volume,
+                            agupar = @agupar
+                        WHERE cod_det_req = @cod_det_req;
+                        """,
+                        RequisicaoDetalhe);
+                }
 
-                await db.SaveChangesAsync();
                 return RequisicaoDetalhe;
             }
             catch (Exception)
@@ -767,8 +1013,14 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Requisicoes.Where(r => r.num_os_servico == num_os_servico).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.t_requisicao
+                    WHERE num_os_servico = @num_os_servico
+                    ORDER BY num_requisicao DESC
+                    LIMIT 1;
+                    """;
+                var data = await QueryFirstOrDefaultAsync<RequisicaoModel>(sql, new { num_os_servico });
                 return data;
             }
             catch (Exception)
@@ -781,8 +1033,12 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.QryRequisicaoDetalhes.Where(r => r.num_requisicao == num_requisicao).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry_req_detalhes_relatorio_os_chk
+                    WHERE num_requisicao = @num_requisicao;
+                    """;
+                var data = await QueryAsync<QryRequisicaoDetalheModel>(sql, new { num_requisicao });
                 return new ObservableCollection<QryRequisicaoDetalheModel>(data);
             }
             catch (Exception)
@@ -795,8 +1051,12 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Siglas.OrderBy(c => c.sigla_serv).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.view_sigla_chkgeral
+                    ORDER BY sigla_serv;
+                    """;
+                var data = await QueryAsync<SiglaChkListModel>(sql);
                 return new ObservableCollection<SiglaChkListModel>(data);
             }
             catch (Exception)
@@ -809,8 +1069,15 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1") && !c.planilha.Contains("ESTOQUE") && !c.planilha.Contains("ALMOX")).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.relplan
+                    WHERE ativo = '1'
+                      AND planilha NOT LIKE '%ESTOQUE%'
+                      AND planilha NOT LIKE '%ALMOX%'
+                    ORDER BY planilha;
+                    """;
+                var data = await QueryAsync<RelplanModel>(sql);
                 return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
@@ -823,8 +1090,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1") ).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.relplan
+                    WHERE ativo = '1'
+                    ORDER BY planilha;
+                    """;
+                var data = await QueryAsync<RelplanModel>(sql);
                 return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
@@ -837,12 +1109,14 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Produtos
-                    .OrderBy(c => c.descricao)
-                    .Where(c => c.planilha.Equals(planilha))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.produtos
+                    WHERE planilha = @planilha
+                      AND COALESCE(inativo, '') <> '-1'
+                    ORDER BY descricao;
+                    """;
+                var data = await QueryAsync<ProdutoModel>(sql, new { planilha });
                 return new ObservableCollection<ProdutoModel>(data);
             }
             catch (Exception)
@@ -854,12 +1128,14 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.DescAdicionais
-                    .OrderBy(c => c.descricao_adicional)
-                    .Where(c => c.codigoproduto.Equals(codigo))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tabela_desc_adicional
+                    WHERE codigoproduto = @codigo
+                      AND COALESCE(inativo, '') <> '-1'
+                    ORDER BY descricao_adicional;
+                    """;
+                var data = await QueryAsync<TabelaDescAdicionalModel>(sql, new { codigo });
 
                 return new ObservableCollection<TabelaDescAdicionalModel>(data);
             }
@@ -874,12 +1150,14 @@ namespace Producao
             try
             {
                 CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.complementoadicional)
-                    .Where(c => c.coduniadicional.Equals(coduniadicional))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tblcomplementoadicional
+                    WHERE coduniadicional = @coduniadicional
+                      AND COALESCE(inativo, '') <> '-1'
+                    ORDER BY complementoadicional;
+                    """;
+                var data = await QueryAsync<TblComplementoAdicionalModel>(sql, new { coduniadicional });
 
                 return new ObservableCollection<TblComplementoAdicionalModel>(data);
             }
@@ -893,14 +1171,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ComplementoCheckLists
-                    .OrderBy(c => c.local_shoppings)
-                    .Where(c => c.id_aprovado == id_aprovado)
-                    .Select(s => new
-                    {
-                        s.local_shoppings
-                    }).ToArrayAsync();
+                const string sql = """
+                    SELECT DISTINCT local_shoppings
+                    FROM producao.t_complemento_chk
+                    WHERE id_aprovado = @id_aprovado
+                    ORDER BY local_shoppings;
+                    """;
+                var data = await QueryAsync<LocalShoppingRow>(sql, new { id_aprovado });
                 return new ObservableCollection<object>(data.GroupBy(x => x.local_shoppings));
             }
             catch (Exception)
@@ -913,11 +1190,14 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.CheckListGerals
-                    .OrderBy(c => c.id)
-                    .Where(c => c.id_aprovado == id_aprovado && c.kp == null)
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qrychkgeral
+                    WHERE id_aprovado = @id_aprovado
+                      AND kp IS NULL
+                    ORDER BY id;
+                    """;
+                var data = await QueryAsync<QryCheckListGeralModel>(sql, new { id_aprovado });
                 return new ObservableCollection<QryCheckListGeralModel>(data);
             }
             catch (Exception)
@@ -936,10 +1216,61 @@ namespace Producao
             */
             try
             {
-                using DatabaseContext db = new();
-                //db.Entry(ComplementoCheckList).State = ComplementoCheckList.codcompl == null ? EntityState.Added : EntityState.Modified;
-                await db.ComplementoCheckLists.SingleMergeAsync(ComplementoCheckList);
-                await db.SaveChangesAsync();
+                await using var conn = CreateConnection();
+                if (ComplementoCheckList.codcompl is null or 0)
+                {
+                    ComplementoCheckList.codcompl = await conn.ExecuteScalarAsync<long>(
+                        """
+                        INSERT INTO producao.t_complemento_chk
+                            (ordem, sigla, local_shoppings, codproduto, obs, dataalteracaodesc, alteradopor, orient_montagem, item_memorial, datainclusaodesc,
+                             incluidopordesc, kp, kp2, orient_desmont, qtd, coduniadicional, dataalteradescadic, alteradopordescadic, nivel, carga,
+                             class_solucao, id_aprovado, historico, agrupar, motivos, inserido_por, inserido_em, alterado_por, alterado_em)
+                        VALUES
+                            (@ordem, @sigla, @local_shoppings, @codproduto, @obs, @dataalteracaodesc, @alteradopor, @orient_montagem, @item_memorial, @datainclusaodesc,
+                             @incluidopordesc, @kp, @kp2, @orient_desmont, @qtd, @coduniadicional, @dataalteradescadic, @alteradopordescadic, @nivel, @carga,
+                             @class_solucao, @id_aprovado, @historico, @agrupar, @motivos, @inserido_por, @inserido_em, @alterado_por, @alterado_em)
+                        RETURNING codcompl;
+                        """,
+                        ComplementoCheckList);
+                }
+                else
+                {
+                    await conn.ExecuteAsync(
+                        """
+                        UPDATE producao.t_complemento_chk
+                        SET ordem = @ordem,
+                            sigla = @sigla,
+                            local_shoppings = @local_shoppings,
+                            codproduto = @codproduto,
+                            obs = @obs,
+                            dataalteracaodesc = @dataalteracaodesc,
+                            alteradopor = @alteradopor,
+                            orient_montagem = @orient_montagem,
+                            item_memorial = @item_memorial,
+                            datainclusaodesc = @datainclusaodesc,
+                            incluidopordesc = @incluidopordesc,
+                            kp = @kp,
+                            kp2 = @kp2,
+                            orient_desmont = @orient_desmont,
+                            qtd = @qtd,
+                            coduniadicional = @coduniadicional,
+                            dataalteradescadic = @dataalteradescadic,
+                            alteradopordescadic = @alteradopordescadic,
+                            nivel = @nivel,
+                            carga = @carga,
+                            class_solucao = @class_solucao,
+                            id_aprovado = @id_aprovado,
+                            historico = @historico,
+                            agrupar = @agrupar,
+                            motivos = @motivos,
+                            inserido_por = @inserido_por,
+                            inserido_em = @inserido_em,
+                            alterado_por = @alterado_por,
+                            alterado_em = @alterado_em
+                        WHERE codcompl = @codcompl;
+                        """,
+                        ComplementoCheckList);
+                }
 
                 return ComplementoCheckList;
             }
@@ -953,52 +1284,23 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                //db.Entry(ComplementoCheckList).State = ComplementoCheckList.codcompl == null ? EntityState.Added : EntityState.Modified;
-                var comple = await db.ComplementoCheckLists.FirstOrDefaultAsync(p => p.codcompl == compChkList.codcompl);
                 if (compChkList != null)
                 {
-                    if (compChkList.obs != "")
-                    {
-                        comple.obs = compChkList.obs;
-                        db.Entry(comple).Property(p => p.obs).IsModified = true;
-                    }
-                    if (compChkList.orient_montagem != "")
-                    {
-                        comple.orient_montagem = compChkList.orient_montagem;
-                        db.Entry(comple).Property(p => p.orient_montagem).IsModified = true;
-                    }
-                    if (compChkList.orient_desmont != "")
-                    {
-                        comple.orient_desmont = compChkList.orient_desmont;
-                        db.Entry(comple).Property(p => p.orient_desmont).IsModified = true;
-                    }
-                    if (compChkList.ordem != "")
-                    {
-                        comple.ordem = compChkList.ordem;
-                        db.Entry(comple).Property(p => p.ordem).IsModified = true;
-                    }
-                    if (compChkList.local_shoppings != "")
-                    {
-                        comple.local_shoppings = compChkList.local_shoppings;
-                        db.Entry(comple).Property(p => p.local_shoppings).IsModified = true;
-                    }
-                    if (compChkList.item_memorial != "")
-                    {
-                        comple.item_memorial = compChkList.item_memorial;
-                        db.Entry(comple).Property(p => p.item_memorial).IsModified = true;
-                    }
-                    if (compChkList.alterado_por != "")
-                    {
-                        comple.alterado_por = compChkList.alterado_por;
-                        db.Entry(comple).Property(p => p.alterado_por).IsModified = true;
-                    }
-                    if (compChkList.alterado_em != null)
-                    {
-                        comple.alterado_em = compChkList.alterado_em;
-                        db.Entry(comple).Property(p => p.alterado_em).IsModified = true;
-                    }
-                    await db.SaveChangesAsync();
+                    await using var conn = CreateConnection();
+                    await conn.ExecuteAsync(
+                        """
+                        UPDATE producao.t_complemento_chk
+                        SET obs = CASE WHEN @obs <> '' THEN @obs ELSE obs END,
+                            orient_montagem = CASE WHEN @orient_montagem <> '' THEN @orient_montagem ELSE orient_montagem END,
+                            orient_desmont = CASE WHEN @orient_desmont <> '' THEN @orient_desmont ELSE orient_desmont END,
+                            ordem = CASE WHEN @ordem <> '' THEN @ordem ELSE ordem END,
+                            local_shoppings = CASE WHEN @local_shoppings <> '' THEN @local_shoppings ELSE local_shoppings END,
+                            item_memorial = CASE WHEN @item_memorial <> '' THEN @item_memorial ELSE item_memorial END,
+                            alterado_por = CASE WHEN @alterado_por <> '' THEN @alterado_por ELSE alterado_por END,
+                            alterado_em = COALESCE(@alterado_em, alterado_em)
+                        WHERE codcompl = @codcompl;
+                        """,
+                        compChkList);
                 }
             }
             catch (NpgsqlException)
@@ -1011,16 +1313,19 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var comple = await db.ComplementoCheckLists.FirstOrDefaultAsync(p => p.codcompl == compChkList.codcompl);
                 if (compChkList != null)
                 {
                     if (compChkList.carga != "")
                     {
-                        comple.carga = compChkList.carga;
-                        db.Entry(comple).Property(p => p.carga).IsModified = true;
+                        await using var conn = CreateConnection();
+                        await conn.ExecuteAsync(
+                            """
+                            UPDATE producao.t_complemento_chk
+                            SET carga = @carga
+                            WHERE codcompl = @codcompl;
+                            """,
+                            compChkList);
                     }
-                    await db.SaveChangesAsync();
                 }
             }
             catch (NpgsqlException)
@@ -1033,10 +1338,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.CheckListGerals
-                    .Where(c => c.codcompl == CodCompl)
-                    .FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qrychkgeral
+                    WHERE codcompl = @CodCompl
+                    LIMIT 1;
+                    """;
+                var data = await QueryFirstOrDefaultAsync<QryCheckListGeralModel>(sql, new { CodCompl });
                 return data;
             }
             catch (NpgsqlException)
@@ -1050,11 +1358,13 @@ namespace Producao
             try
             {
                 //CheckListGeralComplementos = new ObservableCollection<QryCheckListGeralComplementoModel>();
-                using DatabaseContext db = new();
-                var data = await db.CheckListGeralComplementos
-                    .OrderBy(c => c.coddetalhescompl)
-                    .Where(c => c.codcompl == codcompl)
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qrychkgeral_complemento
+                    WHERE codcompl = @codcompl
+                    ORDER BY coddetalhescompl;
+                    """;
+                var data = await QueryAsync<QryCheckListGeralComplementoModel>(sql, new { codcompl });
 
                 return new ObservableCollection<QryCheckListGeralComplementoModel>(data);
             }
@@ -1068,10 +1378,66 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                //db.Entry(detCompl).State = detCompl.coddetalhescompl == null ? EntityState.Added : EntityState.Modified;
-                await db.DetalhesComplementos.SingleMergeAsync(detCompl);
-                await db.SaveChangesAsync();
+                await using var conn = CreateConnection();
+                if (detCompl.coddetalhescompl is null or 0)
+                {
+                    detCompl.coddetalhescompl = await conn.ExecuteScalarAsync<long>(
+                        """
+                        INSERT INTO producao.tbldetalhescomplemento
+                            (codcompladicional, qtd, data_alteracao, alterado_por, codcompl, id_modelo, confirmado, os, req, transf, local_producao,
+                             justificativa, producao, supermercado, enviado_baia, obs_planilheiro, resp_prod, confirmado_por, confirmado_data,
+                             desabilitado_confirmado_por, desabilitado_confirmado_data, transf_galpao, terceiro, em_producao, meta_producao,
+                             num_os_produto, data_inserido, inserido_por, status_producao, status_transferencia, status_atualizado_por, status_atualizado_em)
+                        VALUES
+                            (@codcompladicional, @qtd, @data_alteracao, @alterado_por, @codcompl, @id_modelo, @confirmado, @os, @req, @transf, @local_producao,
+                             @justificativa, @producao, @supermercado, @enviado_baia, @obs_planilheiro, @resp_prod, @confirmado_por, @confirmado_data,
+                             @desabilitado_confirmado_por, @desabilitado_confirmado_data, @transf_galpao, @terceiro, @em_producao, @meta_producao,
+                             @num_os_produto, @data_inserido, @inserido_por, @status_producao, @status_transferencia, @status_atualizado_por, @status_atualizado_em)
+                        RETURNING coddetalhescompl;
+                        """,
+                        detCompl);
+                }
+                else
+                {
+                    await conn.ExecuteAsync(
+                        """
+                        UPDATE producao.tbldetalhescomplemento
+                        SET codcompladicional = @codcompladicional,
+                            qtd = @qtd,
+                            data_alteracao = @data_alteracao,
+                            alterado_por = @alterado_por,
+                            codcompl = @codcompl,
+                            id_modelo = @id_modelo,
+                            confirmado = @confirmado,
+                            os = @os,
+                            req = @req,
+                            transf = @transf,
+                            local_producao = @local_producao,
+                            justificativa = @justificativa,
+                            producao = @producao,
+                            supermercado = @supermercado,
+                            enviado_baia = @enviado_baia,
+                            obs_planilheiro = @obs_planilheiro,
+                            resp_prod = @resp_prod,
+                            confirmado_por = @confirmado_por,
+                            confirmado_data = @confirmado_data,
+                            desabilitado_confirmado_por = @desabilitado_confirmado_por,
+                            desabilitado_confirmado_data = @desabilitado_confirmado_data,
+                            transf_galpao = @transf_galpao,
+                            terceiro = @terceiro,
+                            em_producao = @em_producao,
+                            meta_producao = @meta_producao,
+                            num_os_produto = @num_os_produto,
+                            data_inserido = @data_inserido,
+                            inserido_por = @inserido_por,
+                            status_producao = @status_producao,
+                            status_transferencia = @status_transferencia,
+                            status_atualizado_por = @status_atualizado_por,
+                            status_atualizado_em = @status_atualizado_em
+                        WHERE coddetalhescompl = @coddetalhescompl;
+                        """,
+                        detCompl);
+                }
 
                 return detCompl;
             }
@@ -1085,35 +1451,35 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-
-                var det = db.DetalhesComplementos.FirstOrDefault(p => p.coddetalhescompl == detCompl.coddetalhescompl);
+                var det = await QueryFirstOrDefaultAsync<DetalhesComplemento>(
+                    """
+                    SELECT *
+                    FROM producao.tbldetalhescomplemento
+                    WHERE coddetalhescompl = @coddetalhescompl
+                    LIMIT 1;
+                    """,
+                    new { detCompl.coddetalhescompl });
                 if (det != null)
                 {
-                    // Atualiza somente o campo necessário (no caso, o nome)
-                    //produto.Nome = novoNome;
-
-                    // Informa ao Entity Framework que o objeto foi modificado
-
                     det.confirmado = detCompl.confirmado;
                     det.confirmado_data = detCompl.confirmado_data;
                     det.confirmado_por = detCompl.confirmado_por;
                     det.desabilitado_confirmado_data = detCompl.desabilitado_confirmado_data;
                     det.desabilitado_confirmado_por = detCompl.desabilitado_confirmado_por;
 
-                    db.Entry(det).Property(p => p.confirmado).IsModified = true;
-                    db.Entry(det).Property(p => p.confirmado_data).IsModified = true;
-                    db.Entry(det).Property(p => p.confirmado_por).IsModified = true;
-                    db.Entry(det).Property(p => p.desabilitado_confirmado_data).IsModified = true;
-                    db.Entry(det).Property(p => p.desabilitado_confirmado_por).IsModified = true;
-
-                    // Salva apenas a atualização do campo modificado
-                    await db.SaveChangesAsync();
+                    await using var conn = CreateConnection();
+                    await conn.ExecuteAsync(
+                        """
+                        UPDATE producao.tbldetalhescomplemento
+                        SET confirmado = @confirmado,
+                            confirmado_data = @confirmado_data,
+                            confirmado_por = @confirmado_por,
+                            desabilitado_confirmado_data = @desabilitado_confirmado_data,
+                            desabilitado_confirmado_por = @desabilitado_confirmado_por
+                        WHERE coddetalhescompl = @coddetalhescompl;
+                        """,
+                        det);
                 }
-
-                //db.Entry(detCompl).State = detCompl.coddetalhescompl == null ? EntityState.Added : EntityState.Modified;
-                //await db.DetalhesComplementos.SingleMergeAsync(detCompl);
-                //await db.SaveChangesAsync();
 
                 return det;
             }
@@ -1127,25 +1493,25 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ChkGeralRelatorios
-                    .OrderBy(c => c.ordem)
-                    .Where(c => c.id_aprovado == id_aprovado)
-                    .Select(s => new
-                    {
-                        s.item_memorial,
-                        s.local_shoppings,
-                        s.planilha,
-                        s.descricao_dd,
-                        s.unidade,
-                        s.qtd, //qtd = string.Format(CultureInfo.GetCultureInfo("pt-BR"), "{0:D}", s.qtd),
-                        s.custo_unitario,
-                        s.custo_total,
-                        s.orient_montagem,
-                        s.coddetalhescompl,
-                        s.caminhao
-                    })
-                    .ToListAsync();
+                const string sql = """
+                    SELECT
+                        item_memorial,
+                        local_shoppings,
+                        planilha,
+                        descricao_dd,
+                        unidade,
+                        qtd,
+                        custo_unitario,
+                        custo_total,
+                        orient_montagem,
+                        coddetalhescompl,
+                        caminhao
+                    FROM producao.qrychkgeral_relatorio
+                    WHERE id_aprovado = @id_aprovado
+                    ORDER BY ordem;
+                    """;
+                await using var conn = CreateConnection();
+                var data = (await conn.QueryAsync(sql, new { id_aprovado })).ToList();
                 return data;
 
             }
@@ -1157,34 +1523,28 @@ namespace Producao
 
         public async Task DeleteCheckListAsync(long codcompl)
         {
-            using DatabaseContext db = new();
-            var strategy = db.Database.CreateExecutionStrategy();
-            await strategy.ExecuteAsync(async () =>
+            await using var conn = CreateConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+            try
             {
-                using (var transaction = await db.Database.BeginTransactionAsync())
-                {
-                    try
-                    {
-                        //var comple = await db.ComplementoCheckLists.FirstOrDefaultAsync(p => p.codcompl == codcompl);
-                        //var det = db.DetalhesComplementos.Where(p => p.codcompl == codcompl).ToListAsync();
-                        //if (comple != null)
-                        //{
-                        
-                        await db.DetalhesComplementos.Where(c => c.codcompl == codcompl).ExecuteDeleteAsync();
-                        await db.SaveChangesAsync();
+                await conn.ExecuteAsync(
+                    "DELETE FROM producao.tbldetalhescomplemento WHERE codcompl = @codcompl;",
+                    new { codcompl },
+                    transaction);
 
-                        await db.ComplementoCheckLists.Where(c => c.codcompl == codcompl).ExecuteDeleteAsync();
-                        await db.SaveChangesAsync();
-                        //}
-                        await transaction.CommitAsync();
-                    }
-                    catch (NpgsqlException)
-                    {
-                        await transaction.RollbackAsync();
-                        throw;
-                    }
-                }
-            });
+                await conn.ExecuteAsync(
+                    "DELETE FROM producao.t_complemento_chk WHERE codcompl = @codcompl;",
+                    new { codcompl },
+                    transaction);
+
+                await transaction.CommitAsync();
+            }
+            catch (NpgsqlException)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -1196,3 +1556,4 @@ namespace Producao
 
     }
 }
+

@@ -22,7 +22,7 @@
 
         <telerik:RadNumericUpDown
             Grid.Row="0"
-            Margin="5"
+            Margin="0,0,2,2"
             Minimum="0"
             NumberDecimalDigits="0"
             Value="{Binding Modelo.qtd_fiada_cascata, Mode=TwoWay}"

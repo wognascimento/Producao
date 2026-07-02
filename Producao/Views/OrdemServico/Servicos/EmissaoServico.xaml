@@ -29,19 +29,19 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,6">
-            <TextBlock Text="TIPO DA O.S."/>
+            <TextBlock Text="TIPO DA O.S." Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtTipo"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding Tipos}"
                       SelectedItem="{Binding Tipo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      Text="{Binding OrdemServico.tipo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      Text="{Binding OrdemServico.tipo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Margin="0,0,0,6">
-            <TextBlock Text="SERVIÇO"/>
+            <TextBlock Text="SERVIÇO" Margin="0,0,2,2"/>
             <telerik:RadWatermarkTextBox x:Name="txtServico"
-                     Text="{Binding OrdemServico.descricao_servico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                     Text="{Binding OrdemServico.descricao_servico, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2"/>
         </StackPanel>
 
         <Grid Grid.Row="2" Margin="0,0,0,6">
@@ -51,49 +51,49 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
-                <TextBlock Text="SETOR"/>
+                <TextBlock Text="SETOR" Margin="0,0,2,2"/>
                 <telerik:RadComboBox x:Name="txtSetor"
                           IsEditable="True"
                           IsTextSearchEnabled="True"
                           ItemsSource="{Binding Setores}"
                           DisplayMemberPath="setor"
                           SelectedItem="{Binding Setor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          Text="{Binding OrdemServico.descricao_setor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                          Text="{Binding OrdemServico.descricao_setor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
             </StackPanel>
 
             <CheckBox Grid.Column="1"
-                      Margin="10,18,0,0"
+                      Margin="0,0,2,2"
                       VerticalAlignment="Top"
                       Content="PERMISSÃO DE TRABALHO"
                       IsChecked="{Binding Path=OrdemServico.pt, Mode=TwoWay}"/>
         </Grid>
 
         <StackPanel Grid.Row="3" Margin="0,0,0,6">
-            <TextBlock Text="PLANILHA"/>
+            <TextBlock Text="PLANILHA" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtPlanilha"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding Planilhas}"
                       DisplayMemberPath="planilha"
                       SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      Text="{Binding OrdemServico.planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      Text="{Binding OrdemServico.planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Margin="0,0,0,6">
-            <TextBlock Text="ORIENTAÇÃO"/>
+            <TextBlock Text="ORIENTAÇÃO" Margin="0,0,2,2"/>
             <telerik:RadWatermarkTextBox x:Name="txtOrientacao"
                      Text="{Binding OrdemServico.orientacao, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      VerticalScrollBarVisibility="Visible"
                      MaxLength="250"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"
-                     MinHeight="70"/>
+                     MinHeight="70" Margin="0,0,2,2"/>
         </StackPanel>
 
         <StackPanel Grid.Row="5" Margin="0,0,0,6">
-            <TextBlock Text="QUANTIDADE"/>
+            <TextBlock Text="QUANTIDADE" Margin="0,0,2,2"/>
             <telerik:RadWatermarkTextBox x:Name="txtQuantidade"
-                     Text="{Binding OrdemServico.quantidade, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                     Text="{Binding OrdemServico.quantidade, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2"/>
         </StackPanel>
 
         <Grid Grid.Row="6" Margin="0,0,0,6">
@@ -103,33 +103,33 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Margin="0,0,5,0">
-                <TextBlock Text="DATA EMISSÃO"/>
-                <telerik:RadDatePicker SelectedDate="{Binding OrdemServico.data_emissao, Mode=TwoWay}"/>
+                <TextBlock Text="DATA EMISSÃO" Margin="0,0,2,2"/>
+                <telerik:RadDatePicker SelectedDate="{Binding OrdemServico.data_emissao, Mode=TwoWay}" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Margin="0,0,5,0">
-                <TextBlock Text="DATA CONCLUSÃO"/>
-                <telerik:RadDatePicker SelectedDate="{Binding OrdemServico.data_conclusao, Mode=TwoWay}"/>
+                <TextBlock Text="DATA CONCLUSÃO" Margin="0,0,2,2"/>
+                <telerik:RadDatePicker SelectedDate="{Binding OrdemServico.data_conclusao, Mode=TwoWay}" Margin="0,0,2,2"/>
             </StackPanel>
         </Grid>
 
         <StackPanel Grid.Row="7" Margin="0,0,0,6">
-            <TextBlock Text="CLIENTE"/>
+            <TextBlock Text="CLIENTE" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtcliente"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding Siglas}"
                       DisplayMemberPath="sigla_serv"
                       SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      Text="{Binding OrdemServico.cliente, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      Text="{Binding OrdemServico.cliente, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="8" Orientation="Horizontal">
-            <telerik:RadButton Margin="2"
+            <telerik:RadButton Margin="0,0,2,2"
                                Padding="10,6"
                                Content="ADICIONAR"
                                Click="OnAdicionarClick"/>
-            <telerik:RadButton Margin="2"
+            <telerik:RadButton Margin="0,0,2,2"
                                Padding="10,6"
                                Content="IMPRIMIR"
                                Click="OnPrintClick"/>

@@ -1,4 +1,4 @@
-﻿using BibliotecasSIG;
+using BibliotecasSIG;
 using ClosedXML.Excel;
 using Dapper;
 using Npgsql;
@@ -23,8 +23,6 @@ using Producao.Views.Planilha;
 using Producao.Views.RelatoriosTecnicos;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -50,8 +48,7 @@ namespace Producao
         public MainWindow()
         {
             InitializeComponent();
-            StyleManager.ApplicationTheme = new Windows11Theme();
-
+            
             txtUsername.Text = BaseSettings.Username;
             txtDataBase.Text = BaseSettings.Database;
         }
@@ -62,6 +59,7 @@ namespace Producao
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Dados");
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
             worksheet.Cell(1, 1).InsertTable(data, "Dados", true);
             worksheet.Columns().AdjustToContents();
             workbook.SaveAs(filePath);
@@ -76,6 +74,7 @@ namespace Producao
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Dados");
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
             worksheet.Cell(1, 1).InsertTable(dataTable, "Dados", true);
             worksheet.Columns().AdjustToContents();
             workbook.SaveAs(filePath);
@@ -139,6 +138,7 @@ namespace Producao
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Dados");
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
 
             worksheet.Cell("A1").Value = title;
             worksheet.Range("A1:F1").Merge();
@@ -177,12 +177,12 @@ namespace Producao
             }
 
             worksheet.PageSetup.PageOrientation = XLPageOrientation.Landscape;
-            worksheet.PageSetup.Margins.Footer = 0;
-            worksheet.PageSetup.Margins.Header = 0;
-            worksheet.PageSetup.Margins.Left = 0;
-            worksheet.PageSetup.Margins.Right = 0;
-            worksheet.PageSetup.Margins.Top = 0;
-            worksheet.PageSetup.Margins.Bottom = 0;
+            worksheet.PageSetup.Margins.Footer = Producao.Utils.PrintPageSetupHelper.FooterMargin;
+            worksheet.PageSetup.Margins.Header = Producao.Utils.PrintPageSetupHelper.HeaderMargin;
+            worksheet.PageSetup.Margins.Left = Producao.Utils.PrintPageSetupHelper.LeftMargin;
+            worksheet.PageSetup.Margins.Right = Producao.Utils.PrintPageSetupHelper.RightMargin;
+            worksheet.PageSetup.Margins.Top = Producao.Utils.PrintPageSetupHelper.TopMargin;
+            worksheet.PageSetup.Margins.Bottom = Producao.Utils.PrintPageSetupHelper.BottomMargin;
             worksheet.PageSetup.CenterHorizontally = true;
             worksheet.PageSetup.CenterVertically = false;
             worksheet.PageSetup.SetRowsToRepeatAtTop(1, 3);
@@ -606,7 +606,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -681,7 +681,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -699,7 +699,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -823,7 +823,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -871,12 +871,12 @@ namespace Producao
                 catch (Exception ex)
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -896,12 +896,12 @@ namespace Producao
                 catch (Exception ex)
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -921,12 +921,12 @@ namespace Producao
                 catch (Exception ex)
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -946,12 +946,12 @@ namespace Producao
                 catch (Exception ex)
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1015,12 +1015,12 @@ namespace Producao
                 catch (Exception ex)
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1038,7 +1038,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1056,7 +1056,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1081,7 +1081,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1116,7 +1116,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1214,7 +1214,7 @@ namespace Producao
                 catch (Exception ex)
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
             }
         }
@@ -1258,7 +1258,7 @@ namespace Producao
                 catch (Exception ex)
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
             }
         }
@@ -1286,7 +1286,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1301,7 +1301,7 @@ namespace Producao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             
 
@@ -1342,7 +1342,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1350,6 +1350,7 @@ namespace Producao
         {
             var workbook = new Telerik.Windows.Documents.Spreadsheet.Model.Workbook();
             var worksheet = workbook.Worksheets.Add();
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
             worksheet.Name = "Consulta";
 
             var properties = typeof(T).GetProperties();
@@ -1442,7 +1443,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1481,7 +1482,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1578,7 +1579,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -1656,7 +1657,7 @@ namespace Producao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 

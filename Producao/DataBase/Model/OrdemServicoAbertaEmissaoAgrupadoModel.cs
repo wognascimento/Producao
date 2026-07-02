@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_os_aberta_emissao_agrupado", Schema = "producao")]
     public class OrdemServicoAbertaEmissaoAgrupadoModel
     {

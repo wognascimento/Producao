@@ -1,9 +1,11 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
 using Microsoft.Win32;
 using Npgsql;
 using Producao.DataBase.Model;
+using Producao.Utils;
 using Producao.Views.CentralModelos.Compat;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -14,8 +16,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
 using Telerik.Windows.Controls;
-using Telerik.Windows.Controls.GridView;
-using Telerik.Windows.Persistence.Core;
 
 namespace Producao.Views.CheckList
 {
@@ -26,6 +26,13 @@ namespace Producao.Views.CheckList
     {
         PropostaFechaSiglaModel sigla;
         PropostaFechaTemaModel tema;
+
+        static ViewMemorial()
+        {
+            SqlMapper.AddTypeHandler(new DateOnlyToDateTimeHandler());
+        }
+
+
         public ViewMemorial()
         {
             InitializeComponent();
@@ -43,7 +50,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -72,7 +79,7 @@ namespace Producao.Views.CheckList
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -108,7 +115,7 @@ namespace Producao.Views.CheckList
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
         //private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e) => System.Diagnostics.Process.Start(e.Uri.ToString());
@@ -122,7 +129,7 @@ namespace Producao.Views.CheckList
                     var folderDialog = new OpenFolderDialog
                     {
                         Title = "Selecione a pasta",
-                        InitialDirectory = @"\\servidor\clientes" //Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+                        InitialDirectory = @"\\192.168.0.4\clientes" //Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
                     };
 
                     if (folderDialog.ShowDialog() == true)
@@ -144,7 +151,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
 
         }
@@ -165,6 +172,7 @@ namespace Producao.Views.CheckList
                 //Create a workbook
                 IWorkbook workbook = application.Workbooks.Create(1);
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.IsGridLinesVisible = false;
 
                 IStyle headerStyle;
@@ -245,7 +253,7 @@ namespace Producao.Views.CheckList
 
                 worksheet.Rows[2].CellStyle = bodyStyle;
 
-                var dados = vm.Itens.Select(m => new {m.item, m.localitem, m.descricao, m.qtd, m.dimensao, m.baia_caminhao, m.obs, m.obs_interna, m.obs_alteracao}).ToList(); // await Task.Run(() => vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado));
+                var dados = vm.Itens.Select(m => new {m.item, m.localitem, m.descricao, m.qtd, m.dimensao, m.baia_caminhao, m.obs, m.obs_interna, m.obs_alteracao}).ToList(); // await vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado);
                 worksheet.ImportData(dados, 4, 1, false);
 
                 worksheet.Range[$"A4:I{dados.Count + 3}"].CellStyle = headerStyle;
@@ -277,10 +285,10 @@ namespace Producao.Views.CheckList
                 worksheet.PageSetup.PrintTitleColumns = "$A:$H";
                 worksheet.PageSetup.PrintTitleRows = "$1:$2";
                 worksheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
-                worksheet.PageSetup.LeftMargin = 0;
-                worksheet.PageSetup.RightMargin = 0;
-                worksheet.PageSetup.TopMargin = 0;
-                worksheet.PageSetup.BottomMargin = 0.5;
+                worksheet.PageSetup.LeftMargin = Producao.Utils.PrintPageSetupHelper.LeftMargin;
+                worksheet.PageSetup.RightMargin = Producao.Utils.PrintPageSetupHelper.RightMargin;
+                worksheet.PageSetup.TopMargin = Producao.Utils.PrintPageSetupHelper.TopMargin;
+                worksheet.PageSetup.BottomMargin = Producao.Utils.PrintPageSetupHelper.BottomMargin;
                 worksheet.PageSetup.RightFooter = "&P";
                 worksheet.PageSetup.LeftFooter = "&D";
                 //worksheet.PageSetup.CenterVertically = true;
@@ -298,7 +306,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -321,21 +329,28 @@ namespace Producao.Views.CheckList
             }
             catch (PostgresException ex)
             {
-                MessageBox.Show(ex.Message);
-            }
-            catch (DbUpdateException ex)
-            {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
     }
 
     public class ViewMemorialViewModel : INotifyPropertyChanged
     {
+        static ViewMemorialViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -383,8 +398,13 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.PropostaFechaSiglas.OrderBy(c => c.sigla).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM comercial.proposta_fecha_siglas
+                    ORDER BY sigla;
+                    """;
+
+                var data = await QueryAsync<PropostaFechaSiglaModel>(sql);
                 return new ObservableCollection<PropostaFechaSiglaModel>(data);
             }
             catch (Exception)
@@ -397,8 +417,14 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.PropostaFechaTemas.OrderBy(c => c.tema).Where(c => c.cod_brief == sigla.codbriefing).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM comercial.proposta_fecha_tema
+                    WHERE cod_brief = @codbriefing
+                    ORDER BY tema;
+                    """;
+
+                var data = await QueryAsync<PropostaFechaTemaModel>(sql, new { sigla.codbriefing });
                 return new ObservableCollection<PropostaFechaTemaModel>(data);
             }
             catch (Exception)
@@ -411,8 +437,15 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ViewFechas.OrderBy(c => c.item).Where(c => c.cod_brief == tema.cod_brief && c.idtema == tema.idtema).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM comercial.proposta_view_fecha
+                    WHERE cod_brief = @cod_brief
+                      AND idtema = @idtema
+                    ORDER BY item;
+                    """;
+
+                var data = await QueryAsync<ViewFechaModel>(sql, new { tema.cod_brief, tema.idtema });
                 return new ObservableCollection<ViewFechaModel>(data);
             }
             catch (Exception)
@@ -425,8 +458,14 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.FechaLinks.Where(c => c.sigla == sigla && c.tema == tema).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM comercial.tbl_fecha_links
+                    WHERE sigla = @sigla
+                      AND tema = @tema;
+                    """;
+
+                var data = await QueryAsync<FechaLinkModel>(sql, new { sigla, tema });
                 return new ObservableCollection<FechaLinkModel>(data);
             }
             catch (Exception)
@@ -439,9 +478,16 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.FechaLinks.AddAsync(fechaLink);
-                await db.SaveChangesAsync();
+                await using var conn = CreateConnection();
+                const string sql = """
+                    INSERT INTO comercial.tbl_fecha_links
+                        (sigla, tema, links, data_link, idtema)
+                    VALUES
+                        (@sigla, @tema, @links, @data_link, @idtema)
+                    RETURNING codlinkfecha;
+                    """;
+
+                fechaLink.codlinkfecha = await conn.ExecuteScalarAsync<long>(sql, fechaLink);
 
                 return fechaLink;
             }
@@ -455,27 +501,38 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                using (var context = db)
+                await using var conn = CreateConnection();
+
+                const string updateSql = """
+                    UPDATE expedicao.tbl_controle_baia_enderecamento
+                    SET baia_caminhao = @baia_caminhao,
+                        alterado_por = @alterado_por,
+                        alterado_em = @alterado_em
+                    WHERE id_aprovado = @id_aprovado
+                      AND item_memorial = @item_memorial;
+                    """;
+
+                controleBaia.alterado_por ??= Environment.UserName;
+                controleBaia.alterado_em ??= DateTime.Now;
+
+                var affected = await conn.ExecuteAsync(updateSql, controleBaia);
+                if (affected == 0)
                 {
-                    var baia = await context.ControleBaias.Where(x => x.id_aprovado == controleBaia.id_aprovado && x.item_memorial == controleBaia.item_memorial).FirstOrDefaultAsync();
-                    if (baia != null)
-                    {
-                        baia.baia_caminhao = controleBaia.baia_caminhao;
-                        context.Entry(baia).Property(f => f.baia_caminhao).IsModified = true;
-                        await context.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        context.Add(controleBaia).Property(f => f.sigla_serv).IsModified = true;
-                        context.Add(controleBaia).Property(f => f.id_aprovado).IsModified = true;
-                        context.Add(controleBaia).Property(f => f.item_memorial).IsModified = true;
-                        context.Add(controleBaia).Property(f => f.baia_caminhao).IsModified = true;
-                        context.Add(controleBaia).Property(f => f.inserido_por).IsModified = true;
-                        context.Add(controleBaia).Property(f => f.inserido_em).IsModified = true;
-                        await context.SaveChangesAsync();
-                    }
+                    const string insertSql = """
+                        INSERT INTO expedicao.tbl_controle_baia_enderecamento
+                            (sigla_serv, baia_caminhao, endereco, item_memorial, id_aprovado, inserido_por, inserido_em,
+                             alterado_por, alterado_em)
+                        VALUES
+                            (@sigla_serv, @baia_caminhao, @endereco, @item_memorial, @id_aprovado, @inserido_por, @inserido_em,
+                             @alterado_por, @alterado_em)
+                        RETURNING id_controle;
+                        """;
+
+                    controleBaia.inserido_por ??= Environment.UserName;
+                    controleBaia.inserido_em ??= DateTime.Now;
+                    controleBaia.id_controle = await conn.ExecuteScalarAsync<long>(insertSql, controleBaia);
                 }
+
                 return controleBaia;
             }
             catch (Exception)
@@ -486,3 +543,4 @@ namespace Producao.Views.CheckList
 
     }
 }
+

@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_status_chk_geral_central", Schema = "modelos")]
     public class StatusChkGeralCentralModel
     {

@@ -1,6 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Dapper;
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.DataBase.Model;
 using Producao.Views.Helper;
@@ -32,7 +31,7 @@ public partial class Planta : UserControl
         catch (Exception ex)
         {
             System.IO.File.WriteAllText("crash_constructor.log", ex.ToString());
-            MessageBox.Show($"Erro no construtor: {ex.Message}");
+            Producao.ErrorDialog.Show(ex, "Erro no construtor");
         }
     }
 
@@ -53,17 +52,13 @@ public partial class Planta : UserControl
             await vm.GetRespPlantaAsBuiltsAsync();
 
         }
-        catch (DbUpdateException ex)
-        {
-            MessageBox.Show($"Erro: {ex.InnerException.Message}");
-        }
         catch (PostgresException ex)
         {
-            MessageBox.Show($"Erro: {ex.InnerException.Message}");
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erro: {ex.Message}");
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
     }
 
@@ -164,7 +159,7 @@ public partial class Planta : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erro: {ex.Message}");
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
 
     }
@@ -179,9 +174,9 @@ public partial class Planta : UserControl
                 await SalvarAsync(vm, aprovado);
             }
         }
-        catch (DbUpdateException ex)
+        catch (Exception ex)
         {
-            MessageBox.Show($"Erro: {ex.InnerException.Message}");
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
     }
 
@@ -220,10 +215,11 @@ public partial class ViewPlantaViewModel : ObservableObject
 
     public async Task GetAprovadosAsync()
     {
-        using DatabaseContext _dbContext = new();
-        var result = await _dbContext.Aprovados
-            .OrderBy(f => f.sigla)
-            .ToListAsync();
+        using var connection = new NpgsqlConnection(_dataBaseSettings.connectionString);
+        var result = await connection.QueryAsync<AprovadoModel>(
+            @"SELECT *
+              FROM producao.qry_aprovados
+              ORDER BY sigla;");
         Aprovados =  new ObservableCollection<AprovadoModel>(result);
     }
 
@@ -328,12 +324,23 @@ public partial class ViewPlantaViewModel : ObservableObject
 
     public async Task SaveAsync(TAprovadoModel model)
     {
-            using DatabaseContext db = new();
-            var modelExistente = await db.TAprovados.FindAsync(model.id_aprovado);
-            if (modelExistente == null)
-                await db.TAprovados.AddAsync(model);
-            else
-                db.Entry(modelExistente).CurrentValues.SetValues(model);
-            await db.SaveChangesAsync();
+        if (model.id_aprovado == null)
+            return;
+
+        var properties = typeof(TAprovadoModel).GetProperties();
+        var columns = properties.Select(p => p.Name).ToArray();
+        var updateColumns = columns
+            .Where(c => c != nameof(TAprovadoModel.id_aprovado))
+            .Select(c => $"{c} = EXCLUDED.{c}");
+
+        using var connection = new NpgsqlConnection(_dataBaseSettings.connectionString);
+        await connection.ExecuteAsync(
+            $@"INSERT INTO producao.t_aprovados
+                ({string.Join(", ", columns)})
+              VALUES
+                ({string.Join(", ", columns.Select(c => "@" + c))})
+              ON CONFLICT (id_aprovado) DO UPDATE SET
+                {string.Join(", ", updateColumns)};",
+            model);
     }
 }

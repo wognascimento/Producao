@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.Views.CentralModelos.Compat;
 using System;
@@ -39,7 +38,7 @@ namespace Producao.Views.OrdemServico.Servicos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -68,7 +67,7 @@ namespace Producao.Views.OrdemServico.Servicos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -104,8 +103,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.tblServicos.OrderBy(s => s.num_os).ToListAsync();
+                var data = await ServicoOrdemRepository.GetServicosAsync();
                 return new ObservableCollection<TblServicoModel>(data);
             }
             catch (NpgsqlException)
@@ -118,10 +116,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.tblServicos.SingleMergeAsync(model);
-                await db.SaveChangesAsync();
-                return model;
+                return await ServicoOrdemRepository.SaveServicoAsync(model);
             }
             catch (Exception)
             {
@@ -168,6 +163,7 @@ namespace Producao.Views.OrdemServico.Servicos
                 application.DefaultVersion = ExcelVersion.Xlsx;
                 IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("ORDEM_SERVICO_SERVICO_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.Range["A1"].Text = $"ORDEM DE SERVIÇO {OS.data_emissao.Value.Year} ";
                 worksheet.Range["F5"].Text = OS.num_os.ToString();
                 worksheet.Range["C7"].Text = OS.data_emissao.Value.ToString();
@@ -195,8 +191,9 @@ namespace Producao.Views.OrdemServico.Servicos
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
     }
 }
+

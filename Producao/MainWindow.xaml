@@ -208,7 +208,7 @@
                 <Image Source="/icones/icons8-usu_0025c3_0025a1rio-de-g_0025c3_0025aanero-neutro-windows-metro-16.png" Width="16" Height="16" MouseDown="OnAlterarUsuario"/>
             </StatusBarItem>
             <StatusBarItem Grid.Column="1">
-                <TextBlock x:Name="txtUsername"/>
+                <TextBlock x:Name="txtUsername" Margin="0,0,2,2"/>
             </StatusBarItem>
             <StatusBarItem Grid.Column="2">
                 <telerik:RadProgressBar x:Name="PbLoading" Height="20" Value="80" Width="100" IsIndeterminate="True" Visibility="Hidden"/>
@@ -217,7 +217,7 @@
                 <Image Source="/icones/configuracao-de-dados-windows-metro-16.png" Width="16" Height="16" MouseDown="Image_MouseDown"/>
             </StatusBarItem>
             <StatusBarItem Grid.Column="4">
-                <TextBlock x:Name="txtDataBase"/>
+                <TextBlock x:Name="txtDataBase" Margin="0,0,2,2"/>
             </StatusBarItem>
         </StatusBar>
         

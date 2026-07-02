@@ -1,4 +1,5 @@
-﻿using Producao.Localization;
+using Dapper;
+using Producao.Localization;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
@@ -16,16 +17,23 @@ namespace Producao
         public App()
         {
             BaseSettings.LoadFromConfiguration();
-            StyleManager.ApplicationTheme = new Windows11Theme();
+            RegistrarHandlersDapper();
+            StyleManager.ApplicationTheme = new FluentTheme();
             AplicarCulturaPadrao();
-
-            if (!string.IsNullOrWhiteSpace(BaseSettings.SyncfusionLicense))
-                Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(BaseSettings.SyncfusionLicense);
 
             LocalizationManager.Manager = new LocalizationManager
             {
                 ResourceManager = GridViewResources.ResourceManager
             };
+
+            DispatcherUnhandledException += OnDispatcherUnhandledException;
+            System.AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        }
+
+        private static void RegistrarHandlersDapper()
+        {
+            SqlMapper.AddTypeHandler(new Utils.DateOnlyToDateTimeHandler());
+            SqlMapper.AddTypeHandler(new Utils.DateOnlyToNullableDateTimeHandler());
         }
 
         private static void AplicarCulturaPadrao()
@@ -44,6 +52,18 @@ namespace Producao
 
             // Verificação de atualização em segundo plano
             //await CheckForUpdatesAsync();
+        }
+
+        private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            ErrorDialog.Show(e.Exception, "Erro inesperado");
+            e.Handled = true;
+        }
+
+        private void OnUnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is System.Exception ex)
+                ErrorDialog.Show(ex, "Erro critico", MessageBoxImage.Stop);
         }
     }
 }

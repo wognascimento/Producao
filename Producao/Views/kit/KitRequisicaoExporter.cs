@@ -26,6 +26,8 @@ namespace Producao.Views.kit
             var etiquetas = package.Workbook.Worksheets.Count > 1
                 ? package.Workbook.Worksheets[1]
                 : package.Workbook.Worksheets.Add("Etiquetas");
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(requisicao);
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(etiquetas);
 
             PreencherCabecalho(requisicao, titulo, cabecalho);
             PreencherItens(requisicao, itens);
@@ -149,8 +151,8 @@ namespace Producao.Views.kit
                 row2 += 1;
             }
 
-            worksheet.PrinterSettings.LeftMargin = 0.5;
-            worksheet.PrinterSettings.RightMargin = 0.5;
+            worksheet.PrinterSettings.LeftMargin = Producao.Utils.PrintPageSetupHelper.LeftMargin;
+            worksheet.PrinterSettings.RightMargin = Producao.Utils.PrintPageSetupHelper.RightMargin;
             worksheet.PrinterSettings.HorizontalCentered = true;
             worksheet.PrinterSettings.VerticalCentered = true;
             worksheet.PrinterSettings.Scale = 90;

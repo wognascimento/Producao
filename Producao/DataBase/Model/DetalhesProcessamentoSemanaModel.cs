@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_detalhes_processamento_semana", Schema = "producao")]
     public class DetalhesProcessamentoSemanaModel
     {

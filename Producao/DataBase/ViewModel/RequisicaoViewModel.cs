@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -9,6 +11,22 @@ namespace Producao
 {
     class RequisicaoViewModel : INotifyPropertyChanged
     {
+        static RequisicaoViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
+
+        private static async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            return await conn.QueryFirstOrDefaultAsync<T>(sql, param);
+        }
 
         private ObservableCollection<RelplanModel> _planilhas;
         public ObservableCollection<RelplanModel> Planilhas
@@ -143,17 +161,6 @@ namespace Producao
 
         public RequisicaoViewModel()
         {
-            /*
-            try
-            {
-                Task.Run(async () => await GetPlanilhasAsync());
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            */
-
             Requisicao = new RequisicaoModel();
         }
 
@@ -161,8 +168,14 @@ namespace Producao
         {//e.FirstName.StartsWith(employeeName) || e.LastName.StartsWith(employeeName)
             try
             {
-                using DatabaseContext db = new();
-                return await db.Descricoes.Where(d => d.inativo.Equals("0") && d.codcompladicional == codcompladicional).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry3descricoes
+                    WHERE inativo = '0'
+                      AND codcompladicional = @codcompladicional
+                    LIMIT 1;
+                    """;
+                return await QueryFirstOrDefaultAsync<QryDescricao>(sql, new { codcompladicional });
             }
             catch (Exception)
             {
@@ -174,8 +187,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                return new ObservableCollection<RelplanModel>(await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync());
+                const string sql = """
+                    SELECT *
+                    FROM producao.relplan
+                    WHERE ativo = '1'
+                    ORDER BY planilha;
+                    """;
+                return new ObservableCollection<RelplanModel>(await QueryAsync<RelplanModel>(sql));
             }
             catch (Exception)
             {
@@ -188,12 +206,14 @@ namespace Producao
             try
             {
                 Produtos = new ObservableCollection<ProdutoModel>();
-                using DatabaseContext db = new();
-                var data = await db.Produtos
-                    .OrderBy(c => c.descricao)
-                    .Where(c => c.planilha.Equals(planilha))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.produtos
+                    WHERE planilha = @planilha
+                      AND COALESCE(inativo, '') <> '-1'
+                    ORDER BY descricao;
+                    """;
+                var data = await QueryAsync<ProdutoModel>(sql, new { planilha });
                 //Produtos = new ObservableCollection<ProdutoModel>(data);
 
                 return new ObservableCollection<ProdutoModel>(data);
@@ -209,12 +229,14 @@ namespace Producao
             try
             {
                 DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.DescAdicionais
-                    .OrderBy(c => c.descricao_adicional)
-                    .Where(c => c.codigoproduto.Equals(codigo))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tabela_desc_adicional
+                    WHERE codigoproduto = @codigo
+                      AND COALESCE(inativo, '') <> '-1'
+                    ORDER BY descricao_adicional;
+                    """;
+                var data = await QueryAsync<TabelaDescAdicionalModel>(sql, new { codigo });
                 //DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>(data);
                 return new ObservableCollection<TabelaDescAdicionalModel>(data);
             }
@@ -229,12 +251,14 @@ namespace Producao
             try
             {
                 CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.complementoadicional)
-                    .Where(c => c.coduniadicional.Equals(coduniadicional))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tblcomplementoadicional
+                    WHERE coduniadicional = @coduniadicional
+                      AND COALESCE(inativo, '') <> '-1'
+                    ORDER BY complementoadicional;
+                    """;
+                var data = await QueryAsync<TblComplementoAdicionalModel>(sql, new { coduniadicional });
                 //CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>(data);
                 return new ObservableCollection<TblComplementoAdicionalModel>(data);
             }
@@ -248,8 +272,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.Requisicoes.FindAsync(num_requisicao); //Where(r => r.num_os_servico == num_os_servico).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.t_requisicao
+                    WHERE num_requisicao = @num_requisicao
+                    LIMIT 1;
+                    """;
+                return await QueryFirstOrDefaultAsync<RequisicaoModel>(sql, new { num_requisicao });
             }
             catch (Exception)
             {
@@ -261,9 +290,14 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.Requisicoes.OrderBy(u => u.num_requisicao).Where(r => r.num_os_servico == num_os_servico).LastOrDefaultAsync();
-                //await _context.TaskOrder.OrderBy(u => u.TaskOrderId).LastOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.t_requisicao
+                    WHERE num_os_servico = @num_os_servico
+                    ORDER BY num_requisicao DESC
+                    LIMIT 1;
+                    """;
+                return await QueryFirstOrDefaultAsync<RequisicaoModel>(sql, new { num_os_servico });
             }
             catch (Exception)
             {
@@ -275,13 +309,42 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                /*db.Entry(requisicaoDetalhe).State = requisicaoDetalhe.cod_det_req == null ?
-                                   EntityState.Added :
-                                   EntityState.Modified;*/
+                await using var conn = CreateConnection();
+                if (requisicaoDetalhe.cod_det_req is null or 0)
+                {
+                    const string insertSql = """
+                        INSERT INTO producao.t_detalhes_req
+                            (num_requisicao, quantidade, data, alterado_por, ok, data_ok, ok_expedido, observacao, voltagem, local_shop, complemento_chk, codcompladicional, volume, dividir_qtd_volume, agupar)
+                        VALUES
+                            (@num_requisicao, @quantidade, @data, @alterado_por, @ok, @data_ok, @ok_expedido, @observacao, @voltagem, @local_shop, @complemento_chk, @codcompladicional, @volume, @dividir_qtd_volume, @agupar)
+                        RETURNING cod_det_req;
+                        """;
+                    requisicaoDetalhe.cod_det_req = await conn.ExecuteScalarAsync<long>(insertSql, requisicaoDetalhe);
+                }
+                else
+                {
+                    const string updateSql = """
+                        UPDATE producao.t_detalhes_req
+                        SET num_requisicao = @num_requisicao,
+                            quantidade = @quantidade,
+                            data = @data,
+                            alterado_por = @alterado_por,
+                            ok = @ok,
+                            data_ok = @data_ok,
+                            ok_expedido = @ok_expedido,
+                            observacao = @observacao,
+                            voltagem = @voltagem,
+                            local_shop = @local_shop,
+                            complemento_chk = @complemento_chk,
+                            codcompladicional = @codcompladicional,
+                            volume = @volume,
+                            dividir_qtd_volume = @dividir_qtd_volume,
+                            agupar = @agupar
+                        WHERE cod_det_req = @cod_det_req;
+                        """;
+                    await conn.ExecuteAsync(updateSql, requisicaoDetalhe);
+                }
 
-                await db.RequisicaoDetalhes.SingleMergeAsync(requisicaoDetalhe);
-                await db.SaveChangesAsync();
                 return requisicaoDetalhe;
             }
             catch (Exception)
@@ -294,8 +357,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ReqDetalhes.Where(r => r.num_requisicao == num_requisicao).OrderBy(x => x.volume).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qry_req_detalhes
+                    WHERE num_requisicao = @num_requisicao
+                    ORDER BY volume;
+                    """;
+                var data = await QueryAsync<ReqDetalhesModel>(sql, new { num_requisicao });
                 return new ObservableCollection<ReqDetalhesModel>(data);
             }
             catch (Exception)
@@ -308,8 +376,13 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.RequisicaoDetalhes.FindAsync(codDetReq);
+                const string sql = """
+                    SELECT *
+                    FROM producao.t_detalhes_req
+                    WHERE cod_det_req = @codDetReq
+                    LIMIT 1;
+                    """;
+                var data = await QueryFirstOrDefaultAsync<DetalheRequisicaoModel>(sql, new { codDetReq });
                 return data;
             }
             catch (Exception)
@@ -322,8 +395,12 @@ namespace Producao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.QryRequisicaoDetalhes.Where(r => r.num_requisicao == num_requisicao).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry_req_detalhes_relatorio_os_chk
+                    WHERE num_requisicao = @num_requisicao;
+                    """;
+                var data = await QueryAsync<QryRequisicaoDetalheModel>(sql, new { num_requisicao });
                 return new ObservableCollection<QryRequisicaoDetalheModel>(data);
             }
             catch (Exception)
@@ -334,16 +411,24 @@ namespace Producao
 
         public async Task GravarItensReceitaAsync(long? num_requisicao)
         {
-            using DatabaseContext db = new();
-            var strategy = db.Database.CreateExecutionStrategy();
+            await using var conn = CreateConnection();
+            await conn.OpenAsync();
 
-            RequisicaoModel requisicao = await db.Requisicoes.FindAsync(num_requisicao);
-            ProdutoServicoModel produtoServico = await db.ProdutoServicos.FindAsync(requisicao.num_os_servico);
-            ProdutoOsModel produtoOs = await db.ProdutoOs.FirstOrDefaultAsync(x => x.num_os_produto == produtoServico.num_os_produto);
+            RequisicaoModel requisicao = await conn.QueryFirstOrDefaultAsync<RequisicaoModel>(
+                "SELECT * FROM producao.t_requisicao WHERE num_requisicao = @num_requisicao LIMIT 1;",
+                new { num_requisicao });
+            ProdutoServicoModel produtoServico = await conn.QueryFirstOrDefaultAsync<ProdutoServicoModel>(
+                "SELECT * FROM producao.tbl_produtos_servico WHERE num_os_servico = @num_os_servico LIMIT 1;",
+                new { requisicao.num_os_servico });
+            ProdutoOsModel produtoOs = await conn.QueryFirstOrDefaultAsync<ProdutoOsModel>(
+                "SELECT * FROM producao.tbl_produto_os WHERE num_os_produto = @num_os_produto LIMIT 1;",
+                new { produtoServico.num_os_produto });
             double? quantidade = 0;
             if (produtoServico.cod_detalhe_compl != null)
             {
-                ComplementoCheckListModel? complementoCheckList = await db.ComplementoCheckLists.FindAsync(produtoServico.cod_detalhe_compl);
+                ComplementoCheckListModel? complementoCheckList = await conn.QueryFirstOrDefaultAsync<ComplementoCheckListModel>(
+                    "SELECT * FROM producao.t_complemento_chk WHERE codcompl = @cod_detalhe_compl LIMIT 1;",
+                    new { produtoServico.cod_detalhe_compl });
                 quantidade = complementoCheckList.qtd;
             }
             else 
@@ -353,13 +438,15 @@ namespace Producao
 
             if (produtoOs.cod_desc_adicional != null) 
 
-            await strategy.ExecuteAsync(async () =>
+            await using (var transaction = await conn.BeginTransactionAsync())
             {
-                using var transaction = db.Database.BeginTransaction();
                 try
                 {
 
-                    var receita = await db.RequisicaoReceitas.Where(r => r.codcompladicional_produto == produtoOs.cod_compl_adicional).ToListAsync();
+                    var receita = await conn.QueryAsync<RequisicaoReceitaModel>(
+                        "SELECT * FROM producao.tbl_requisicao_receita WHERE codcompladicional_produto = @cod_compl_adicional;",
+                        new { produtoOs.cod_compl_adicional },
+                        transaction);
                     foreach (var item in receita)
                     {
                         var ReqDetalhe = new DetalheRequisicaoModel
@@ -372,31 +459,52 @@ namespace Producao
                             alterado_por = Environment.UserName
                         };
 
-                        var encontrado = await db.RequisicaoDetalhes.FirstOrDefaultAsync(x => x.num_requisicao == requisicao.num_requisicao && x.codcompladicional == ReqDetalhe.codcompladicional);
+                        var encontrado = await conn.QueryFirstOrDefaultAsync<DetalheRequisicaoModel>(
+                            """
+                            SELECT *
+                            FROM producao.t_detalhes_req
+                            WHERE num_requisicao = @num_requisicao
+                              AND codcompladicional = @codcompladicional
+                            LIMIT 1;
+                            """,
+                            new { ReqDetalhe.num_requisicao, ReqDetalhe.codcompladicional },
+                            transaction);
                         if (encontrado == null)
                         {
-                            await db.RequisicaoDetalhes.AddAsync(ReqDetalhe);
-                            await db.SaveChangesAsync();
+                            await conn.ExecuteAsync(
+                                """
+                                INSERT INTO producao.t_detalhes_req
+                                    (num_requisicao, codcompladicional, quantidade, data, alterado_por)
+                                VALUES
+                                    (@num_requisicao, @codcompladicional, @quantidade, @data, @alterado_por);
+                                """,
+                                ReqDetalhe,
+                                transaction);
                         }
                                    
                         
                     }
-                    transaction.Commit();
+                    await transaction.CommitAsync();
                 }
                 catch (Exception)
                 {
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
                     throw;
                 }
-            });
+            }
         }
 
         public async Task<ChecklistPrdutoRequisicaoModel> GetPrdutoRequisicaoAsync(long? num_requisicao)
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ChecklistPrdutooRequisicoes.Where(r => r.num_requisicao == num_requisicao).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry_checklist_prduto_requisicao
+                    WHERE num_requisicao = @num_requisicao
+                    LIMIT 1;
+                    """;
+                var data = await QueryFirstOrDefaultAsync<ChecklistPrdutoRequisicaoModel>(sql, new { num_requisicao });
                 return data;
             }
             catch (Exception)
@@ -415,3 +523,4 @@ namespace Producao
 
     }
 }
+

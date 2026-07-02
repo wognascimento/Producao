@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.ObjectModel;
@@ -36,13 +37,13 @@ namespace Producao.Views.RelatoriosTecnicos
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EstabilidadeViewModel vm = (EstabilidadeViewModel)DataContext;
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
+                vm.Siglas = await vm.GetSiglasAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -63,13 +64,13 @@ namespace Producao.Views.RelatoriosTecnicos
                     return;
                 }
 
-                vm.Detalhes = await Task.Run(() => vm.GetItensAsync(vm.Sigla));
+                vm.Detalhes = await vm.GetItensAsync(vm.Sigla);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -86,14 +87,14 @@ namespace Producao.Views.RelatoriosTecnicos
                 var item = grid?.Items.CurrentEditItem as EstabilidadeItem ?? e.Cell.DataContext as EstabilidadeItem;
 
                 if (item != null)
-                    await Task.Run(() => vm.SaveEstabilidadeAsync(item));
+                    await vm.SaveEstabilidadeAsync(item);
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -105,7 +106,7 @@ namespace Producao.Views.RelatoriosTecnicos
 
                 EstabilidadeViewModel vm = (EstabilidadeViewModel)DataContext;
 
-                vm.Cliente = await Task.Run(() => vm.GetClienteAsync(vm.Sigla));
+                vm.Cliente = await vm.GetClienteAsync(vm.Sigla);
 
                 var provider = new XlsxFormatProvider();
                 Workbook workbook;
@@ -115,6 +116,7 @@ namespace Producao.Views.RelatoriosTecnicos
                 }
 
                 var worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.WorksheetPageSetup.FitToPages = false;
                 worksheet.WorksheetPageSetup.CenterHorizontally = true;
                 worksheet.WorksheetPageSetup.ScaleFactor = new Size(0.97, 0.97);
@@ -171,7 +173,7 @@ namespace Producao.Views.RelatoriosTecnicos
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -209,6 +211,11 @@ namespace Producao.Views.RelatoriosTecnicos
 
     public class EstabilidadeViewModel : INotifyPropertyChanged
     {
+        private static NpgsqlConnection CreateConnection()
+        {
+            return new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName) { this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName)); }
 
@@ -228,13 +235,13 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var query = from p in db.Siglas
-                            group p by p.sigla into g
-                            orderby g.Key
-                            select g.Key;
-
-                return new ObservableCollection<string>(await query.ToListAsync());
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<string>(
+                    @"SELECT sigla
+                      FROM producao.view_sigla_chkgeral
+                      GROUP BY sigla
+                      ORDER BY sigla;");
+                return new ObservableCollection<string>(data);
             }
             catch (Exception)
             {
@@ -246,10 +253,12 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var query = await db.Clientes.FindAsync(sigla);
-
-                return query;
+                using var conn = CreateConnection();
+                return await conn.QueryFirstOrDefaultAsync<ClienteModel>(
+                    @"SELECT sigla, nome, endereco, cidade, bairro, est
+                      FROM comercial.clientes
+                      WHERE sigla = @sigla;",
+                    new { sigla });
             }
             catch (Exception)
             {
@@ -261,31 +270,29 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var resultado = from qdQuantitativo in db.PropostaFechaQdQuantitativos
-                                join dimensaoDescComercial in db.propostaDimensoes
-                                on qdQuantitativo.coddimensao equals dimensaoDescComercial.coddimensao
-                                join descComercial in db.PropostaDescricaoComercials
-                                on dimensaoDescComercial.coddesccoml equals descComercial.coddesccoml
-                                where qdQuantitativo.sigla == sigla
-                                orderby descComercial.familia, descComercial.descricaocomercial, dimensaoDescComercial.dimensao
-                                select new EstabilidadeItem
-                                {
-                                    cod_linha_qdfecha = qdQuantitativo.cod_linha_qdfecha,
-                                    familia = descComercial.familia,
-                                    descricaocomercial = descComercial.descricaocomercial,
-                                    coddesccoml = descComercial.coddesccoml,
-                                    dimensao = dimensaoDescComercial.dimensao,
-                                    coddimensao = dimensaoDescComercial.coddimensao,
-                                    relatorio_estabilidade = dimensaoDescComercial.relatorio_estabilidade,
-                                    sigla = qdQuantitativo.sigla,
-                                    local = qdQuantitativo.local,
-                                    detalhe_local = qdQuantitativo.detalhe_local
-                                };
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<EstabilidadeItem>(
+                    @"SELECT
+                          q.cod_linha_qdfecha,
+                          d.familia,
+                          d.descricaocomercial,
+                          d.coddesccoml,
+                          dim.dimensao,
+                          dim.coddimensao,
+                          dim.relatorio_estabilidade,
+                          q.sigla,
+                          q.local,
+                          q.detalhe_local
+                      FROM comercial.tbl_fecha_qd_quantitativo q
+                      JOIN comercial.proposta_dimensaodescricaocomercial dim
+                        ON q.coddimensao = dim.coddimensao
+                      JOIN comercial.proposta_descricaocomercial d
+                        ON dim.coddesccoml = d.coddesccoml
+                      WHERE q.sigla = @sigla
+                      ORDER BY d.familia, d.descricaocomercial, dim.dimensao;",
+                    new { sigla });
 
-                var listaResultado = await resultado.ToListAsync();
-
-                return new ObservableCollection<EstabilidadeItem>(listaResultado);
+                return new ObservableCollection<EstabilidadeItem>(data);
             }
             catch (Exception)
             {
@@ -297,16 +304,15 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                
-                var dimensao = await db.propostaDimensoes.FindAsync(estabilidade.coddimensao);
+                if (estabilidade.coddimensao == null)
+                    return;
 
-                if (estabilidade.relatorio_estabilidade != "")
-                {
-                    dimensao.relatorio_estabilidade = estabilidade.relatorio_estabilidade;
-                    db.Entry(dimensao).Property(p => p.relatorio_estabilidade).IsModified = true;
-                } 
-                await db.SaveChangesAsync();
+                using var conn = CreateConnection();
+                await conn.ExecuteAsync(
+                    @"UPDATE comercial.proposta_dimensaodescricaocomercial
+                      SET relatorio_estabilidade = @relatorio_estabilidade
+                      WHERE coddimensao = @coddimensao;",
+                    estabilidade);
             }
             catch (Exception)
             {

@@ -1,64 +1,54 @@
-﻿<Window
+<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Producao.Views.PopUp"
-        xmlns:Syncfusion="http://schemas.syncfusion.com/wpf" 
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
         x:Class="Producao.Views.PopUp.ProducaoEmissaoOrdemServico"
         mc:Ignorable="d"
         Title="EMISSÃO ORDEM DE SERVIÇO" Height="450" Width="664" ResizeMode="NoResize" WindowStyle="ToolWindow" WindowStartupLocation="CenterOwner">
 
     <Grid>
-
         <GroupBox HorizontalAlignment="Center" Height="127" Margin="0,10,0,0" VerticalAlignment="Top" Width="644"/>
 
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Tipo da O.S." Margin="16,10,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="207">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Núm. O.S." Margin="246,10,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="207" Height="33">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Planilha" Margin="16,41,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="277">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Produto" Margin="16,74,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="503">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
+        <TextBlock Text="Tipo da O.S." Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="207" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
+        <TextBlock Text="Núm. O.S." Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="207" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Setor" Margin="10,142,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="509">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
+        <TextBlock Text="Planilha" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="277" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Quantidade" Margin="524,74,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
+        <TextBlock Text="Produto" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="503" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Data Inicial" Margin="10,180,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Data Final" Margin="119,180,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Shopping" Margin="10,218,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Tema" Margin="119,218,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="509">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
+        <TextBlock Text="Quantidade" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="104" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Orientação" Margin="10,256,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="618">
-            <TextBox TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
-        </Syncfusion:SfTextInputLayout>
+        <TextBlock Text="Setor" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="509" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Próximo Setor" Margin="10,335,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="509">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
-        <Syncfusion:SfTextInputLayout ContainerType="Outlined" HorizontalAlignment="Left" Hint="Num. Serviço" Margin="524,335,0,0" VerticalAlignment="Top" InputViewPadding="4" CharCountVisibility="Collapsed" HelperTextVisibility="Collapsed" Width="104">
-            <TextBox />
-        </Syncfusion:SfTextInputLayout>
+        <TextBlock Text="Data Inicial" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="104" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
+        <TextBlock Text="Data Final" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="104" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+        <TextBlock Text="Shopping" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="104" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+        <TextBlock Text="Tema" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="509" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+        <TextBlock Text="Orientação" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <TextBox Margin="0,0,2,2" Width="618" Height="58" HorizontalAlignment="Left" VerticalAlignment="Top" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" AcceptsReturn="True"/>
+
+        <TextBlock Text="Próximo Setor" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="509" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+        <TextBlock Text="Num. Serviço" Margin="0,0,2,2" VerticalAlignment="Top"/>
+        <telerik:RadWatermarkTextBox Margin="0,0,2,2" Width="104" HorizontalAlignment="Left" VerticalAlignment="Top"/>
     </Grid>
-
 </Window>

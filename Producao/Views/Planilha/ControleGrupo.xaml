@@ -58,13 +58,13 @@
                         <DataTemplate>
                             <CheckBox IsHitTestVisible="False"
                                       HorizontalAlignment="Center"
-                                      IsChecked="{Binding os, Converter={StaticResource ConverterBoolen}}"/>
+                                      IsChecked="{Binding os, Converter={StaticResource ConverterBoolen}}" Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellTemplate>
                     <telerik:GridViewDataColumn.CellEditTemplate>
                         <DataTemplate>
                             <CheckBox HorizontalAlignment="Center"
-                                      IsChecked="{Binding os, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                      IsChecked="{Binding os, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellEditTemplate>
                 </telerik:GridViewDataColumn>

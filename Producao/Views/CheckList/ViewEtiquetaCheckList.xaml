@@ -46,7 +46,7 @@
                     <telerik:GridViewDataColumn.CellTemplate>
                         <DataTemplate>
                             <telerik:RadButton Content="IMPRIMIR"
-                                               Click="OnImprimirEtiquetaCheckListClick"/>
+                                               Click="OnImprimirEtiquetaCheckListClick" Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>

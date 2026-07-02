@@ -39,16 +39,16 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0">
-            <TextBlock Text="REQUISIÇÃO NÚMERO"/>
+            <TextBlock Text="REQUISIÇÃO NÚMERO" Margin="0,0,2,2"/>
             <telerik:RadWatermarkTextBox x:Name="tbNumRequisicao"
                      Text="{Binding Requisicao.num_requisicao}"
                      TextAlignment="Center"
-                     PreviewKeyDown="tbNumRequisicao_PreviewKeyDown"/>
+                     PreviewKeyDown="tbNumRequisicao_PreviewKeyDown" Margin="0,0,2,2"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="0">
-            <TextBlock Text="BUSCAR PRODUTO POR CÓDIGO"/>
-            <telerik:RadWatermarkTextBox x:Name="tbCodproduto" PreviewKeyDown="OnBuscaProduto"/>
+            <TextBlock Text="BUSCAR PRODUTO POR CÓDIGO" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox x:Name="tbCodproduto" PreviewKeyDown="OnBuscaProduto" Margin="0,0,2,2"/>
         </StackPanel>
 
         <telerik:RadButton x:Name="btnBuscar"
@@ -58,61 +58,61 @@
                            HorizontalAlignment="Left"
                            VerticalAlignment="Bottom"
                            Content="..."
-                           Click="OnOpenDescricoes"/>
+                           Click="OnOpenDescricoes" Margin="0,0,2,2"/>
 
         <StackPanel Grid.Row="2" Grid.Column="0">
-            <TextBlock Text="PLANILHA"/>
+            <TextBlock Text="PLANILHA" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtPlanilha"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding Planilhas}"
                       DisplayMemberPath="planilha"
-                      SelectionChanged="OnSelectedPlanilha"/>
+                      SelectionChanged="OnSelectedPlanilha" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.Column="2">
-            <TextBlock Text="DESCRIÇÃO"/>
+            <TextBlock Text="DESCRIÇÃO" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtDescricao"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding Produtos}"
                       DisplayMemberPath="descricao"
-                      SelectionChanged="OnSelectedDescricao"/>
+                      SelectionChanged="OnSelectedDescricao" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3">
-            <TextBlock Text="DESCRIÇÃO ADICIONAL"/>
+            <TextBlock Text="DESCRIÇÃO ADICIONAL" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtDescricaoAdicional"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding DescAdicionais}"
                       DisplayMemberPath="descricao_adicional"
-                      SelectionChanged="OnSelectedDescricaoAdicional"/>
+                      SelectionChanged="OnSelectedDescricaoAdicional" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
-            <TextBlock Text="COMPLEMENTO ADICIONAL"/>
+            <TextBlock Text="COMPLEMENTO ADICIONAL" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtComplementoAdicional"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding CompleAdicionais}"
                       DisplayMemberPath="complementoadicional"
-                      SelectionChanged="OnSelectedComplementoAdicional"/>
+                      SelectionChanged="OnSelectedComplementoAdicional" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="5" Grid.Column="0">
-            <TextBlock Text="QUANTIDADE"/>
-            <telerik:RadWatermarkTextBox x:Name="txtQuantidade"/>
+            <TextBlock Text="QUANTIDADE" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox x:Name="txtQuantidade" Margin="0,0,2,2"/>
         </StackPanel>
 
         <StackPanel Grid.Row="5" Grid.Column="2" Width="100" HorizontalAlignment="Left">
-            <TextBlock Text="UNIDADE"/>
-            <telerik:RadWatermarkTextBox x:Name="txtUnidade" IsEnabled="False"/>
+            <TextBlock Text="UNIDADE" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox x:Name="txtUnidade" IsEnabled="False" Margin="0,0,2,2"/>
         </StackPanel>
 
         <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3">
-            <TextBlock Text="OBSERVAÇÃO"/>
-            <telerik:RadWatermarkTextBox x:Name="txtObservacao"/>
+            <TextBlock Text="OBSERVAÇÃO" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox x:Name="txtObservacao" Margin="0,0,2,2"/>
         </StackPanel>
 
         <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3">
@@ -130,12 +130,12 @@
                 <ColumnDefinition Width="65"/>
             </Grid.ColumnDefinitions>
 
-            <telerik:RadButton Grid.Column="0" Content="LIMPAR" Click="OnLimparClick"/>
-            <telerik:RadButton Grid.Column="2" Content="ADICIONAR" Click="OnAdicionarClick"/>
-            <telerik:RadButton Grid.Column="4" Content="EDITAR" Click="OnEditClick"/>
-            <telerik:RadButton Grid.Column="6" Content="BUSCAR RECEITA" Click="OnReceitaClick"/>
-            <telerik:RadButton Grid.Column="8" Content="REQUISICAO" Click="OnPrintClick"/>
-            <telerik:RadButton Grid.Column="10" Content="ETIQUETA" Click="OnPrintEtiquetaClick"/>
+            <telerik:RadButton Grid.Column="0" Content="LIMPAR" Click="OnLimparClick" Margin="0,0,2,2"/>
+            <telerik:RadButton Grid.Column="2" Content="ADICIONAR" Click="OnAdicionarClick" Margin="0,0,2,2"/>
+            <telerik:RadButton Grid.Column="4" Content="EDITAR" Click="OnEditClick" Margin="0,0,2,2"/>
+            <telerik:RadButton Grid.Column="6" Content="BUSCAR RECEITA" Click="OnReceitaClick" Margin="0,0,2,2"/>
+            <telerik:RadButton Grid.Column="8" Content="REQUISICAO" Click="OnPrintClick" Margin="0,0,2,2"/>
+            <telerik:RadButton Grid.Column="10" Content="ETIQUETA" Click="OnPrintEtiquetaClick" Margin="0,0,2,2"/>
         </Grid>
 
         <telerik:RadGridView x:Name="itens"

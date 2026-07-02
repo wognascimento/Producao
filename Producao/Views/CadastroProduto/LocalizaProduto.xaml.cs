@@ -42,7 +42,7 @@ namespace Producao.Views.CadastroProduto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             finally
             {
@@ -84,7 +84,7 @@ namespace Producao.Views.CadastroProduto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 

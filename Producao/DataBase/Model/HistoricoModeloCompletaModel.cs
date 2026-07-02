@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("view_historico_modelo_completa", Schema = "modelos")]
     public class HistoricoModeloCompletaModel
     {

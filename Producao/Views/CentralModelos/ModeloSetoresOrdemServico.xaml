@@ -53,9 +53,9 @@
         </telerik:RadGridView>
 
         <StatusBar Grid.Row="1">
-            <telerik:RadButton Content="GERAR O.S" Click="OnCreateOrdemServico"/>
+            <telerik:RadButton Content="GERAR O.S" Click="OnCreateOrdemServico" Margin="0,0,2,2"/>
             <Separator Width="1"/>
-            <telerik:RadButton Content="IMPRIMIR O.S/REQUISIÇÃO" Click="OnPrintOS" Visibility="Collapsed"/>
+            <telerik:RadButton Content="IMPRIMIR O.S/REQUISIÇÃO" Click="OnPrintOS" Visibility="Collapsed" Margin="0,0,2,2"/>
         </StatusBar>
     </Grid>
 </Window>

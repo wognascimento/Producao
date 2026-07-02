@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -31,14 +32,14 @@ namespace Producao.Views.CentralModelos
             try
             {
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
-                vm.ItensChkList = await Task.Run(() => vm.GetControlesAsync(modelo));
+                vm.ItensChkList = await vm.GetControlesAsync(modelo);
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
 
                 //MessageBox.Show("Precisona a tecla F3 para dar baixa na linha selecionada.","Info Baixa", MessageBoxButton.OK, MessageBoxImage.Question);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
             }
         }
@@ -59,13 +60,13 @@ namespace Producao.Views.CentralModelos
                     try
                     {
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                        await Task.Run(() => vm.BaixaModeloAsync(vm.ItemChkList.coddetalhescompl, modelo.id_modelo));
-                        vm.ItensChkList = await Task.Run(() => vm.GetControlesAsync(modelo));
+                        await vm.BaixaModeloAsync(vm.ItemChkList.coddetalhescompl, modelo.id_modelo);
+                        vm.ItensChkList = await vm.GetControlesAsync(modelo);
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message);
+                        Producao.ErrorDialog.Show(ex, "Erro");
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     }
                 }
@@ -99,8 +100,19 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ModelosControle.Where(c => c.tema == modelo.tema && c.codcompladicional == modelo.codcompladicional && c.id_modelo == null && c.qtd_compl_chk > 0).ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<ControleModeloBaixa>(
+                    @"SELECT *
+                      FROM modelos.qry_controle_modelo_baixa
+                      WHERE tema = @tema
+                        AND codcompladicional = @codcompladicional
+                        AND id_modelo IS NULL
+                        AND qtd_compl_chk > 0;",
+                    new
+                    {
+                        modelo.tema,
+                        modelo.codcompladicional
+                    });
                 return new ObservableCollection<ControleModeloBaixa>(data);
             }
             catch (Exception)
@@ -113,11 +125,12 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                DetalhesComplemento det = await db.DetalhesComplementos.FindAsync(coddetalhescompl);
-                det.id_modelo = id_modelo;
-                await db.DetalhesComplementos.SingleUpdateAsync(det);
-                await db.SaveChangesAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                await conn.ExecuteAsync(
+                    @"UPDATE producao.tbldetalhescomplemento
+                      SET id_modelo = @id_modelo
+                      WHERE coddetalhescompl = @coddetalhescompl;",
+                    new { coddetalhescompl, id_modelo });
             }
             catch (Exception)
             {

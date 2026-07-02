@@ -48,14 +48,14 @@ namespace Producao.Views.Construcao
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 EtiquetaConstrucaoViewModel vm = (EtiquetaConstrucaoViewModel)DataContext;
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
+                vm.Planilhas = await vm.GetPlanilhasAsync();
                 vm.Tamanhos = new ObservableCollection<string>() { "P", "M", "G", "GG" };
                 vm.Dificuldades = new ObservableCollection<string>() { "FÁCIL", "MÉDIO", "DIFÍCIL", "MUITO DIFÍCIL" };
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -82,7 +82,7 @@ namespace Producao.Views.Construcao
 
                 //txtUnidade.Text = string.Empty;
 
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(planilha?.planilha));
+                vm.Produtos = await vm.GetProdutosAsync(planilha?.planilha);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 clearMedidas();
                 txtDescricao.Focus();
@@ -90,7 +90,7 @@ namespace Producao.Views.Construcao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -112,7 +112,7 @@ namespace Producao.Views.Construcao
 
                 //txtUnidade.Text = string.Empty;
 
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(produto?.codigo));
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(produto?.codigo);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 clearMedidas();
                 txtDescricaoAdicional.Focus();
@@ -120,7 +120,7 @@ namespace Producao.Views.Construcao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -138,7 +138,7 @@ namespace Producao.Views.Construcao
 
                 //txtUnidade.Text = string.Empty;
 
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(adicional?.coduniadicional));
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(adicional?.coduniadicional);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 clearMedidas();
                 txtComplementoAdicional.Focus();
@@ -146,7 +146,7 @@ namespace Producao.Views.Construcao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -175,13 +175,13 @@ namespace Producao.Views.Construcao
                 txt_dificuldade.SelectedItem = complemento?.dificuldade;
                 
 
-                vm.Pecas = await Task.Run(() => vm.GetPecasAsync(complemento?.codcompladicional));
+                vm.Pecas = await vm.GetPecasAsync(complemento?.codcompladicional);
                 if (vm.Pecas.Count == 0)
                 {
-                    vm.Detalhes = await Task.Run(() => vm.GetDetalhesAsync(complemento?.codcompladicional));
+                    vm.Detalhes = await vm.GetDetalhesAsync(complemento?.codcompladicional);
                     foreach (var det in vm.Detalhes)
                     {
-                        await Task.Run(() => vm.SaveConstrucaoDetalheAsync(
+                        await vm.SaveConstrucaoDetalheAsync(
                             new ConstrucaoPecaModel
                             {
                                 ano = DateTime.Now.Year,
@@ -189,12 +189,12 @@ namespace Producao.Views.Construcao
                                 item = det.item,
                                 descricao_peca = det.descricao_peca,
                                 volume_etiqueta = det.volume,
-                            }));
+                            });
                     }
-                    vm.Pecas = await Task.Run(() => vm.GetPecasAsync(complemento?.codcompladicional));
+                    vm.Pecas = await vm.GetPecasAsync(complemento?.codcompladicional);
                 }
 
-                vm.Historicos = await Task.Run(() => vm.GetHistoricoConstrucaoAsync(complemento?.codcompladicional));
+                vm.Historicos = await vm.GetHistoricoConstrucaoAsync(complemento?.codcompladicional);
 
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -202,7 +202,7 @@ namespace Producao.Views.Construcao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             
         }
@@ -254,12 +254,12 @@ namespace Producao.Views.Construcao
                     return;
                 }
 
-                vm.Peca = await Task.Run(() => vm.SaveConstrucaoDetalheAsync(data));
+                vm.Peca = await vm.SaveConstrucaoDetalheAsync(data);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 var toRemove = vm.Pecas.Where(x => x.id_detalhes == null).ToList();
                 foreach (var item in toRemove)
                     vm.Pecas.Remove(item);
@@ -287,14 +287,15 @@ namespace Producao.Views.Construcao
             application.DefaultVersion = ExcelVersion.Xlsx;
             IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("ETIQUETA_REQUISICAO_MODELO.xlsx"));
             IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
 
             var etiqueta = Enum.Parse(typeof(Etiqueta), "Primeira");
             int paginas = (int)Math.Ceiling(Decimal.Divide(count, 4));
             int _etiqueta = 1;
             int _pagina = 1;
 
-            vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(vm.Compledicional.codcompladicional));
-            vm.ChecklistPrduto = await Task.Run(() => vm.GetChecklistPrdutoAsync(vm.Compledicional.codcompladicional));
+            vm.Descricao = await vm.GetDescricaoAsync(vm.Compledicional.codcompladicional);
+            vm.ChecklistPrduto = await vm.GetChecklistPrdutoAsync(vm.Compledicional.codcompladicional);
 
             //foreach (EtiquetaEmitidaModel item in filteredResult)
             for (int i = 0; i < count; i++)
@@ -464,7 +465,7 @@ namespace Producao.Views.Construcao
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
 
@@ -486,7 +487,7 @@ namespace Producao.Views.Construcao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
 
@@ -517,9 +518,10 @@ namespace Producao.Views.Construcao
                 application.DefaultVersion = ExcelVersion.Xlsx;
                 IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("DESCRICOES_CONSTRUCAO_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
 
-                vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(vm.Compledicional.codcompladicional));
-                vm.ChecklistPrduto = await Task.Run(() => vm.GetChecklistPrdutoAsync(vm.Compledicional.codcompladicional));
+                vm.Descricao = await vm.GetDescricaoAsync(vm.Compledicional.codcompladicional);
+                vm.ChecklistPrduto = await vm.GetChecklistPrdutoAsync(vm.Compledicional.codcompladicional);
 
                 worksheet.Range["A1"].Text = vm.Descricao.descricao_completa;
                 worksheet.Range["A4"].Text = vm?.ChecklistPrduto?.sigla;
@@ -591,7 +593,7 @@ namespace Producao.Views.Construcao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -622,8 +624,8 @@ namespace Producao.Views.Construcao
                     throw new InvalidOperationException("Temperatura não informada.");
                 */
                 var volumes = vm.Pecas.OrderBy(o => o.volume_etiqueta).GroupBy(user => user.volume_etiqueta).ToList();
-                vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(vm.Compledicional.codcompladicional));
-                vm.ChecklistPrduto = await Task.Run(() => vm.GetChecklistPrdutoAsync(vm.Compledicional.codcompladicional));
+                vm.Descricao = await vm.GetDescricaoAsync(vm.Compledicional.codcompladicional);
+                vm.ChecklistPrduto = await vm.GetChecklistPrdutoAsync(vm.Compledicional.codcompladicional);
                 var fieldCount = volumes.Count;
                 
                 for (int i = 0; i < fieldCount; i++)
@@ -755,7 +757,7 @@ namespace Producao.Views.Construcao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             /*
             EtiquetaConstrucaoViewModel? vm = (EtiquetaConstrucaoViewModel)DataContext;
@@ -804,7 +806,7 @@ namespace Producao.Views.Construcao
 
                     foreach (ConstrucaoPecaModel item in e.Items.OfType<ConstrucaoPecaModel>())
                     {
-                        await Task.Run(() => vm.DeleteControladoAsync((long)item.id_detalhes));
+                        await vm.DeleteControladoAsync((long)item.id_detalhes);
                     }
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -812,15 +814,15 @@ namespace Producao.Views.Construcao
                     var reload = MessageBox.Show("Deseja Recarregar as peças?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
                     if (reload == MessageBoxResult.Yes) 
                     {
-                        vm.Pecas = await Task.Run(() => vm.GetPecasAsync(vm.Compledicional?.codcompladicional));
+                        vm.Pecas = await vm.GetPecasAsync(vm.Compledicional?.codcompladicional);
                         if (vm.Pecas.Count == 0)
                         {
                             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                            vm.Detalhes = await Task.Run(() => vm.GetDetalhesAsync(vm.Compledicional?.codcompladicional));
+                            vm.Detalhes = await vm.GetDetalhesAsync(vm.Compledicional?.codcompladicional);
                             foreach (var det in vm.Detalhes)
                             {
-                                await Task.Run(() => vm.SaveConstrucaoDetalheAsync(
+                                await vm.SaveConstrucaoDetalheAsync(
                                     new ConstrucaoPecaModel
                                     {
                                         ano = DateTime.Now.Year,
@@ -828,9 +830,9 @@ namespace Producao.Views.Construcao
                                         item = det.item,
                                         descricao_peca = det.descricao_peca,
                                         volume_etiqueta = det.volume,
-                                    }));
+                                    });
                             }
-                            vm.Pecas = await Task.Run(() => vm.GetPecasAsync(vm.Compledicional?.codcompladicional));
+                            vm.Pecas = await vm.GetPecasAsync(vm.Compledicional?.codcompladicional);
 
                             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                         }
@@ -844,7 +846,7 @@ namespace Producao.Views.Construcao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             

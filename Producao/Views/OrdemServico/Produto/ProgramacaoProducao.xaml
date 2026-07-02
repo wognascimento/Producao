@@ -39,78 +39,78 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Grid.Column="0">
-                <TextBlock Text="LOCAL"/>
+                <TextBlock Text="LOCAL" Margin="0,0,2,2"/>
                 <telerik:RadComboBox ItemsSource="{Binding Locais}"
                           DisplayMemberPath="localizacao"
                           SelectedValuePath="localizacao"
-                          SelectionChanged="LocaisSelectionChanged"/>
+                          SelectionChanged="LocaisSelectionChanged" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="1" Grid.Column="0">
-                <TextBlock Text="SETORES"/>
+                <TextBlock Text="SETORES" Margin="0,0,2,2"/>
                 <telerik:RadComboBox ItemsSource="{Binding Setores}"
                           DisplayMemberPath="setor"
                           SelectedValuePath="setor"
                           IsTextSearchEnabled="True"
-                          SelectionChanged="SetoresSelectionChanged"/>
+                          SelectionChanged="SetoresSelectionChanged" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="2" Grid.Column="0">
-                <TextBlock Text="ENCARREGADO"/>
-                <telerik:RadWatermarkTextBox/>
+                <TextBlock Text="ENCARREGADO" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="3" Grid.Column="0">
-                <TextBlock Text="RESPONSÁVEL"/>
-                <telerik:RadWatermarkTextBox/>
+                <TextBlock Text="RESPONSÁVEL" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="0" Grid.Column="1" Margin="5,0,0,0">
-                <TextBlock Text="FILA/M.O"/>
-                <telerik:RadWatermarkTextBox x:Name="txtFila" IsEnabled="False" TextAlignment="Center"/>
+                <TextBlock Text="FILA/M.O" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="txtFila" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="1" Grid.Column="1" Margin="5,0,0,0">
-                <TextBlock Text="EM ANDAMENTO"/>
-                <telerik:RadWatermarkTextBox x:Name="txtAndamento" IsEnabled="False" TextAlignment="Center"/>
+                <TextBlock Text="EM ANDAMENTO" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="txtAndamento" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="2" Grid.Column="1" Margin="5,0,0,0">
-                <TextBlock Text="EMBALAGEM/EXPEDIÇÃO"/>
-                <telerik:RadWatermarkTextBox x:Name="txtProjeto" IsEnabled="False" TextAlignment="Center"/>
+                <TextBlock Text="EMBALAGEM/EXPEDIÇÃO" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="txtProjeto" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="3" Grid.Column="1" Margin="5,0,0,0">
-                <TextBlock Text="ESPAÇO FÍSICO"/>
-                <telerik:RadWatermarkTextBox x:Name="txtDiretoria" IsEnabled="False" TextAlignment="Center"/>
+                <TextBlock Text="ESPAÇO FÍSICO" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="txtDiretoria" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="0" Grid.Column="2" Margin="5,0,0,0">
-                <TextBlock Text="INDEFINIDO"/>
-                <telerik:RadWatermarkTextBox x:Name="txtIndefinido" IsEnabled="False" TextAlignment="Center"/>
+                <TextBlock Text="INDEFINIDO" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="txtIndefinido" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="1" Grid.Column="2" Margin="5,0,0,0">
-                <TextBlock Text="PROJETOS"/>
-                <telerik:RadWatermarkTextBox x:Name="txtProjetos" IsEnabled="False" TextAlignment="Center"/>
+                <TextBlock Text="PROJETOS" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="txtProjetos" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="2" Grid.Column="2" Margin="5,0,0,0">
-                <TextBlock Text="FALTA MATERIAL INTERNO / TRANSF"/>
-                <telerik:RadWatermarkTextBox x:Name="txtFaltaMaterialTranf" IsEnabled="False" TextAlignment="Center"/>
+                <TextBlock Text="FALTA MATERIAL INTERNO / TRANSF" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="txtFaltaMaterialTranf" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="3" Grid.Column="2" Margin="5,0,0,0">
-                <TextBlock Text="FALTA MATERIAL EXTERNO / COMPRAS"/>
-                <telerik:RadWatermarkTextBox x:Name="txtFaltaMaterialCompras" IsEnabled="False" TextAlignment="Center"/>
+                <TextBlock Text="FALTA MATERIAL EXTERNO / COMPRAS" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="txtFaltaMaterialCompras" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Grid.Row="0" Grid.Column="3" Margin="5,0,0,0">
-                <TextBlock Text="PLANILHAS"/>
+                <TextBlock Text="PLANILHAS" Margin="0,0,2,2"/>
                 <telerik:RadComboBox ItemsSource="{Binding Aprovados}"
                           DisplayMemberPath="SiglaServ"
                           SelectedValuePath="SiglaServ"
-                          IsTextSearchEnabled="True"/>
+                          IsTextSearchEnabled="True" Margin="0,0,2,2"/>
             </StackPanel>
 
             <telerik:RadButton Grid.Row="3"
@@ -118,7 +118,7 @@
                                HorizontalAlignment="Right"
                                Padding="10,6"
                                Content="IMPRIMIR"
-                               Click="OnPrintClick"/>
+                               Click="OnPrintClick" Margin="0,0,2,2"/>
         </Grid>
 
         <telerik:RadGridView x:Name="programacao"

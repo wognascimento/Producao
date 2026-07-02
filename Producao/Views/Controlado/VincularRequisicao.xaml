@@ -15,21 +15,21 @@
     </UserControl.Resources>
 
     <StackPanel>
-        <TextBlock Margin="10,0,10,0" Text="Número Requisição"/>
+        <TextBlock Margin="0,0,2,2" Text="Número Requisição"/>
         <telerik:RadWatermarkTextBox
             x:Name="txtRequisicao"
             WatermarkContent="Número Requisição"
             PreviewKeyDown="OnBuscaProdutos"
-            Margin="10,0,10,8"
+            Margin="0,0,2,2"
             Width="150"
             HorizontalAlignment="Left"/>
 
-        <TextBlock Margin="10,0,10,0" Text="Código da etiqueta"/>
+        <TextBlock Margin="0,0,2,2" Text="Código da etiqueta"/>
         <telerik:RadWatermarkTextBox
             x:Name="codigoProduto"
             WatermarkContent="Código da etiqueta"
             PreviewKeyDown="OnAdicionarProduto"
-            Margin="10,0,10,8"
+            Margin="0,0,2,2"
             Width="150"
             HorizontalAlignment="Left"/>
 
@@ -63,7 +63,7 @@
             Content="Baixar Requisição"
             Width="180"
             Height="30"
-            Margin="10,0,0,0"
+            Margin="0,0,2,2"
             HorizontalAlignment="Left"
             Click="OnBaixaRequisicaoClick"/>
     </StackPanel>

@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_baixa_os_producao", Schema = "ht")]
     public class BaixaOsProducaoModel
     {

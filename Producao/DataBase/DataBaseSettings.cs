@@ -14,7 +14,6 @@ public sealed class DataBaseSettings
     private const string EnvDatabase = "PRODUCAO_DB_NAME";
     private const string EnvUsername = "PRODUCAO_DB_USER";
     private const string EnvPassword = "PRODUCAO_DB_PASSWORD";
-    private const string EnvSyncfusionLicense = "PRODUCAO_SYNCFUSION_LICENSE";
 
     private string? connectionStringValue;
 
@@ -25,7 +24,6 @@ public sealed class DataBaseSettings
     public NameValueCollection? AppSetting { get; set; }
     public string CaminhoSistema { get; set; } = @"C:\SIG\Producao S.I.G\";
     public string? UpdateInfoUrl { get; set; }
-    public string? SyncfusionLicense { get; set; }
     public static DataBaseSettings Instance => instance;
 
     public string? ConnectionString
@@ -50,8 +48,6 @@ public sealed class DataBaseSettings
         Password = ReadSetting("Password", EnvPassword, null);
         CaminhoSistema = ReadSetting("SystemPath", null, CaminhoSistema);
         UpdateInfoUrl = ReadSetting("UpdateInfoUrl", null, "http://192.168.0.49/downloads/producao/version.json");
-        SyncfusionLicense = ReadSetting("SyncfusionLicense", EnvSyncfusionLicense, null);
-
         RefreshConnectionString();
     }
 

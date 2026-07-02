@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.ObjectModel;
@@ -36,7 +37,7 @@ namespace Producao.Views.Planilha
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -56,20 +57,10 @@ namespace Producao.Views.Planilha
                 await vm.SaveAsync(registro);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
-            catch (DbUpdateException ex)
-            {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.InnerException?.Message);
-
-                if (registro is not null && registro.codareatema == 0)
-                    ((AreaTemaViewModel)DataContext).AreaTemas.Remove(registro);
-                else
-                    gridAreaTema.Rebind();
-            }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
 
                 if (registro is not null && registro.codareatema == 0)
                     ((AreaTemaViewModel)DataContext).AreaTemas.Remove(registro);
@@ -147,10 +138,11 @@ namespace Producao.Views.Planilha
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Aprovados
-                    .OrderBy(a => a.sigla_serv)
-                    .ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<AprovadoModel>(
+                    @"SELECT *
+                      FROM producao.qry_aprovados
+                      ORDER BY sigla_serv;");
                 return new ObservableCollection<AprovadoModel>(data);
             }
             catch (Exception)
@@ -163,13 +155,14 @@ namespace Producao.Views.Planilha
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Aprovados
-                    .Where(a => a.sigla_serv == sigla)
-                    .OrderBy(a => a.tema)
-                    .GroupBy(a => a.tema)
-                    .Select(a => a.Key)
-                    .ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<string>(
+                    @"SELECT tema
+                      FROM producao.qry_aprovados
+                      WHERE sigla_serv = @sigla
+                      GROUP BY tema
+                      ORDER BY tema;",
+                    new { sigla });
                 return new ObservableCollection<string>(data);
             }
             catch (Exception)
@@ -182,9 +175,10 @@ namespace Producao.Views.Planilha
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.AreaTemas
-                    .ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<TblAreaTemaModel>(
+                    @"SELECT *
+                      FROM producao.tbl_area_temas;");
                 return new ObservableCollection<TblAreaTemaModel>(data);
             }
             catch (Exception)
@@ -197,13 +191,48 @@ namespace Producao.Views.Planilha
         {
             try
             {
-                using DatabaseContext db = new();
-
-                db.Entry(areaTema).State = areaTema.codareatema == 0 ?
-                                   EntityState.Added :
-                                   EntityState.Modified;
-
-                db.SaveChanges();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                if (areaTema.codareatema == 0)
+                {
+                    areaTema.codareatema = await conn.ExecuteScalarAsync<long>(
+                        @"INSERT INTO producao.tbl_area_temas
+                            (sigla, tema, ano, local, trem, area_total_memorial, area_total_planta,
+                             trilha_memorial, trilha_planta, pa, planta_liquida, perimetro_planta,
+                             construcao_total, cenografia_planta, incluido_por, data_inclusao,
+                             alterad_por, data_altera)
+                          VALUES
+                            (@sigla, @tema, @ano, @local, @trem, @area_total_memorial, @area_total_planta,
+                             @trilha_memorial, @trilha_planta, @pa, @planta_liquida, @perimetro_planta,
+                             @construcao_total, @cenografia_planta, @incluido_por, @data_inclusao,
+                             @alterad_por, @data_altera)
+                          RETURNING codareatema;",
+                        areaTema);
+                }
+                else
+                {
+                    await conn.ExecuteAsync(
+                        @"UPDATE producao.tbl_area_temas
+                          SET sigla = @sigla,
+                              tema = @tema,
+                              ano = @ano,
+                              local = @local,
+                              trem = @trem,
+                              area_total_memorial = @area_total_memorial,
+                              area_total_planta = @area_total_planta,
+                              trilha_memorial = @trilha_memorial,
+                              trilha_planta = @trilha_planta,
+                              pa = @pa,
+                              planta_liquida = @planta_liquida,
+                              perimetro_planta = @perimetro_planta,
+                              construcao_total = @construcao_total,
+                              cenografia_planta = @cenografia_planta,
+                              incluido_por = @incluido_por,
+                              data_inclusao = @data_inclusao,
+                              alterad_por = @alterad_por,
+                              data_altera = @data_altera
+                          WHERE codareatema = @codareatema;",
+                        areaTema);
+                }
 
                 return areaTema;
             }

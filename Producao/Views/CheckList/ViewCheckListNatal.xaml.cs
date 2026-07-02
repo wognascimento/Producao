@@ -1,3 +1,5 @@
+using Dapper;
+using Producao.Utils;
 using Producao.Views.CentralModelos.Compat;
 using Producao.Views.popup;
 using System;
@@ -5,7 +7,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -23,6 +24,14 @@ namespace Producao.Views.CheckList
         private bool dbClick;
 
         DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+
+
+        static ViewCheckListNatal()
+        {
+            SqlMapper.AddTypeHandler(new DateOnlyToDateTimeHandler());
+        }
+
+
         public ViewCheckListNatal()
         {
             DataContext = new CheckListViewModel();
@@ -44,7 +53,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -127,7 +136,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -159,7 +168,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -192,7 +201,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -242,7 +251,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -265,7 +274,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -360,7 +369,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -392,7 +401,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro ao inserir", MessageBoxButton.OK, MessageBoxImage.Error);
+                Producao.ErrorDialog.Show(ex, "Erro ao inserir");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             
@@ -419,7 +428,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro ao alterar", MessageBoxButton.OK, MessageBoxImage.Error);
+                Producao.ErrorDialog.Show(ex, "Erro ao alterar");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -482,6 +491,7 @@ namespace Producao.Views.CheckList
                 //Create a workbook
                 IWorkbook workbook = application.Workbooks.Create(1);
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.IsGridLinesVisible = false;
 
                 IStyle headerStyle;
@@ -559,7 +569,7 @@ namespace Producao.Views.CheckList
 
                 worksheet.Rows[1].CellStyle = bodyStyle;
 
-                var dados = await Task.Run(() => vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado));
+                var dados = await vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado);
                 worksheet.ImportData(dados, 3, 1, false);
 
                 worksheet.Range[$"A3:K{dados.Count + 2}"].CellStyle = headerStyle;
@@ -596,10 +606,10 @@ namespace Producao.Views.CheckList
                 worksheet.PageSetup.PrintTitleColumns = "$A:$K";
                 worksheet.PageSetup.PrintTitleRows = "$1:$2";
                 worksheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
-                worksheet.PageSetup.LeftMargin = 0.0;
-                worksheet.PageSetup.RightMargin = 0.0;
-                worksheet.PageSetup.TopMargin = 0.0;
-                worksheet.PageSetup.BottomMargin = 0.5;
+                worksheet.PageSetup.LeftMargin = Producao.Utils.PrintPageSetupHelper.LeftMargin;
+                worksheet.PageSetup.RightMargin = Producao.Utils.PrintPageSetupHelper.RightMargin;
+                worksheet.PageSetup.TopMargin = Producao.Utils.PrintPageSetupHelper.TopMargin;
+                worksheet.PageSetup.BottomMargin = Producao.Utils.PrintPageSetupHelper.BottomMargin;
                 worksheet.PageSetup.RightFooter = "&P";
                 worksheet.PageSetup.LeftFooter = "&D";
                 worksheet.PageSetup.Zoom = 88;
@@ -618,7 +628,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             
@@ -708,7 +718,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             
             
@@ -747,7 +757,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 var toRemove = vm.CheckListGeralComplementos.Where(x => x.coddetalhescompl == null).ToList();
                 foreach (var item in toRemove)
                     vm.CheckListGeralComplementos.Remove(item);

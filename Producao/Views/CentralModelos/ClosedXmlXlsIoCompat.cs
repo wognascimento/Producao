@@ -480,10 +480,13 @@ namespace Producao.Views.CentralModelos.Compat
                 : XLPageOrientation.Portrait;
         }
 
-        public double LeftMargin { set => worksheet.PageSetup.Margins.Left = value; }
-        public double RightMargin { set => worksheet.PageSetup.Margins.Right = value; }
-        public double TopMargin { set => worksheet.PageSetup.Margins.Top = value; }
-        public double BottomMargin { set => worksheet.PageSetup.Margins.Bottom = value; }
+        public double LeftMargin { set => worksheet.PageSetup.Margins.Left = Producao.Utils.PrintPageSetupHelper.LeftMargin; }
+        public double RightMargin { set => worksheet.PageSetup.Margins.Right = Producao.Utils.PrintPageSetupHelper.RightMargin; }
+        public double TopMargin { set => worksheet.PageSetup.Margins.Top = Producao.Utils.PrintPageSetupHelper.TopMargin; }
+        public double BottomMargin { set => worksheet.PageSetup.Margins.Bottom = Producao.Utils.PrintPageSetupHelper.BottomMargin; }
+        public double HeaderMargin { set => worksheet.PageSetup.Margins.Header = Producao.Utils.PrintPageSetupHelper.HeaderMargin; }
+        public double FooterMargin { set => worksheet.PageSetup.Margins.Footer = Producao.Utils.PrintPageSetupHelper.FooterMargin; }
+        public XLPaperSize PaperSize { set => worksheet.PageSetup.PaperSize = value; }
         public string RightFooter { set => worksheet.PageSetup.Footer.Right.AddText(value); }
         public string LeftFooter { set => worksheet.PageSetup.Footer.Left.AddText(value); }
         public bool CenterVertically { set => worksheet.PageSetup.CenterVertically = value; }

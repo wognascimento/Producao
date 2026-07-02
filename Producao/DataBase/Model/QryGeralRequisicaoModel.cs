@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao.DataBase.Model
 {
-    [Keyless]
     [Table("qry_geral_requisicao", Schema = "producao")]
     public class QryGeralRequisicaoModel
     {

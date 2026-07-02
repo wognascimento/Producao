@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Producao.Views.OrdemServico.Produto;
 using System;
 using System.Collections.ObjectModel;
@@ -34,7 +33,7 @@ namespace Producao.Views.OrdemServico.Servicos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -63,7 +62,7 @@ namespace Producao.Views.OrdemServico.Servicos
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -95,9 +94,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.tblServicos
-                    .ToListAsync();
+                var data = await ServicoOrdemRepository.GetServicosAsync();
                 return new ObservableCollection<TblServicoModel>(data);
             }
             catch (Exception)
@@ -110,12 +107,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var os = await db.tblServicos.FindAsync(baixa.num_os);
-                os.data_conclusao = baixa.data_conclusao;
-                os.data_conclusao_efetiva = baixa.data_conclusao_efetiva;
-                //await db.ProdutoServicos.SingleMergeAsync(os);
-                await db.SaveChangesAsync();
+                await ServicoOrdemRepository.BaixarAsync(baixa);
             }
             catch (Exception)
             {
@@ -127,11 +119,9 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var os = await db.tblServicos.FindAsync(baixa.num_os);
-                os.cancelar = baixa.cancelar;
-                //os.concluida_os_data = baixa.concluida_os_data;
-                await db.tblServicos.SingleMergeAsync(os);
+                baixa.cancelado_por ??= Environment.UserName;
+                baixa.data_cancelamento ??= DateTime.Now;
+                await ServicoOrdemRepository.CancelarAsync(baixa);
             }
             catch (Exception)
             {
@@ -178,8 +168,9 @@ namespace Producao.Views.OrdemServico.Servicos
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.DirectoryServices.AccountManagement;
 using System.Windows;
@@ -58,7 +58,7 @@ namespace Producao
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Falha na autenticação: {ex.Message}");
+                    Producao.ErrorDialog.Show(ex, "Falha na autenticação");
                 }
             }
         }

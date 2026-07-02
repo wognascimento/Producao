@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_req_detalhes_relatorio_os_chk", Schema = "producao")]
     public class QryRequisicaoDetalheModel
     {

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Producao.Views.RelatoriosTecnicos.Estabilidade"
+<UserControl x:Class="Producao.Views.RelatoriosTecnicos.Estabilidade"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -34,9 +34,9 @@
             OpenDropDownOnFocus="True"
             ItemsSource="{Binding Siglas}"
             SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            SelectionChanged="OnSiglaSelectionChanged"/>
+            SelectionChanged="OnSiglaSelectionChanged" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
-        <telerik:RadButton Grid.Column="1" HorizontalAlignment="Left" Content="Imprimir" Click="OnPrintClick"/>
+        <telerik:RadButton Grid.Column="1" HorizontalAlignment="Left" Content="Imprimir" Click="OnPrintClick" Margin="0,0,2,2"/>
 
 
 

@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao.DataBase.Model
 {
-    [Keyless]
     [Table("qry_codigo_impresso", Schema = "producao")]
     public class ControladoEtiquetaImpressaModel
     {

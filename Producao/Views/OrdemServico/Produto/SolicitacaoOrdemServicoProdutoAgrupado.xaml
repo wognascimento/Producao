@@ -36,13 +36,13 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0">
-            <TextBlock Text="TIPO DA O.S."/>
-            <telerik:RadComboBox x:Name="cmbTipoOs" ItemsSource="{Binding TpoOS}"/>
+            <TextBlock Text="TIPO DA O.S." Margin="0,0,2,2"/>
+            <telerik:RadComboBox x:Name="cmbTipoOs" ItemsSource="{Binding TpoOS}" Margin="0,0,2,2"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="0">
-            <TextBlock Text="BUSCAR PRODUTO POR CÓDIGO"/>
-            <telerik:RadWatermarkTextBox x:Name="tbCodproduto" PreviewKeyDown="OnBuscaProduto"/>
+            <TextBlock Text="BUSCAR PRODUTO POR CÓDIGO" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox x:Name="tbCodproduto" PreviewKeyDown="OnBuscaProduto" Margin="0,0,2,2"/>
         </StackPanel>
 
         <telerik:RadButton x:Name="btnBuscar"
@@ -52,50 +52,50 @@
                            HorizontalAlignment="Left"
                            VerticalAlignment="Bottom"
                            Content="..."
-                           Click="OnOpenDescricoes"/>
+                           Click="OnOpenDescricoes" Margin="0,0,2,2"/>
 
         <StackPanel Grid.Row="2" Grid.Column="0">
-            <TextBlock Text="PLANILHA"/>
+            <TextBlock Text="PLANILHA" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtPlanilha"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding Planilhas}"
                       DisplayMemberPath="planilha"
                       SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      SelectionChanged="OnSelectedPlanilha"/>
+                      SelectionChanged="OnSelectedPlanilha" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.Column="2">
-            <TextBlock Text="DESCRIÇÃO"/>
+            <TextBlock Text="DESCRIÇÃO" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtDescricao"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding Produtos}"
                       DisplayMemberPath="descricao"
                       SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      SelectionChanged="OnSelectedDescricao"/>
+                      SelectionChanged="OnSelectedDescricao" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3">
-            <TextBlock Text="DESCRIÇÃO ADICIONAL"/>
+            <TextBlock Text="DESCRIÇÃO ADICIONAL" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtDescricaoAdicional"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding DescAdicionais}"
                       DisplayMemberPath="descricao_adicional"
                       SelectedItem="{Binding DescAdicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      SelectionChanged="OnSelectedDescricaoAdicional"/>
+                      SelectionChanged="OnSelectedDescricaoAdicional" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
-            <TextBlock Text="COMPLEMENTO ADICIONAL"/>
+            <TextBlock Text="COMPLEMENTO ADICIONAL" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtComplementoAdicional"
                       IsEditable="True"
                       IsTextSearchEnabled="True"
                       ItemsSource="{Binding CompleAdicionais}"
                       DisplayMemberPath="complementoadicional"
                       SelectedItem="{Binding Compledicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      SelectionChanged="OnSelectedComplementoAdicional"/>
+                      SelectionChanged="OnSelectedComplementoAdicional" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <telerik:RadGridView x:Name="dgClientes"

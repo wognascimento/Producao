@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,7 +34,7 @@ namespace Producao.Views.Controlado
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -64,7 +64,7 @@ namespace Producao.Views.Controlado
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -91,7 +91,7 @@ namespace Producao.Views.Controlado
             get { return _produto; }
             set { _produto = value; RaisePropertyChanged("Produto"); }
         }
-        
+
         private ControladoRecebidoModel _retorno;
         public ControladoRecebidoModel Retorno
         {
@@ -103,8 +103,10 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ControladoRetornoGeral.ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<ControladoRetornoGeralModel>(
+                    @"SELECT *
+                      FROM expedicao.qry_controlados_retorno_geral;");
                 return new ObservableCollection<ControladoRetornoGeralModel>(data);
             }
             catch (Exception)
@@ -117,19 +119,24 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var controlado = await db.ControladoRecebido.Where(w => w.id_aprovado == m.id_aprovado && w.codcompladicional == m.codcompladicional).FirstOrDefaultAsync();
-
-                if (controlado == null)
-                    await db.ControladoRecebido.AddAsync(m);
-                else
-                {
-                    controlado.atualizado_em = m.atualizado_em;
-                    controlado.atualizado_por = m.atualizado_por;
-                    controlado.qtd = m.qtd;
-                    db.ControladoRecebido.Update(controlado);
-                }
-                await db.SaveChangesAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                await conn.ExecuteAsync(
+                    @"INSERT INTO expedicao.t_controlados_recebidos
+                        (id_aprovado, codcompladicional, qtd, atualizado_por, atualizado_em,
+                         cancelar_cobraca, justificativa, entrada_estoque, entrada_estoque_por, entrada_estoque_em)
+                      VALUES
+                        (@id_aprovado, @codcompladicional, @qtd, @atualizado_por, @atualizado_em,
+                         @cancelar_cobraca, @justificativa, @entrada_estoque, @entrada_estoque_por, @entrada_estoque_em)
+                      ON CONFLICT (id_aprovado, codcompladicional) DO UPDATE SET
+                        qtd = EXCLUDED.qtd,
+                        atualizado_por = EXCLUDED.atualizado_por,
+                        atualizado_em = EXCLUDED.atualizado_em,
+                        cancelar_cobraca = EXCLUDED.cancelar_cobraca,
+                        justificativa = EXCLUDED.justificativa,
+                        entrada_estoque = EXCLUDED.entrada_estoque,
+                        entrada_estoque_por = EXCLUDED.entrada_estoque_por,
+                        entrada_estoque_em = EXCLUDED.entrada_estoque_em;",
+                    m);
             }
             catch (Exception)
             {

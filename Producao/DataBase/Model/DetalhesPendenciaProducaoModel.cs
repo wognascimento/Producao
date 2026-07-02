@@ -1,4 +1,3 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Producao.DataBase.Model
 {
-    [Keyless]
     [Table("detalhes_pendencia_producao", Schema = "pcp")]
     public class DetalhesPendenciaProducaoModel
     {

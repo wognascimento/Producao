@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.Views.PopUp;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -69,12 +70,12 @@ namespace Producao.Views.OrdemServico.Requisicao
                 }
                 catch (FormatException ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -98,7 +99,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -130,12 +131,12 @@ namespace Producao.Views.OrdemServico.Requisicao
                 }
                 catch (FormatException ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -188,7 +189,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -219,7 +220,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -246,7 +247,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -288,7 +289,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -316,12 +317,12 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (FormatException ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -349,6 +350,23 @@ namespace Producao.Views.OrdemServico.Requisicao
 
     public class ReceitaRequisicaoViewModel : INotifyPropertyChanged
     {
+        static ReceitaRequisicaoViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
+
+        private static async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            return await conn.QueryFirstOrDefaultAsync<T>(sql, param);
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -446,11 +464,7 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Relplans
-                    .OrderBy(c => c.planilha)
-                    .Where(c => c.ativo.Equals("1"))
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetPlanilhasAsync();
                 return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
@@ -463,9 +477,14 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Descricoes.Where(c => c.codcompladicional == codcompladicional).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry3descricoes
+                    WHERE codcompladicional = @codcompladicional
+                    LIMIT 1;
+                    """;
 
+                var data = await QueryFirstOrDefaultAsync<QryDescricao>(sql, new { codcompladicional });
                 return data;
             }
             catch (Exception)
@@ -478,12 +497,7 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Produtos
-                    .OrderBy(c => c.descricao)
-                    .Where(c => c.planilha.Equals(planilha))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetProdutosAsync(planilha);
                 return new ObservableCollection<ProdutoModel>(data);
             }
             catch (Exception)
@@ -496,12 +510,7 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.DescAdicionais
-                    .OrderBy(c => c.descricao_adicional)
-                    .Where(c => c.codigoproduto.Equals(codigo))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetDescAdicionaisAsync(codigo);
                 return new ObservableCollection<TabelaDescAdicionalModel>(data);
             }
             catch (Exception)
@@ -514,12 +523,7 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.complementoadicional)
-                    .Where(c => c.coduniadicional.Equals(coduniadicional))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetCompleAdicionaisAsync(coduniadicional);
                 return new ObservableCollection<TblComplementoAdicionalModel>(data);
             }
             catch (Exception)
@@ -532,9 +536,39 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.RequisicaoReceitas.SingleMergeAsync(receita);
-                await db.SaveChangesAsync();
+                await using var conn = CreateConnection();
+
+                if (receita.id is null or 0)
+                {
+                    const string insertSql = """
+                        INSERT INTO producao.tbl_requisicao_receita
+                            (codcompladicional_produto, codcompladicional_receita, quantidade, inserido_por, inserido_em,
+                             alterado_por, alterado_em)
+                        VALUES
+                            (@codcompladicional_produto, @codcompladicional_receita, @quantidade, @inserido_por, @inserido_em,
+                             @alterado_por, @alterado_em)
+                        RETURNING id;
+                        """;
+
+                    receita.id = await conn.ExecuteScalarAsync<long>(insertSql, receita);
+                }
+                else
+                {
+                    const string updateSql = """
+                        UPDATE producao.tbl_requisicao_receita
+                        SET codcompladicional_produto = @codcompladicional_produto,
+                            codcompladicional_receita = @codcompladicional_receita,
+                            quantidade = @quantidade,
+                            inserido_por = @inserido_por,
+                            inserido_em = @inserido_em,
+                            alterado_por = @alterado_por,
+                            alterado_em = @alterado_em
+                        WHERE id = @id;
+                        """;
+
+                    await conn.ExecuteAsync(updateSql, receita);
+                }
+
                 return receita;
             }
             catch (Exception)
@@ -547,50 +581,24 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                /*
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.complementoadicional)
-                    .Where(c => c.coduniadicional.Equals(coduniadicional))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
-                */
-                
-                var data = db.RequisicaoReceitas
-                    .Where( t => t.codcompladicional_produto == codcompladicional_produto)
-                    .Join(db.Descricoes, o => o.codcompladicional_receita, i => i.codcompladicional, (o, i) =>
-                    new Item
-                    {
-                        id = o.id,
-                        codcompladicional_receita = o.codcompladicional_receita,
-                        planilha = i.planilha,
-                        descricao_completa = i.descricao_completa,
-                        unidade = i.unidade,
-                        quantidade = o.quantidade,
-                        inserido_por = o.inserido_por,
-                        inserido_em = o.inserido_em
+                const string sql = """
+                    SELECT
+                        receita.id,
+                        receita.codcompladicional_receita,
+                        descricao.planilha,
+                        descricao.descricao_completa,
+                        descricao.unidade,
+                        receita.quantidade,
+                        receita.inserido_por,
+                        receita.inserido_em
+                    FROM producao.tbl_requisicao_receita receita
+                    JOIN producao.qry3descricoes descricao
+                        ON descricao.codcompladicional = receita.codcompladicional_receita
+                    WHERE receita.codcompladicional_produto = @codcompladicional_produto;
+                    """;
 
-                    });
-                
-                /*
-                var data = (from t in db.RequisicaoReceitas
-                             join il in db.Descricoes
-                             on t.codcompladicional_receita equals il.codcompladicional
-                             where t.codcompladicional_produto == codcompladicional_produto
-                             select (new Item
-                             {
-                                 id = t.id,
-                                 codcompladicional_receita = t.codcompladicional_receita,
-                                 planilha = il.planilha,
-                                 descricao_completa = il.descricao_completa,
-                                 unidade = il.unidade,
-                                 quantidade = t.quantidade,
-                                 inserido_por = t.inserido_por,
-                                 inserido_em = t.inserido_em
-                             })
-                    ).ToListAsync();
-                */
-                return new ObservableCollection<Item>((IEnumerable<Item>)data);
+                var data = await QueryAsync<Item>(sql, new { codcompladicional_produto });
+                return new ObservableCollection<Item>(data);
             }
             catch (Exception)
             {
@@ -611,3 +619,4 @@ namespace Producao.Views.OrdemServico.Requisicao
         public DateTime? inserido_em { get; set; }
     }
 }
+

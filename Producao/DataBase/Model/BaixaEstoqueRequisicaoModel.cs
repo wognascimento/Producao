@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_baixa_estoque_requisicao", Schema = "producao")]
     public class BaixaEstoqueRequisicaoModel
     {

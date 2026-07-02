@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -32,7 +33,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
         }
@@ -88,9 +89,15 @@ namespace Producao.Views.CentralModelos
 
         public async Task<ObservableCollection<HistoricoModeloCompletaModel>> GetModelosAsync(QryModeloModel modelo)
         {
-            using DatabaseContext db = new();
-            var data = await db.HistoricoModeloCompletas.ToListAsync();
+            await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            const string sql = """
+                SELECT *
+                FROM modelos.view_historico_modelo_completa;
+                """;
+
+            var data = await conn.QueryAsync<HistoricoModeloCompletaModel>(sql);
             return new ObservableCollection<HistoricoModeloCompletaModel>(data);
         }
     }
 }
+

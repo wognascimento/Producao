@@ -32,13 +32,13 @@ public partial class TodasDescricoes : UserControl
             ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
             TodasDescricoesViewModel vm = (TodasDescricoesViewModel)DataContext;
-            vm.Descricoes = await Task.Run(vm.GetDescricoesAsync);
+            vm.Descricoes = await vm.GetDescricoesAsync();
             ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
             ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
@@ -56,6 +56,7 @@ public partial class TodasDescricoes : UserControl
             var dados = itens.Items.OfType<QryDescricao>().ToList();
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Produtos");
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
 
             var col = 1;
             foreach (var coluna in itens.Columns.OfType<GridViewDataColumn>())
@@ -102,7 +103,7 @@ public partial class TodasDescricoes : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
     }
 }

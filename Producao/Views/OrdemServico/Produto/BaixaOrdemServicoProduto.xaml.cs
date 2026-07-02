@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.Views.CentralModelos;
 using System;
 using System.Collections.ObjectModel;
@@ -34,7 +35,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -58,7 +59,7 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -70,6 +71,10 @@ namespace Producao.Views.OrdemServico.Produto
 
     public class BaixaOrdemServicoProdutoViewModel : INotifyPropertyChanged
     {
+        static BaixaOrdemServicoProdutoViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
         private ObservableCollection<BaixaOsProducaoModel>? _itens;
         public ObservableCollection<BaixaOsProducaoModel> Itens
         {
@@ -88,9 +93,13 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.BaixaOsProducoes
-                    .ToListAsync();
+                await using var conn = CreateConnection();
+                const string sql = """
+                    SELECT *
+                    FROM ht.qry_baixa_os_producao;
+                    """;
+
+                var data = await conn.QueryAsync<BaixaOsProducaoModel>(sql);
                 return new ObservableCollection<BaixaOsProducaoModel>(data);
             }
             catch (Exception)
@@ -103,12 +112,15 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var os = await db.ProdutoServicos.FindAsync(baixa.num_os_servico);
-                os.recebido_setor_data = baixa.recebido_setor_data;
-                os.concluida_os_data = baixa.concluida_os_data;
-                //await db.ProdutoServicos.SingleMergeAsync(os);
-                await db.SaveChangesAsync();
+                await using var conn = CreateConnection();
+                const string sql = """
+                    UPDATE producao.tbl_produtos_servico
+                    SET recebido_setor_data = @recebido_setor_data,
+                        concluida_os_data = @concluida_os_data
+                    WHERE num_os_servico = @num_os_servico;
+                    """;
+
+                await conn.ExecuteAsync(sql, baixa);
             }
             catch (Exception)
             {
@@ -120,11 +132,14 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var os = await db.ProdutoServicos.FindAsync(baixa.num_os_servico);
-                os.cancelada_os = baixa.cancelada_os;
-                //os.concluida_os_data = baixa.concluida_os_data;
-                await db.ProdutoServicos.SingleMergeAsync(os);
+                await using var conn = CreateConnection();
+                const string sql = """
+                    UPDATE producao.tbl_produtos_servico
+                    SET cancelada_os = @cancelada_os
+                    WHERE num_os_servico = @num_os_servico;
+                    """;
+
+                await conn.ExecuteAsync(sql, baixa);
             }
             catch (Exception)
             {
@@ -178,8 +193,9 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
     }
 }
+

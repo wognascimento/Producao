@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.Views.PopUp;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -33,15 +35,15 @@ namespace Producao.Views.CentralModelos
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
-                vm.Temas = await Task.Run(vm.GetTemasAsync);
-                vm.QryModelos = await Task.Run(vm.GetModelos);
+                vm.Planilhas = await vm.GetPlanilhasAsync();
+                vm.Temas = await vm.GetTemasAsync();
+                vm.QryModelos = await vm.GetModelos();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtPlanilha.Focus();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -54,7 +56,7 @@ namespace Producao.Views.CentralModelos
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                     string text = txtCodigoProduto.Text;
-                    vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(long.Parse(text)));
+                    vm.Descricao = await vm.GetDescricaoAsync(long.Parse(text));
                     if (vm.Descricao == null)
                     {
                         MessageBox.Show("Produto não encontrado", "Busca de produto");
@@ -72,12 +74,12 @@ namespace Producao.Views.CentralModelos
                 }
                 catch (FormatException ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 
@@ -120,13 +122,13 @@ namespace Producao.Views.CentralModelos
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
-                vm.Produtos = await Task.Run(()=> vm.GetProdutosAsync(planilha?.planilha));
+                vm.Produtos = await vm.GetProdutosAsync(planilha?.planilha);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricao.Focus();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -146,13 +148,13 @@ namespace Producao.Views.CentralModelos
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(produto?.codigo));
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(produto?.codigo);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtDescricaoAdicional.Focus();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -167,13 +169,13 @@ namespace Producao.Views.CentralModelos
                 txtComplementoAdicional.SelectedItem = null;
                 txtComplementoAdicional.Text = string.Empty;
 
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(adicional?.coduniadicional));
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(adicional?.coduniadicional);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 txtComplementoAdicional.Focus();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -229,17 +231,17 @@ namespace Producao.Views.CentralModelos
 
                 var tema = txtTema.SelectedItem as TemaModel;
                 
-                vm.Modelo = await Task.Run(() => vm.AddModeloAsync(dados, tema));
+                vm.Modelo = await vm.AddModeloAsync(dados, tema);
                 if (modelo == null)
                 {
-                    modelo = await Task.Run(() => vm.GetModelo(vm.Modelo.id_modelo));
+                    modelo = await vm.GetModelo(vm.Modelo.id_modelo);
                     vm?.QryModelos.Add(modelo);
                     this.dgModelos.SelectedItem = modelo;
                     this.dgModelos.ScrollIntoViewAsync(modelo, null);
                 }
                 else
                 {
-                    modelo = await Task.Run(() => vm.GetModelo(vm.Modelo.id_modelo));
+                    modelo = await vm.GetModelo(vm.Modelo.id_modelo);
                     var found = vm.QryModelos.FirstOrDefault(x => x.id_modelo == modelo.id_modelo);
                     int i = vm.QryModelos.IndexOf(found);
                     vm.QryModelos[i] = modelo;
@@ -258,7 +260,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -319,7 +321,7 @@ namespace Producao.Views.CentralModelos
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Descricao = await Task.Run(() => vm.GetDescricaoAsync(modelo.codcompladicional));
+                vm.Descricao = await vm.GetDescricaoAsync(modelo.codcompladicional);
                 txtCodigoProduto.Text = vm.Descricao.codcompladicional.ToString();
                 txtPlanilha.Text = vm.Descricao.planilha;
                 txtDescricao.Text = vm.Descricao.descricao;
@@ -328,20 +330,20 @@ namespace Producao.Views.CentralModelos
                 txtTema.Text = modelo.tema;
                 txtObservacao.Text = modelo.obs_modelo;
 
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(vm.Descricao.planilha));
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(vm.Descricao.codigo));
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional));
+                vm.Produtos = await vm.GetProdutosAsync(vm.Descricao.planilha);
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Descricao.codigo);
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional);
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (FormatException ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -356,12 +358,12 @@ namespace Producao.Views.CentralModelos
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.QryModelos = await Task.Run(vm.GetModelos);
+                vm.QryModelos = await vm.GetModelos();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -374,6 +376,22 @@ namespace Producao.Views.CentralModelos
 
     public class CentralCriarModeloViewModel : INotifyPropertyChanged
     {
+        static CentralCriarModeloViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
+
+        private static async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            return await conn.QueryFirstOrDefaultAsync<T>(sql, param);
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
@@ -477,8 +495,14 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.qryModelos.Where(m => m.id_modelo == id_modelo).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qrymodelos
+                    WHERE id_modelo = @id_modelo
+                    LIMIT 1;
+                    """;
+
+                var data = await QueryFirstOrDefaultAsync<QryModeloModel>(sql, new { id_modelo });
                 return data;
             }
             catch (Exception)
@@ -491,8 +515,12 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.qryModelos.ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qrymodelos;
+                    """;
+
+                var data = await QueryAsync<QryModeloModel>(sql);
                 return new ObservableCollection<QryModeloModel>(data);
             }
             catch (Exception)
@@ -505,12 +533,15 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Relplans
-                    .OrderBy(c => c.planilha)
-                    .Where(c => c.ativo.Equals("1"))
-                    .Where(c => c.agrupamento.Contains("CENTRAL DE MODELOS"))
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.relplan
+                    WHERE ativo = '1'
+                      AND agrupamento LIKE '%' || @agrupamento || '%'
+                    ORDER BY planilha;
+                    """;
+
+                var data = await QueryAsync<RelplanModel>(sql, new { agrupamento = "CENTRAL DE MODELOS" });
                 return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
@@ -523,12 +554,15 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Produtos
-                    .OrderBy(c => c.descricao)
-                    .Where(c => c.planilha.Equals(planilha))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.produtos
+                    WHERE planilha = @planilha
+                      AND COALESCE(inativo, '') <> '-1'
+                    ORDER BY descricao;
+                    """;
+
+                var data = await QueryAsync<ProdutoModel>(sql, new { planilha });
                 return new ObservableCollection<ProdutoModel>(data);
             }
             catch (Exception)
@@ -541,12 +575,15 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.DescAdicionais
-                    .OrderBy(c => c.descricao_adicional)
-                    .Where(c => c.codigoproduto.Equals(codigo))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tabela_desc_adicional
+                    WHERE codigoproduto = @codigo
+                      AND COALESCE(inativo, '') <> '-1'
+                    ORDER BY descricao_adicional;
+                    """;
+
+                var data = await QueryAsync<TabelaDescAdicionalModel>(sql, new { codigo });
                 return new ObservableCollection<TabelaDescAdicionalModel>(data);
             }
             catch (Exception)
@@ -559,12 +596,15 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.complementoadicional)
-                    .Where(c => c.coduniadicional.Equals(coduniadicional))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tblcomplementoadicional
+                    WHERE coduniadicional = @coduniadicional
+                      AND COALESCE(inativo, '') <> '-1'
+                    ORDER BY complementoadicional;
+                    """;
+
+                var data = await QueryAsync<TblComplementoAdicionalModel>(sql, new { coduniadicional });
                 return new ObservableCollection<TblComplementoAdicionalModel>(data);
             }
             catch (Exception)
@@ -577,7 +617,7 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
+                await Task.CompletedTask;
             }
             catch (Exception)
             {
@@ -589,11 +629,14 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Temas
-                    .OrderBy(c => c.temas)
-                    .Where(c => c.ativo == "S")
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM comercial.temas
+                    WHERE ativo = 'S'
+                    ORDER BY temas;
+                    """;
+
+                var data = await QueryAsync<TemaModel>(sql);
                 return new ObservableCollection<TemaModel>(data);
             }
             catch (Exception)
@@ -606,9 +649,14 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Descricoes.Where(c => c.codcompladicional == codcompladicional).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry3descricoes
+                    WHERE codcompladicional = @codcompladicional
+                    LIMIT 1;
+                    """;
                     
+                var data = await QueryFirstOrDefaultAsync<QryDescricao>(sql, new { codcompladicional });
                 return data;
             }
             catch (Exception)
@@ -619,45 +667,61 @@ namespace Producao.Views.CentralModelos
 
         public async Task<ModeloModel> AddModeloAsync(ModeloModel modelo, TemaModel tema)
         {
-            using DatabaseContext db = new();
-
-            var strategy = db.Database.CreateExecutionStrategy();
-            await strategy.ExecuteAsync(async () =>
+            await using var conn = CreateConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+            try
             {
-                var transaction = db.Database.BeginTransaction();
-                try
+                if (modelo.id_modelo is null or 0)
                 {
-                    await db.Modelos.SingleMergeAsync(modelo);
-                    await db.SaveChangesAsync();
-                    /*
-                    var historico =  await db.HistoricosModelo.Where(c =>  c.codcompladicional_modelo == modelo.codcompladicional && c.idtema == tema.idtema ).ToListAsync();
-                    foreach (HistoricoModelo item in historico)
-                    {
-                        var receita = new ModeloReceitaModel
-                        {
-                            id_modelo = modelo.id_modelo,
-                            codcompladicional = item.codcompladicional_receita,
-                            qtd_modelo = item.media_qtd_modelo,
-                            qtd_producao = item.media_qtd_producao,
-                            cadastrado_por = Environment.UserName,
-                            data_cadastro = DateTime.Now,
-                        };
-                        await db.ReceitaModelos.SingleMergeAsync(receita);
-                        await db.SaveChangesAsync();
-                    }
-                    */
-                    //<ObservableCollection<TemaModel>>
-                    transaction.Commit();
+                    const string insertSql = """
+                        INSERT INTO modelos.tbl_modelos
+                            (foto, tema, obs_modelo, aprovado, aprovado_por, data_aprovacao, alterado, data_alteracao,
+                             liberado, liberado_por, data_liberacao, codcompladicional, cadastrado_por, data_cadastro, qtd_fiada_cascata)
+                        VALUES
+                            (@foto, @tema, @obs_modelo, @aprovado, @aprovado_por, @data_aprovacao, @alterado, @data_alteracao,
+                             @liberado, @liberado_por, @data_liberacao, @codcompladicional, @cadastrado_por, @data_cadastro, @qtd_fiada_cascata)
+                        RETURNING id_modelo;
+                        """;
+
+                    modelo.id_modelo = await conn.ExecuteScalarAsync<long>(insertSql, modelo, transaction);
                 }
-                catch (Exception)
+                else
                 {
-                    transaction.Rollback();
-                    throw;
+                    const string updateSql = """
+                        UPDATE modelos.tbl_modelos
+                        SET foto = @foto,
+                            tema = @tema,
+                            obs_modelo = @obs_modelo,
+                            aprovado = @aprovado,
+                            aprovado_por = @aprovado_por,
+                            data_aprovacao = @data_aprovacao,
+                            alterado = @alterado,
+                            data_alteracao = @data_alteracao,
+                            liberado = @liberado,
+                            liberado_por = @liberado_por,
+                            data_liberacao = @data_liberacao,
+                            codcompladicional = @codcompladicional,
+                            cadastrado_por = @cadastrado_por,
+                            data_cadastro = @data_cadastro,
+                            qtd_fiada_cascata = @qtd_fiada_cascata
+                        WHERE id_modelo = @id_modelo;
+                        """;
+
+                    await conn.ExecuteAsync(updateSql, modelo, transaction);
                 }
-            });
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
             return modelo;
         }
 
     }
 }
+

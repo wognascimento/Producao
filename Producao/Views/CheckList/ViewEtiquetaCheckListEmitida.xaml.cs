@@ -1,6 +1,8 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.Views.CentralModelos.Compat;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -33,7 +35,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
             }
         }
@@ -75,6 +77,7 @@ namespace Producao.Views.CheckList
                 application.DefaultVersion = ExcelVersion.Xlsx;
                 using IWorkbook workbook = application.Workbooks.Open(baseSettings.ResolveModeloPath("ETIQUETA_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
 
                 var etiqueta = Etiqueta.Primeira;
                 int paginas = (int)Math.Ceiling(decimal.Divide(itens.Count, 6));
@@ -131,7 +134,7 @@ namespace Producao.Views.CheckList
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -179,6 +182,17 @@ namespace Producao.Views.CheckList
 
     public class EtiquetaEmitidaViewModel : INotifyPropertyChanged
     {
+        static EtiquetaEmitidaViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
+
         public DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
         private ObservableCollection<EtiquetaEmitidaModel> _etiquetas;
@@ -200,8 +214,12 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.EtiquetaEmitidas.ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.etiqueta_emitida;
+                    """;
+
+                var data = await QueryAsync<EtiquetaEmitidaModel>(sql);
                 Etiquetas = new ObservableCollection<EtiquetaEmitidaModel>(data);
             }
             catch (Exception)
@@ -218,3 +236,4 @@ namespace Producao.Views.CheckList
         }
     }
 }
+

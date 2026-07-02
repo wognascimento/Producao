@@ -1,11 +1,9 @@
-﻿using Dapper;
-using Microsoft.EntityFrameworkCore;
+using Dapper;
 using Npgsql;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,7 +14,7 @@ using Telerik.Windows.Controls.GridView;
 namespace Producao.Views.kit.solucao
 {
     /// <summary>
-    /// Interação lógica para ViewKitSolucao.xam
+    /// Interacao logica para ViewKitSolucao.xaml
     /// </summary>
     public partial class ViewKitSolucao : UserControl
     {
@@ -35,17 +33,19 @@ namespace Producao.Views.kit.solucao
 
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                Mouse.OverrideCursor = Cursors.Wait;
                 KitSolucaoViewModel vm = (KitSolucaoViewModel)DataContext;
                 await vm.CriarOSAsync();
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
+                vm.Siglas = await vm.GetSiglasAsync();
                 inicializado = true;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Producao.ErrorDialog.Show(ex, "Erro");
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
             }
         }
 
@@ -54,14 +54,16 @@ namespace Producao.Views.kit.solucao
             try
             {
                 KitSolucaoViewModel vm = (KitSolucaoViewModel)DataContext;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.OsKits = await Task.Run(async () => await vm.GetOsKitsAsync(vm?.Sigla?.num_os));
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Mouse.OverrideCursor = Cursors.Wait;
+                vm.OsKits = await vm.GetOsKitsAsync(vm?.Sigla?.num_os);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Producao.ErrorDialog.Show(ex, "Erro");
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
             }
         }
 
@@ -115,81 +117,64 @@ namespace Producao.Views.kit.solucao
                 if (e.Row.Item is not OsKitSolucaoModel data)
                     return;
 
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                /*
-                if (this.osKit.View.IsAddingNew)
-                {
-                    await Task.Run(() => vm.AddOsKitsAsync(data));
-                    //AddOsKitsAsync
-                }
-                else if (this.osKit.View.IsEditingItem)
-                {
-                    await Task.Run(() => vm.EditOsKitsAsync(data));
-                    //EditOsKitsAsync
-                }
-                */
-
-                //data.concluir_ate = data.concluir_ate.Value.Date;
-                //data.data_emissao = data.data_emissao.Value.Date;
-                //data.data_solicitacao = data.data_solicitacao.Value.Date;
-
-                await Task.Run(() => vm.AddOsKitsAsync(data));
-
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Mouse.OverrideCursor = Cursors.Wait;
+                await vm.AddOsKitsAsync(data);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                Producao.ErrorDialog.Show(ex, "Erro");
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
             }
         }
-
-       
     }
 
     public class KitSolucaoViewModel : INotifyPropertyChanged
     {
-        DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+        private readonly DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public void RaisePropertyChanged(string propName)
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
-        private ICommand rowDetalhesCommand { get; set; }
+        private ICommand rowDetalhesCommand;
         public ICommand RowDetalhesCommand
         {
             get { return rowDetalhesCommand; }
             set { rowDetalhesCommand = value; }
         }
 
-        private ObservableCollection<TblServicoModel> _siglas;
-        public ObservableCollection<TblServicoModel> Siglas
+        private ObservableCollection<TblServicoModel>? _siglas;
+        public ObservableCollection<TblServicoModel>? Siglas
         {
             get { return _siglas; }
-            set { _siglas = value; RaisePropertyChanged("Siglas"); }
+            set { _siglas = value; RaisePropertyChanged(nameof(Siglas)); }
         }
 
-        private TblServicoModel _sigla;
-        public TblServicoModel Sigla
+        private TblServicoModel? _sigla;
+        public TblServicoModel? Sigla
         {
             get { return _sigla; }
-            set { _sigla = value; RaisePropertyChanged("Sigla"); }
+            set { _sigla = value; RaisePropertyChanged(nameof(Sigla)); }
         }
 
-        private ObservableCollection<OsKitSolucaoModel> _osKits;
-        public ObservableCollection<OsKitSolucaoModel> OsKits
+        private ObservableCollection<OsKitSolucaoModel>? _osKits;
+        public ObservableCollection<OsKitSolucaoModel>? OsKits
         {
             get { return _osKits; }
-            set { _osKits = value; RaisePropertyChanged("OsKits"); }
+            set { _osKits = value; RaisePropertyChanged(nameof(OsKits)); }
         }
 
-        private OsKitSolucaoModel _osKit;
-        public OsKitSolucaoModel OsKit
+        private OsKitSolucaoModel? _osKit;
+        public OsKitSolucaoModel? OsKit
         {
             get { return _osKit; }
-            set { _osKit = value; RaisePropertyChanged("OsKit"); }
+            set { _osKit = value; RaisePropertyChanged(nameof(OsKit)); }
         }
 
         public KitSolucaoViewModel()
@@ -203,7 +188,7 @@ namespace Producao.Views.kit.solucao
 
             if (osKit == null)
             {
-                MessageBox.Show("A linha não foi totalmente inserida.", "Atenção", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("A linha nao foi totalmente inserida.", "Atencao", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -213,71 +198,58 @@ namespace Producao.Views.kit.solucao
 
         public async Task<ObservableCollection<TblServicoModel>> GetSiglasAsync()
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.tblServicos.OrderBy(c => c.sigla).Where(c => c.tipo.Equals("KIT SOLUÇÃO")).ToListAsync();
-                return new ObservableCollection<TblServicoModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            const string sql = @"
+                SELECT *
+                FROM producao.tbl_servicos
+                WHERE tipo = 'KIT SOLUÇÃO'
+                ORDER BY sigla;";
+
+            await using var conn = new NpgsqlConnection(BaseSettings.ConnectionString);
+            var data = await conn.QueryAsync<TblServicoModel>(sql);
+            return new ObservableCollection<TblServicoModel>(data);
         }
 
         public async Task<ObservableCollection<OsKitSolucaoModel>> GetOsKitsAsync(long? os_mont)
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.OsKitSolucaos.OrderBy(c => c.os).Where(c => c.t_os_mont == os_mont).ToListAsync();
-                return new ObservableCollection<OsKitSolucaoModel>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            const string sql = @"
+                SELECT *
+                FROM kitsolucao.t_os_kitsolucao
+                WHERE t_os_mont = @os_mont
+                ORDER BY os;";
+
+            await using var conn = new NpgsqlConnection(BaseSettings.ConnectionString);
+            var data = await conn.QueryAsync<OsKitSolucaoModel>(sql, new { os_mont });
+            return new ObservableCollection<OsKitSolucaoModel>(data);
         }
 
         public async Task AddOsKitsAsync(OsKitSolucaoModel? osKit)
         {
-            try
+            if (osKit is null)
+                return;
+
+            await using var conn = new NpgsqlConnection(BaseSettings.ConnectionString);
+
+            if (osKit.os.HasValue && osKit.os.Value > 0)
             {
-                using DatabaseContext db = new();
-                //var data = await db.OsKitSolucaos.OrderBy(c => c.os).Where(c => c.t_os_mont == os_mont).ToListAsync();
-                //await db.OsKitSolucaos.AddAsync(osKit);
-                await db.OsKitSolucaos.SingleMergeAsync(osKit);
-                await db.SaveChangesAsync();
+                await conn.ExecuteAsync(UpdateOsKitSql, osKit);
+                return;
             }
-            catch (Exception)
-            {
-                throw;
-            }
+
+            osKit.os = await conn.ExecuteScalarAsync<long>(InsertOsKitSql, osKit);
         }
 
         public async Task EditOsKitsAsync(OsKitSolucaoModel? osKit)
         {
-            try
-            {
-                using DatabaseContext db = new();
-                //var data = await db.OsKitSolucaos.OrderBy(c => c.os).Where(c => c.t_os_mont == os_mont).ToListAsync();
-                var kit = await  db.OsKitSolucaos.FindAsync(osKit.os);
-                if (kit != null)
-                {
-                    db.Entry(kit).CurrentValues.SetValues(osKit);
-                    db.Update(osKit);
-                }
-                await db.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            if (osKit is null)
+                return;
+
+            await using var conn = new NpgsqlConnection(BaseSettings.ConnectionString);
+            await conn.ExecuteAsync(UpdateOsKitSql, osKit);
         }
 
         public async Task CriarOSAsync()
         {
-            using var conn = new NpgsqlConnection(BaseSettings.connectionString);
+            await using var conn = new NpgsqlConnection(BaseSettings.ConnectionString);
 
             await conn.ExecuteAsync(
                 @"INSERT INTO producao.tbl_servicos (
@@ -333,5 +305,42 @@ namespace Producao.Views.kit.solucao
                     END;");
         }
 
+        private const string InsertOsKitSql = @"
+            INSERT INTO kitsolucao.t_os_kitsolucao (
+                t_os_mont, shopping, data_emissao, data_solicitacao, solicitante,
+                concluir_ate, forma_de_envio, responsavel, obs_de_envio, valor_estimado,
+                noite_montagem, volumes, atendente, cod_solicita_transporte,
+                tipo_manutencao, status, status_por, status_data, id_manutencao
+            )
+            VALUES (
+                @t_os_mont, @shopping, @data_emissao, @data_solicitacao, @solicitante,
+                @concluir_ate, @forma_de_envio, @responsavel, @obs_de_envio, @valor_estimado,
+                @noite_montagem, @volumes, @atendente, @cod_solicita_transporte,
+                @tipo_manutencao, @status, @status_por, @status_data, @id_manutencao
+            )
+            RETURNING os;";
+
+        private const string UpdateOsKitSql = @"
+            UPDATE kitsolucao.t_os_kitsolucao SET
+                t_os_mont = @t_os_mont,
+                shopping = @shopping,
+                data_emissao = @data_emissao,
+                data_solicitacao = @data_solicitacao,
+                solicitante = @solicitante,
+                concluir_ate = @concluir_ate,
+                forma_de_envio = @forma_de_envio,
+                responsavel = @responsavel,
+                obs_de_envio = @obs_de_envio,
+                valor_estimado = @valor_estimado,
+                noite_montagem = @noite_montagem,
+                volumes = @volumes,
+                atendente = @atendente,
+                cod_solicita_transporte = @cod_solicita_transporte,
+                tipo_manutencao = @tipo_manutencao,
+                status = @status,
+                status_por = @status_por,
+                status_data = @status_data,
+                id_manutencao = @id_manutencao
+            WHERE os = @os;";
     }
 }

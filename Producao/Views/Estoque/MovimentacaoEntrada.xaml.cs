@@ -220,11 +220,11 @@ public partial class MovimentacaoEntrada : UserControl
         }
         catch (PostgresException ex)
         {
-            MessageBox.Show(ex.MessageText, $"Erro: {ex.SqlState}");
+            Producao.ErrorDialog.Show(ex, "Erro do banco");
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
         finally
         {

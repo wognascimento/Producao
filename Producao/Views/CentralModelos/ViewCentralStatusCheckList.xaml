@@ -32,7 +32,7 @@
                             <telerik:RadButton
                                 Content="Gerar"
                                 Padding="8,2"
-                                Click="OnGerarModeloClick"/>
+                                Click="OnGerarModeloClick" Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>

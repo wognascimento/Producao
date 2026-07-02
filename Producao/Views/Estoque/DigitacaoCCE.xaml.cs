@@ -36,7 +36,7 @@ namespace Producao.Views.Estoque
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             finally
             {
@@ -65,7 +65,7 @@ namespace Producao.Views.Estoque
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             finally
             {

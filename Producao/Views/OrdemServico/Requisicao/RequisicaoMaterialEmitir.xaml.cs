@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -51,7 +52,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -74,7 +75,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -87,6 +88,10 @@ namespace Producao.Views.OrdemServico.Requisicao
 
     class RequisicaoMaterialEmitirViewModel : INotifyPropertyChanged
     {
+        static RequisicaoMaterialEmitirViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
         private ProdutoServicoModel _produtoServico;
         public ProdutoServicoModel ProdutoServico
         {
@@ -105,8 +110,15 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.ProdutoServicos.FindAsync(num_os_servico);
+                await using var conn = CreateConnection();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tbl_produtos_servico
+                    WHERE num_os_servico = @num_os_servico
+                    LIMIT 1;
+                    """;
+
+                return await conn.QueryFirstOrDefaultAsync<ProdutoServicoModel>(sql, new { num_os_servico });
             }
             catch (Exception)
             {
@@ -118,8 +130,15 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.Globais.FindAsync(num_os_servico);
+                await using var conn = CreateConnection();
+                const string sql = """
+                    SELECT *
+                    FROM ht.t_global
+                    WHERE num_os = @num_os_servico
+                    LIMIT 1;
+                    """;
+
+                return await conn.QueryFirstOrDefaultAsync<TGlobalModel>(sql, new { num_os_servico });
             }
             catch (Exception)
             {
@@ -131,9 +150,37 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.Requisicoes.SingleMergeAsync(requisicao);
-                await db.SaveChangesAsync();
+                if (requisicao is null)
+                    throw new ArgumentNullException(nameof(requisicao));
+
+                await using var conn = CreateConnection();
+
+                if (requisicao.num_requisicao is null or 0)
+                {
+                    const string insertSql = """
+                        INSERT INTO producao.t_requisicao
+                            (num_os_servico, data, alterado_por, concluida)
+                        VALUES
+                            (@num_os_servico, @data, @alterado_por, @concluida)
+                        RETURNING num_requisicao;
+                        """;
+
+                    requisicao.num_requisicao = await conn.ExecuteScalarAsync<long>(insertSql, requisicao);
+                }
+                else
+                {
+                    const string updateSql = """
+                        UPDATE producao.t_requisicao
+                        SET num_os_servico = @num_os_servico,
+                            data = @data,
+                            alterado_por = @alterado_por,
+                            concluida = @concluida
+                        WHERE num_requisicao = @num_requisicao;
+                        """;
+
+                    await conn.ExecuteAsync(updateSql, requisicao);
+                }
+
                 return requisicao;
             }
             catch (Exception)
@@ -150,3 +197,4 @@ namespace Producao.Views.OrdemServico.Requisicao
         }
     }
 }
+

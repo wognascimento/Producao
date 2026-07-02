@@ -1,8 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using Producao.Views.CentralModelos.Compat;
 using Producao.Views.OrdemServico;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -41,9 +43,9 @@ namespace Producao.Views.CentralModelos
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Setores = await Task.Run(vm.GetSetorsAsync);
+                vm.Setores = await vm.GetSetorsAsync();
                 vm.Itens = [];
-                //vm.Itens = await Task.Run(() => vm.GetSetoresProdutoAsync(modeloControle.codcompladicional));
+                //vm.Itens = await vm.GetSetoresProdutoAsync(modeloControle.codcompladicional);
                 //vm.Itens.Add(new HistoricoSetorModel { selesao = false });
                 //vm.Itens.Add(new HistoricoSetorModel { selesao = false });
                 //vm.Itens.Add(new HistoricoSetorModel { selesao = false });
@@ -59,7 +61,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -125,7 +127,7 @@ namespace Producao.Views.CentralModelos
                     return;
                 }
 
-                vm.Planilhas = await Task.Run(() => vm.GetPlanilasReceita(modeloControle.id_modelo));
+                vm.Planilhas = await vm.GetPlanilasReceita(modeloControle.id_modelo);
                 if (vm.Planilhas.Count == 0 && (modeloControle.planilha != "VASO" && modeloControle.planilha != "TOPIÁRIA"))
                 {
                     MessageBox.Show("Não existe item na receita do modelo", "Não é possível emitir Ordem de Serviço");
@@ -134,12 +136,12 @@ namespace Producao.Views.CentralModelos
                     return;
                 }
 
-                await Task.Run(() => vm.CreateOrdenServicoAsync(modeloControle));
+                await vm.CreateOrdenServicoAsync(modeloControle);
 
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
 
-                await Task.Run(ImprimpirRequisicao);
-                await Task.Run(ImprimpirOS);
+                await ImprimpirRequisicao();
+                await ImprimpirOS();
                 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
 
@@ -151,7 +153,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -162,13 +164,13 @@ namespace Producao.Views.CentralModelos
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                await Task.Run(ImprimpirRequisicao);
-                await Task.Run(ImprimpirOS);
+                await ImprimpirRequisicao();
+                await ImprimpirOS();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
 
@@ -178,7 +180,7 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                var servicos = await Task.Run(() => vm.GetOsEmitidas(vm.ProdutoOsModel.num_os_produto));
+                var servicos = await vm.GetOsEmitidas(vm.ProdutoOsModel.num_os_produto);
                 var printer = new OrdemServicoModeloPrinter();
                 await printer.ImprimirAsync(servicos, async numOsProduto => await vm.GetServicos(numOsProduto));
             }
@@ -192,17 +194,17 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                var servico = await Task.Run(() => vm.GetServicoRequisicao(vm.ProdutoOsModel.num_os_produto));
-                var requisicoes = await Task.Run(() => vm.GetRequisicaoAsync(servico.num_os_servico));
+                var servico = await vm.GetServicoRequisicao(vm.ProdutoOsModel.num_os_produto);
+                var requisicoes = await vm.GetRequisicaoAsync(servico.num_os_servico);
 
                 if (servico.setor_caminho.Contains("FITAS"))
                 {
-                    await Task.Run(() => OnPrintControle(servico.id_modelo, servico.num_os_servico));
+                    await OnPrintControle(servico.id_modelo, servico.num_os_servico);
                 }
 
                 foreach (var re in requisicoes)
                 {
-                    vm.ReqDetalhes = await Task.Run(() => vm.GetRequisicaoDetalhesAsync(re.num_requisicao));
+                    vm.ReqDetalhes = await vm.GetRequisicaoDetalhesAsync(re.num_requisicao);
 
                     ReqDetalhesModel requi = (from r in vm.ReqDetalhes select r).FirstOrDefault();
 
@@ -211,6 +213,7 @@ namespace Producao.Views.CentralModelos
                     application.DefaultVersion = ExcelVersion.Xlsx;
                     IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("REQUISICAO_MODELO.xlsx"));
                     IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                     worksheet.Range["C2"].Number = Convert.ToDouble(requi?.num_requisicao);
                     worksheet.Range["E2"].DateTime = Convert.ToDateTime(requi?.data);
                     worksheet.Range["C3"].Text = requi?.alterado_por;
@@ -280,14 +283,15 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                QryModeloModel Modelo = await Task.Run(() => vm.GetModeloAsync(idModelo));
-                vm.ReqDetalhes = await Task.Run(() => vm.GetRequisicaoDetalServicohesAsync(numServico));
+                QryModeloModel Modelo = await vm.GetModeloAsync(idModelo);
+                vm.ReqDetalhes = await vm.GetRequisicaoDetalServicohesAsync(numServico);
 
                 using ExcelEngine excelEngine = new ExcelEngine();
                 IApplication application = excelEngine.Excel;
                 application.DefaultVersion = ExcelVersion.Xlsx;
                 IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("RECEITA_CENTRAL_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.Range["A1"].Text = "CENTRAL DE MODELOS - CONTROLE";
                 worksheet.Range["C2"].Text = Modelo.id_modelo.ToString();
                 worksheet.Range["C3"].Text = Modelo.planilha;
@@ -343,7 +347,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -351,6 +355,108 @@ namespace Producao.Views.CentralModelos
 
     public class ModeloSetoresOrdemServicoViewModel : INotifyPropertyChanged
     {
+        static ModeloSetoresOrdemServicoViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
+
+        private static async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            return await conn.QueryFirstOrDefaultAsync<T>(sql, param);
+        }
+
+        private static Task<long> InsertProdutoOsAsync(NpgsqlConnection conn, ProdutoOsModel produto, NpgsqlTransaction transaction)
+        {
+            const string sql = """
+                INSERT INTO producao.tbl_produto_os
+                    (tipo, planilha, cod_produto, cod_desc_adicional, cod_compl_adicional, quantidade,
+                     data_emissao, responsavel_emissao, id_modelo, solicitado_por, codigo_saida, cliente)
+                VALUES
+                    (@tipo, @planilha, @cod_produto, @cod_desc_adicional, @cod_compl_adicional, @quantidade,
+                     @data_emissao, @responsavel_emissao, @id_modelo, @solicitado_por, @codigo_saida, @cliente)
+                RETURNING num_os_produto;
+                """;
+
+            return conn.ExecuteScalarAsync<long>(sql, produto, transaction);
+        }
+
+        private static Task InsertObsOsAsync(NpgsqlConnection conn, ObsOsModel obs, NpgsqlTransaction transaction)
+        {
+            const string sql = """
+                INSERT INTO producao.tbl_obs_os
+                    (num_os_produto, cod_compl_adicional, num_caminho, codigo_setor, setor_caminho,
+                     orientacao_caminho, distribuir_os, cliente, solicitado_por, solicitado_data,
+                     emitida, produtos_servico_num_os_servico, cancelar, cancelado_por, cancelado_em, pt)
+                VALUES
+                    (@num_os_produto, @cod_compl_adicional, @num_caminho, @codigo_setor, @setor_caminho,
+                     @orientacao_caminho, @distribuir_os, @cliente, @solicitado_por, @solicitado_data,
+                     @emitida, @produtos_servico_num_os_servico, @cancelar, @cancelado_por, @cancelado_em, @pt);
+                """;
+
+            return conn.ExecuteAsync(sql, obs, transaction);
+        }
+
+        private static Task<long> InsertProdutoServicoAsync(NpgsqlConnection conn, ProdutoServicoModel servico, NpgsqlTransaction transaction)
+        {
+            const string sql = """
+                INSERT INTO producao.tbl_produtos_servico
+                    (num_os_produto, tipo, codigo_setor, setor_caminho, quantidade, data_inicio, data_fim,
+                     cliente, tema, orientacao_caminho, codigo_setor_proximo, setor_caminho_proximo, fase,
+                     responsavel_emissao_os, emitida_por, emitida_data, meta_data, turno, ajuste_projeto,
+                     cancelada_os, retrabalho, recebido_setor_data, concluida_os_data, impresso,
+                     cod_detalhe_compl, id_modelo, alterado_por, alterado_data, status, data_status,
+                     status_por, motivo_cancelamento, aprovado, aprovado_por, aprovado_em, programacao_ordem,
+                     programacao_status, programacao_observacao, programacao_inserido_por, programacao_inserido_data,
+                     meta_lider, pagina, pt)
+                VALUES
+                    (@num_os_produto, @tipo, @codigo_setor, @setor_caminho, @quantidade, @data_inicio, @data_fim,
+                     @cliente, @tema, @orientacao_caminho, @codigo_setor_proximo, @setor_caminho_proximo, @fase,
+                     @responsavel_emissao_os, @emitida_por, @emitida_data, @meta_data, @turno, @ajuste_projeto,
+                     @cancelada_os, @retrabalho, @recebido_setor_data, @concluida_os_data, @impresso,
+                     @cod_detalhe_compl, @id_modelo, @alterado_por, @alterado_data, @status, @data_status,
+                     @status_por, @motivo_cancelamento, @aprovado, @aprovado_por, @aprovado_em, @programacao_ordem,
+                     @programacao_status, @programacao_observacao, @programacao_inserido_por, @programacao_inserido_data,
+                     @meta_lider, @pagina, @pt)
+                RETURNING num_os_servico;
+                """;
+
+            return conn.ExecuteScalarAsync<long>(sql, servico, transaction);
+        }
+
+        private static Task<long> InsertRequisicaoAsync(NpgsqlConnection conn, RequisicaoModel requisicao, NpgsqlTransaction transaction)
+        {
+            const string sql = """
+                INSERT INTO producao.t_requisicao
+                    (num_os_servico, data, alterado_por, concluida)
+                VALUES
+                    (@num_os_servico, @data, @alterado_por, @concluida)
+                RETURNING num_requisicao;
+                """;
+
+            return conn.ExecuteScalarAsync<long>(sql, requisicao, transaction);
+        }
+
+        private static Task InsertDetalheRequisicaoAsync(NpgsqlConnection conn, DetalheRequisicaoModel detalhe, NpgsqlTransaction transaction)
+        {
+            const string sql = """
+                INSERT INTO producao.t_detalhes_req
+                    (num_requisicao, quantidade, data, alterado_por, ok, data_ok, ok_expedido, observacao,
+                     voltagem, local_shop, complemento_chk, codcompladicional, volume, dividir_qtd_volume, agupar)
+                VALUES
+                    (@num_requisicao, @quantidade, @data, @alterado_por, @ok, @data_ok, @ok_expedido, @observacao,
+                     @voltagem, @local_shop, @complemento_chk, @codcompladicional, @volume, @dividir_qtd_volume, @agupar);
+                """;
+
+            return conn.ExecuteAsync(sql, detalhe, transaction);
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -443,8 +549,13 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.HistoricosSetor.Where(c => c.codcompladicional == codcompladicional).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.view_historico_setor
+                    WHERE codcompladicional = @codcompladicional;
+                    """;
+
+                var data = await QueryAsync<HistoricoSetorModel>(sql, new { codcompladicional });
                 return new ObservableCollection<HistoricoSetorModel>(data);
             }
             catch (Exception)
@@ -456,8 +567,15 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await (from s in db.SetorProducaos where s.inativo == "0    " select new SetorModel { setor =  s.setor + " - " + s.galpao, codigo_setor = s.codigo_setor}).ToListAsync();
+                const string sql = """
+                    SELECT
+                        setor || ' - ' || galpao AS setor,
+                        codigo_setor
+                    FROM producao.tbl_setor
+                    WHERE inativo = '0    ';
+                    """;
+
+                var data = await QueryAsync<SetorModel>(sql);
                 return new ObservableCollection<SetorModel>(data);
             }
             catch (Exception)
@@ -468,143 +586,166 @@ namespace Producao.Views.CentralModelos
 
         public async Task CreateOrdenServicoAsync(ModeloGerarOsModel modeloControle)
         {
-            using DatabaseContext db = new();
-            var strategy = db.Database.CreateExecutionStrategy();
+            await using var conn = CreateConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+            var Setores = (from e in Itens where e.selesao == true select e).ToList();
+            if (Setores.Count == 0)
+                throw new InvalidOperationException("Não existe setor para criar ordem de serviço.");
 
-            await strategy.ExecuteAsync(async () => 
+            var quantidade = (modeloControle?.qtde - (int)(modeloControle?.qtde_os ?? 0));
+            try
             {
-                using var transaction = db.Database.BeginTransaction();
-                var Setores = (from e in Itens where e.selesao == true select e).ToList();
-                if (Setores.Count == 0)
-                    throw new InvalidOperationException("Não existe setor para criar ordem de serviço.");
+                const string produtoSql = """
+                    SELECT *
+                    FROM producao.qry3descricoes
+                    WHERE codcompladicional = @codcompladicional
+                    LIMIT 1;
+                    """;
 
-                var quantidade = (modeloControle?.qtde - (int)(modeloControle?.qtde_os ?? 0));
-                try
+                var produto = await conn.QueryFirstOrDefaultAsync<QryDescricao>(
+                    produtoSql,
+                    new { modeloControle.codcompladicional },
+                    transaction);
+
+                if (produto is null)
+                    throw new InvalidOperationException("Produto não encontrado para criar ordem de serviço.");
+
+                var produtoOsModel = new ProdutoOsModel
                 {
-                    var produto = await db.Descricoes.Where(d => d.codcompladicional == modeloControle.codcompladicional).FirstOrDefaultAsync();
-                    var produtoOsModel = new ProdutoOsModel
+                    tipo = "KIT",
+                    planilha = produto.planilha,
+                    quantidade = quantidade,
+                    responsavel_emissao = Environment.UserName,
+                    data_emissao = DateTime.Now,
+                    cod_produto = produto.codigo,
+                    cod_desc_adicional = produto.coduniadicional,
+                    cod_compl_adicional = produto.codcompladicional,
+                    id_modelo = modeloControle.id_modelo
+                };
+                produtoOsModel.num_os_produto = await InsertProdutoOsAsync(conn, produtoOsModel, transaction);
+
+                ProdutoOsModel = produtoOsModel;
+
+                for (int i = 0; i < Setores.Count; i++)
+                {
+                    var item = Setores[i];
+                    var Obs = new ObsOsModel
                     {
-                        tipo = "KIT",
-                        planilha = produto.planilha,
-                        quantidade = quantidade,
-                        responsavel_emissao = Environment.UserName,
-                        data_emissao = DateTime.Now,
-                        cod_produto = produto.codigo,
-                        cod_desc_adicional = produto.coduniadicional,
+                        num_os_produto = produtoOsModel.num_os_produto,
                         cod_compl_adicional = produto.codcompladicional,
-                        id_modelo = modeloControle.id_modelo
+                        num_caminho = i + 1,
+                        codigo_setor = item.codigo_setor,
+                        setor_caminho = item.setor,
+                        orientacao_caminho = item.observacao,
+                        distribuir_os = "No setor",
+                        cliente = modeloControle.sigla,
+                        solicitado_por = Environment.UserName,
+                        solicitado_data = DateTime.Now
                     };
-                    await db.ProdutoOs.AddAsync(produtoOsModel);
-                    await db.SaveChangesAsync();
 
-                    ProdutoOsModel = produtoOsModel;
+                    await InsertObsOsAsync(conn, Obs, transaction);
+                }
 
-                    for (int i = 0; i < Setores.Count; i++)
+                const string solicitAbertaSql = """
+                    SELECT *
+                    FROM producao.qry_os_emissao_aberta_form
+                    WHERE num_os_produto = @num_os_produto
+                    ORDER BY num_caminho;
+                    """;
+                var solictAberta = (await conn.QueryAsync<OrdemServicoEmissaoAbertaForm>(
+                    solicitAbertaSql,
+                    new { produtoOsModel.num_os_produto },
+                    transaction)).ToList();
+
+                for (int i = 0; i < solictAberta.Count; i++)
+                {
+                    var item = solictAberta[i];
+                    var produtoServicoModel = new ProdutoServicoModel
                     {
-                        var item = Setores[i];
-                        var Obs = new ObsOsModel
-                        {
-                            num_os_produto = produtoOsModel.num_os_produto,
-                            cod_compl_adicional = produto.codcompladicional,
-                            num_caminho = i + 1,
-                            codigo_setor = item.codigo_setor,
-                            setor_caminho = item.setor,
-                            orientacao_caminho = item.observacao,
-                            distribuir_os = "No setor",
-                            cliente = modeloControle.sigla,
-                            solicitado_por = Environment.UserName,
-                            solicitado_data = DateTime.Now
-                        };
+                        num_os_produto = item.num_os_produto,
+                        tipo = item.tipo,
+                        codigo_setor = item.codigo_setor,
+                        setor_caminho = item.setor_caminho,
+                        quantidade = item.quantidade,
+                        data_inicio = DateTime.Now,
+                        data_fim = DateTime.Now.AddDays(15),
+                        cliente = item.cliente,
+                        tema = item.tema,
+                        orientacao_caminho = item.orientacao_caminho,
+                        codigo_setor_proximo = ((i + 1) < solictAberta.Count) ? solictAberta[i + 1].codigo_setor : 39,
+                        setor_caminho_proximo = ((i + 1) < solictAberta.Count) ? solictAberta[i + 1].setor_caminho : "FINAL - TODOS",
+                        fase = "PRODUÇÃO",
+                        responsavel_emissao_os = Environment.UserName,
+                        emitida_por = Environment.UserName,
+                        emitida_data = DateTime.Now,
+                        turno = "DIURNO",
+                        id_modelo = item.id_modelo,
+                    };
 
-                        await db.ObsOs.AddAsync(Obs);
-                        await db.SaveChangesAsync();
-                    }
+                    produtoServicoModel.num_os_servico = await InsertProdutoServicoAsync(conn, produtoServicoModel, transaction);
 
-                    var solictAberta = await db.OrdemServicoEmissaoAbertas.OrderBy(o => o.num_caminho).Where(o => o.num_os_produto == produtoOsModel.num_os_produto).ToListAsync();
-                    for (int i = 0; i < solictAberta.Count; i++)
+                    //ADICIONAR REQUISIÇÃO DE MATERIAL
+                    if (i == 0)
                     {
-                        var item = solictAberta[i];
-                        var teste = ((i + 1) < solictAberta.Count);
-                        var produtoServicoModel = new ProdutoServicoModel
+                        foreach (var planilha in Planilhas)
                         {
-                            num_os_produto = item.num_os_produto,
-                            tipo = item.tipo,
-                            codigo_setor = item.codigo_setor,
-                            setor_caminho = item.setor_caminho,
-                            quantidade = item.quantidade,
-                            data_inicio = DateTime.Now,
-                            data_fim = DateTime.Now.AddDays(15),
-                            cliente = item.cliente,
-                            tema = item.tema,
-                            orientacao_caminho = item.orientacao_caminho,
-                            codigo_setor_proximo = ((i + 1) < solictAberta.Count) ? solictAberta[i + 1].codigo_setor : 39,
-                            setor_caminho_proximo = ((i + 1) < solictAberta.Count) ? solictAberta[i + 1].setor_caminho : "FINAL - TODOS",
-                            fase = "PRODUÇÃO",
-                            responsavel_emissao_os = Environment.UserName,
-                            emitida_por = Environment.UserName,
-                            emitida_data = DateTime.Now,
-                            turno = "DIURNO",
-                            id_modelo = item.id_modelo,
-                        };
-
-                        await db.ProdutoServicos.AddAsync(produtoServicoModel);
-                        await db.SaveChangesAsync();
-
-
-                        //ADICIONAR REQUISIÇÃO DE MATERIAL
-                        if (i == 0)
-                        {
-                            foreach (var planilha in Planilhas)
+                            if (!planilha.Contains("FITAS"))
                             {
-                                if (!planilha.Contains("FITAS"))
+                                var requisicao = new RequisicaoModel { num_os_servico = produtoServicoModel.num_os_servico, data = DateTime.Now, alterado_por = Environment.UserName };
+                                requisicao.num_requisicao = await InsertRequisicaoAsync(conn, requisicao, transaction);
+
+                                const string detalhesSql = """
+                                    SELECT *
+                                    FROM modelos.qry_detalhes_modelo
+                                    WHERE planilha = @planilha
+                                      AND id_modelo = @id_modelo;
+                                    """;
+
+                                var detalhes = await conn.QueryAsync<DetalhesModeloModel>(
+                                    detalhesSql,
+                                    new { planilha, modeloControle.id_modelo },
+                                    transaction);
+
+                                foreach (DetalhesModeloModel detalhe in detalhes)
                                 {
-                                    var requisicao = new RequisicaoModel { num_os_servico = produtoServicoModel.num_os_servico, data = DateTime.Now, alterado_por = Environment.UserName };
-
-                                    await db.Requisicoes.SingleMergeAsync(requisicao);
-                                    await db.SaveChangesAsync();
-
-                                    //adicinar requisicao
-
-                                    //var detalhes = db.DetalhesModelo.Where()
-                                    //modeloControle.planilha
-                                    var detalhes = await db.DetalhesModelo.Where(d => d.planilha == planilha && d.id_modelo == modeloControle.id_modelo).ToListAsync();
-                                    foreach (DetalhesModeloModel detalhe in detalhes)
+                                    var detReq = new DetalheRequisicaoModel
                                     {
-                                        var detReq = new DetalheRequisicaoModel
-                                        {
-                                            num_requisicao = requisicao.num_requisicao,
-                                            codcompladicional = detalhe.codcompladicional,
-                                            quantidade = modeloControle.planilha == "ADEREÇO" || modeloControle.planilha == "FIADA" || modeloControle.planilha == "ENF PISO" ? Math.Ceiling((double)detalhe.qtd) : Math.Ceiling((double)(detalhe.qtd * produtoServicoModel.quantidade)),
-                                            observacao = detalhe.observacao,
-                                            data = DateTime.Now,
-                                            alterado_por = Environment.UserName
-                                        };
-                                        await db.RequisicaoDetalhes.SingleMergeAsync(detReq);
-                                        await db.SaveChangesAsync();
-                                    }
-                                    //throw new Exception("FORÇAR ERRO PARA NÃO CONCLUIR A TRANSAÇÃO");
-                                    // IMPRIMIR REQUISIÇÃO
+                                        num_requisicao = requisicao.num_requisicao,
+                                        codcompladicional = detalhe.codcompladicional,
+                                        quantidade = modeloControle.planilha == "ADEREÇO" || modeloControle.planilha == "FIADA" || modeloControle.planilha == "ENF PISO" ? Math.Ceiling((double)detalhe.qtd) : Math.Ceiling((double)(detalhe.qtd * produtoServicoModel.quantidade)),
+                                        observacao = detalhe.observacao,
+                                        data = DateTime.Now,
+                                        alterado_por = Environment.UserName
+                                    };
+                                    await InsertDetalheRequisicaoAsync(conn, detReq, transaction);
                                 }
                             }
                         }
                     }
+                }
 
-                    transaction.Commit();
-                }
-                catch (Exception)
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-            }); 
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<ProdutoServicoModel> GetServicoRequisicao(long? num_os_produto)
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ProdutoServicos.Where(i => i.num_os_produto == num_os_produto).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tbl_produtos_servico
+                    WHERE num_os_produto = @num_os_produto
+                    LIMIT 1;
+                    """;
+
+                var data = await QueryFirstOrDefaultAsync<ProdutoServicoModel>(sql, new { num_os_produto });
                 return data;
             }
             catch (Exception)
@@ -617,8 +758,13 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ImprimirOsS.Where(i => i.num_os_produto == num_os_produto).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry_os_emissao_producao_imprimir
+                    WHERE num_os_produto = @num_os_produto;
+                    """;
+
+                var data = await QueryAsync<OsEmissaoProducaoImprimirModel>(sql, new { num_os_produto });
                 return new ObservableCollection<OsEmissaoProducaoImprimirModel>(data);
             }
             catch (Exception)
@@ -631,8 +777,13 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ProdutoServicos.Where(i => i.num_os_produto == num_os_produto).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tbl_produtos_servico
+                    WHERE num_os_produto = @num_os_produto;
+                    """;
+
+                var data = await QueryAsync<ProdutoServicoModel>(sql, new { num_os_produto });
                 return new ObservableCollection<ProdutoServicoModel>(data);
             }
             catch (Exception)
@@ -645,12 +796,18 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.qryReceitas.Where(r => r.id_modelo == id_modelo).OrderBy(g => g.planilha).GroupBy(g => new { g.planilha, g.id_modelo }).Select(p => new { p.Key.planilha }).ToListAsync();
+                const string sql = """
+                    SELECT DISTINCT planilha
+                    FROM modelos.qry_receita_detalhes_criado
+                    WHERE id_modelo = @id_modelo
+                    ORDER BY planilha;
+                    """;
+
+                var data = await QueryAsync<string>(sql, new { id_modelo });
 
                 ObservableCollection<string> nos = new ObservableCollection<string>();
                 foreach (var item in data)
-                    nos.Add(item.planilha);
+                    nos.Add(item);
 
                 return nos;
             }
@@ -664,12 +821,14 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ReqDetalhes
-                    .Where(r => r.num_os_servico == num_os_servico)
-                    .GroupBy(p => p.num_requisicao)
-                    .Select(x => new Requisicao { num_requisicao = x.Key })
-                    .ToListAsync();
+                const string sql = """
+                    SELECT num_requisicao
+                    FROM modelos.qry_req_detalhes
+                    WHERE num_os_servico = @num_os_servico
+                    GROUP BY num_requisicao;
+                    """;
+
+                var data = await QueryAsync<Requisicao>(sql, new { num_os_servico });
                 return new ObservableCollection<Requisicao>(data);
             }
             catch (Exception)
@@ -682,8 +841,13 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ReqDetalhes.Where(r => r.num_requisicao == num_requisicao).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qry_req_detalhes
+                    WHERE num_requisicao = @num_requisicao;
+                    """;
+
+                var data = await QueryAsync<ReqDetalhesModel>(sql, new { num_requisicao });
                 return new ObservableCollection<ReqDetalhesModel>(data);
             }
             catch (Exception)
@@ -696,8 +860,14 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.qryModelos.Where(r => r.id_modelo == idModelo).FirstOrDefaultAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qrymodelos
+                    WHERE id_modelo = @idModelo
+                    LIMIT 1;
+                    """;
+
+                var data = await QueryFirstOrDefaultAsync<QryModeloModel>(sql, new { idModelo });
                 return data;
             }
             catch (Exception)
@@ -710,8 +880,14 @@ namespace Producao.Views.CentralModelos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ReqDetalhes.Where(r => r.num_os_servico == num_os_servico && r.quantidade > 0).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM modelos.qry_req_detalhes
+                    WHERE num_os_servico = @num_os_servico
+                      AND quantidade > 0;
+                    """;
+
+                var data = await QueryAsync<ReqDetalhesModel>(sql, new { num_os_servico });
                 return new ObservableCollection<ReqDetalhesModel>(data);
             }
             catch (Exception)
@@ -727,3 +903,4 @@ namespace Producao.Views.CentralModelos
         public long? num_requisicao { get; set; }
     }
 }
+

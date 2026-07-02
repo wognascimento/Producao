@@ -1,20 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Producao.Views.OrdemServico.Produto
 {
@@ -40,7 +32,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -54,13 +46,13 @@ namespace Producao.Views.OrdemServico.Produto
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
-
         private RelplanModel _relplan;
         public RelplanModel Relplan
         {
             get { return _relplan; }
             set { _relplan = value; RaisePropertyChanged("Relplan"); }
         }
+
         private ObservableCollection<RelplanModel> _relplans;
         public ObservableCollection<RelplanModel> Relplans
         {
@@ -72,8 +64,11 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await (from s in db.Relplans orderby s.planilha select s).ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<RelplanModel>(
+                    @"SELECT *
+                      FROM producao.relplan
+                      ORDER BY planilha;");
                 return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
@@ -81,6 +76,5 @@ namespace Producao.Views.OrdemServico.Produto
                 throw;
             }
         }
-
     }
 }

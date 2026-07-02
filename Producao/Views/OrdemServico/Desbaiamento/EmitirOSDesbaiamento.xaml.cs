@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using Producao.Views.OrdemServico.Produto;
 using System;
@@ -45,7 +46,7 @@ namespace Producao.Views.OrdemServico.Desbaiamento
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -74,7 +75,7 @@ namespace Producao.Views.OrdemServico.Desbaiamento
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 var toRemove = vm.Itens.Where(x => x.n_os_desbaiamento == null).ToList();
                 foreach (var item in toRemove)
                     vm.Itens.Remove(item);
@@ -86,6 +87,10 @@ namespace Producao.Views.OrdemServico.Desbaiamento
 
     public class EmitirOSDesbaiamentoViewModel : INotifyPropertyChanged
     {
+        static EmitirOSDesbaiamentoViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -110,9 +115,13 @@ namespace Producao.Views.OrdemServico.Desbaiamento
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.OsExps
-                    .ToListAsync();
+                await using var conn = CreateConnection();
+                const string sql = """
+                    SELECT *
+                    FROM expedicao.tbl_os_exp;
+                    """;
+
+                var data = await conn.QueryAsync<OsExpModel>(sql);
                 return new ObservableCollection<OsExpModel>(data);
             }
             catch (Exception)
@@ -125,9 +134,44 @@ namespace Producao.Views.OrdemServico.Desbaiamento
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.OsExps.SingleMergeAsync(osExp);
-                await db.SaveChangesAsync();
+                await using var conn = CreateConnection();
+
+                if (osExp.n_os_desbaiamento is null or 0)
+                {
+                    const string insertSql = """
+                        INSERT INTO expedicao.tbl_os_exp
+                            (antigo, codvol, data, resp, setor, quantidade, obs, coddetalhescompl,
+                             solicitante, local_shopp, inserido_por, inserido_em)
+                        VALUES
+                            (@antigo, @codvol, @data, @resp, @setor, @quantidade, @obs, @coddetalhescompl,
+                             @solicitante, @local_shopp, @inserido_por, @inserido_em)
+                        RETURNING n_os_desbaiamento;
+                        """;
+
+                    osExp.n_os_desbaiamento = await conn.ExecuteScalarAsync<long>(insertSql, osExp);
+                }
+                else
+                {
+                    const string updateSql = """
+                        UPDATE expedicao.tbl_os_exp
+                        SET antigo = @antigo,
+                            codvol = @codvol,
+                            data = @data,
+                            resp = @resp,
+                            setor = @setor,
+                            quantidade = @quantidade,
+                            obs = @obs,
+                            coddetalhescompl = @coddetalhescompl,
+                            solicitante = @solicitante,
+                            local_shopp = @local_shopp,
+                            inserido_por = @inserido_por,
+                            inserido_em = @inserido_em
+                        WHERE n_os_desbaiamento = @n_os_desbaiamento;
+                        """;
+
+                    await conn.ExecuteAsync(updateSql, osExp);
+                }
+
                 return osExp;
             }
             catch (Exception)
@@ -138,3 +182,4 @@ namespace Producao.Views.OrdemServico.Desbaiamento
 
     }
 }
+

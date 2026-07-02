@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Npgsql;
 using Producao.DataBase.Model.Dto;
 using System;
@@ -37,12 +37,12 @@ public partial class CustoProduto : UserControl
         }
         catch(PostgresException ex)
         {
-            MessageBox.Show($"Erro ao conectar com o banco de dados: {ex.Message}");
+            Producao.ErrorDialog.Show(ex, "Erro ao conectar com o banco de dados");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
     }
@@ -61,7 +61,7 @@ public partial class CustoProduto : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
     }

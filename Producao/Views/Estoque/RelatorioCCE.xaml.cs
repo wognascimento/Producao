@@ -47,7 +47,7 @@ namespace Producao.Views.Estoque
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -66,6 +66,7 @@ namespace Producao.Views.Estoque
                 var filePath = BaseSettings.ResolveImpressosPath("RELATORIO_CCE.xlsx");
                 using var workbook = new XLWorkbook(BaseSettings.ResolveModeloPath("RELATORIO_CCE_MODELO.xlsx"));
                 var worksheet = workbook.Worksheet(1);
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
 
                 worksheet.Cell("H1").Value = vm.Planilha.planilha;
 
@@ -100,7 +101,7 @@ namespace Producao.Views.Estoque
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }

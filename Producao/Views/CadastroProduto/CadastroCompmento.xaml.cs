@@ -39,7 +39,7 @@ namespace Producao.Views.CadastroProduto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             finally
             {
@@ -98,7 +98,7 @@ namespace Producao.Views.CadastroProduto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 var toRemove = vm.ComplementoAdicionais.Where(x => x.codcompladicional is null or 0).ToList();
                 foreach (var item in toRemove)
                     vm.ComplementoAdicionais.Remove(item);

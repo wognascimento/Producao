@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao.DataBase.Model
 {
-    [Keyless]
     [Table("pcp_planejamento_estoque", Schema = "producao")]
     public class PlanejamentoEstoqueModel
     {

@@ -79,6 +79,7 @@ namespace Producao.Views.OrdemServico
 
             using IWorkbook workbook = excelEngine.Excel.Workbooks.Open(baseSettings.ResolveModeloPath("PERMISSAO_TRABALHO.xlsx"));
             IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
             worksheet.Range["G1"].Number = Convert.ToDouble(servico.num_os_servico ?? 0);
 
             var caminhoPt = baseSettings.ResolveImpressosPath($"PERMISSAO_TRABALHO_{servico.num_os_servico}.xlsx");
@@ -168,6 +169,7 @@ namespace Producao.Views.OrdemServico
 
         private static void ConfigurarImpressao(IWorksheet worksheet, string areaImpressao)
         {
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
             worksheet.PageSetup.PrintArea = areaImpressao;
             worksheet.PageSetup.CenterHorizontally = true;
             worksheet.PageSetup.CenterVertically = false;

@@ -1,5 +1,6 @@
 using ClosedXML.Excel;
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.Generic;
@@ -56,7 +57,7 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -79,7 +80,7 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -127,7 +128,7 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -143,6 +144,7 @@ namespace Producao.Views.OrdemServico.Produto
                 var filePath = BaseSettings.ResolveImpressosPath("PROGRAMACAO_PROGRAMACAO_MODELO.xlsx");
                 using var workbook = new XLWorkbook(BaseSettings.ResolveModeloPath("PROGRAMACAO_PROGRAMACAO_MODELO.xlsx"));
                 var worksheet = workbook.Worksheet(1);
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
 
                 int _l = 9;
 
@@ -205,7 +207,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
 
@@ -236,6 +238,17 @@ namespace Producao.Views.OrdemServico.Produto
 
     class ProgramacaoProducaoViewModel : INotifyPropertyChanged
     {
+        static ProgramacaoProducaoViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
+
         private SetorModel _setor;
         public SetorModel Setor
         {
@@ -296,11 +309,13 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.SetorProducaos
-                    .GroupBy(p => p.localizacao)
-                    .Select(g => g.OrderBy(p => p.localizacao).FirstOrDefault())
-                    .ToListAsync();
+                const string sql = """
+                    SELECT DISTINCT ON (localizacao) *
+                    FROM producao.tbl_setor
+                    ORDER BY localizacao;
+                    """;
+
+                var data = await QueryAsync<SetorProducaoModel>(sql);
 
                 return new ObservableCollection<SetorProducaoModel>(data);
             }
@@ -314,8 +329,17 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await (from s in db.SetorProducaos orderby s.setor where s.inativo == "0    " && s.localizacao == localizacao select new SetorModel { setor = s.setor + " - " + s.galpao, codigo_setor = s.codigo_setor }).ToListAsync();
+                const string sql = """
+                    SELECT
+                        setor || ' - ' || galpao AS setor,
+                        codigo_setor
+                    FROM producao.tbl_setor
+                    WHERE inativo = '0    '
+                      AND localizacao = @localizacao
+                    ORDER BY setor;
+                    """;
+
+                var data = await QueryAsync<SetorModel>(sql, new { localizacao });
                 return new ObservableCollection<SetorModel>(data);
             }
             catch (Exception)
@@ -328,10 +352,13 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ProgramacaoProducoes
-                    .Where(p => p.quantidade_os > 0)
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry_programacao_producao_global_producao
+                    WHERE quantidade_os > 0;
+                    """;
+
+                var data = await QueryAsync<ProgramacaoProducaoModel>(sql);
 
                 return new ObservableCollection<ProgramacaoProducaoModel>(data);
             }
@@ -345,15 +372,17 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                TGlobalModel servico = await db.Globais.FindAsync(global.num_os);
-                servico.programacao_ordem = global.programacao_ordem;
-                servico.programacao_observacao = global.programacao_observacao;
-                servico.programacao_inserido_por = global.programacao_inserido_por;
-                servico.programacao_inserido_data = global.programacao_inserido_data;
+                await using var conn = CreateConnection();
+                const string sql = """
+                    UPDATE ht.t_global
+                    SET programacao_ordem = @programacao_ordem,
+                        programacao_observacao = @programacao_observacao,
+                        programacao_inserido_por = @programacao_inserido_por,
+                        programacao_inserido_data = @programacao_inserido_data
+                    WHERE num_os = @num_os;
+                    """;
 
-                await db.SaveChangesAsync();
-                //await db.Globais.SingleUpdateAsync(servico);
+                await conn.ExecuteAsync(sql, global);
             }
             catch (Exception)
             {
@@ -392,3 +421,4 @@ namespace Producao.Views.OrdemServico.Produto
         }
     }
 }
+

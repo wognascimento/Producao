@@ -23,10 +23,10 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Height="39">
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
             <telerik:RadComboBox x:Name="cbSiglaShopping"
                                  Width="260"
-                                 
+                                 Margin="0,0,2,2"
                                  EmptyText="Shopping"
                                  IsEditable="True"
                                  IsFilteringEnabled="True"
@@ -34,9 +34,9 @@
                                  ItemsSource="{Binding Siglas}"
                                  DisplayMemberPath="sigla"
                                  SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 SelectionChanged="OnSiglaSelectionChanged"/>
+                                 SelectionChanged="OnSiglaSelectionChanged" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
-            <TextBlock VerticalAlignment="Center">
+            <TextBlock VerticalAlignment="Center" Margin="0,0,2,2">
                 <Hyperlink NavigateUri="{Binding Link.links}"
                            RequestNavigate="Hyperlink_RequestNavigate">
                     <Run Text="{Binding Link.links}"/>
@@ -44,21 +44,22 @@
             </TextBlock>
 
             <telerik:RadWatermarkTextBox Width="200"
-                                         
+                                         Margin="0,0,2,2"
                                          WatermarkContent="Responsável Tema"
                                          Text="{Binding Tema.resp_tema, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          IsEnabled="False"/>
 
             <telerik:RadWatermarkTextBox Width="200"
+                                         Margin="0,0,2,2"
                                          WatermarkContent="Resp cliente"
                                          Text="{Binding Sigla.diretorcliente, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          IsEnabled="False"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Height="39">
+        <StackPanel Grid.Row="1" Orientation="Horizontal" >
             <telerik:RadComboBox x:Name="txtTema"
                                  Width="710"
-                                 
+                                 Margin="0,0,2,2"
                                  EmptyText="Tema"
                                  IsEditable="True"
                                  IsFilteringEnabled="True"
@@ -66,23 +67,24 @@
                                  ItemsSource="{Binding Temas}"
                                  DisplayMemberPath="tema"
                                  SelectedItem="{Binding Tema, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 SelectionChanged="OnTemaSelectionChanged"/>
+                                 SelectionChanged="OnTemaSelectionChanged" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
             <telerik:RadButton Click="OnPrintMemorial"
                                ToolTip="Imprimir"
-                               Padding="8,4">
+                               Padding="8,4" Margin="0,0,2,2">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="/icones/icons8-impressão-40.png"
                            Width="20"
                            Height="20"
                            />
-                    <TextBlock Text="IMPRIMIR" VerticalAlignment="Center"/>
+                    <TextBlock Text="IMPRIMIR" VerticalAlignment="Center" Margin="0,0,2,2"/>
                 </StackPanel>
             </telerik:RadButton>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal">
             <telerik:RadWatermarkTextBox Width="710"
+                                         Margin="0,0,2,2"
                                          WatermarkContent="Texto do tema"
                                          Text="{Binding Sigla.tema}"
                                          TextWrapping="Wrap"/>

@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Npgsql;
 using Producao.Views.PopUp;
 using System;
@@ -33,15 +33,15 @@ namespace Producao.Views.CadastroProduto
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 CadastroProdutoViewModel vm = (CadastroProdutoViewModel)DataContext;
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
-                vm.ClasseSolicitCompras = await Task.Run( vm.GetClassSolicitComprasAsync);
-                vm.FamiliaProds = await Task.Run(vm.GetFamiliaProdsAsync);
+                vm.Planilhas = await vm.GetPlanilhasAsync();
+                vm.ClasseSolicitCompras = await vm.GetClassSolicitComprasAsync();
+                vm.FamiliaProds = await vm.GetFamiliaProdsAsync();
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -55,13 +55,13 @@ namespace Producao.Views.CadastroProduto
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 CadastroProdutoViewModel vm = (CadastroProdutoViewModel)DataContext;
                 //if (!dbClick)
-                vm.Produtos = await Task.Run(async () => await vm.GetProdutosAsync(vm.Planilha?.planilha));
+                vm.Produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -94,14 +94,14 @@ namespace Producao.Views.CadastroProduto
                 data.datacadastro = data.codigo == null ? DateTime.Now : data.datacadastro;
                 data.alterado_por = data.codigo == null ? null : Environment.UserName;
                 data.data_altera = data.codigo == null ? null : DateTime.Now;
-                data = await Task.Run(() => vm.SaveAsync(data));
+                data = await vm.SaveAsync(data);
                 grid?.Items.Refresh();
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 var toRemove = vm.Produtos.Where(x => x.codigo == null).ToList();
                 foreach (var item in toRemove)
                     vm.Produtos.Remove(item);
@@ -249,7 +249,7 @@ namespace Producao.Views.CadastroProduto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }

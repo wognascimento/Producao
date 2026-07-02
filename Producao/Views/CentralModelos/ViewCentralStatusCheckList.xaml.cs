@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -29,7 +30,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
         }
@@ -72,7 +73,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
         }
@@ -84,6 +85,10 @@ namespace Producao.Views.CentralModelos
 
     public class ViewCentralStatusCheckListViewModel : INotifyPropertyChanged
     {
+        static ViewCentralStatusCheckListViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public void RaisePropertyChanged(string propName)
@@ -121,43 +126,88 @@ namespace Producao.Views.CentralModelos
 
         public async Task<ObservableCollection<StatusChkGeralCentralModel>> GetItensAsync()
         {
-            using DatabaseContext db = new();
-            var data = await db.statusChkGeralCentrals
-                .OrderBy(x => x.sigla)
-                .ThenBy(x => x.tema)
-                .ThenBy(x => x.ordem)
-                .ToListAsync();
+            const string sql = """
+                SELECT *
+                FROM modelos.qry_status_chk_geral_central
+                ORDER BY sigla, tema, ordem;
+                """;
+
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<StatusChkGeralCentralModel>(sql);
             return new ObservableCollection<StatusChkGeralCentralModel>(data);
         }
 
         public async Task<ModeloModel> AddModeloAsync(ModeloModel modelo, long? idtema)
         {
-            using DatabaseContext db = new();
-            var strategy = db.Database.CreateExecutionStrategy();
-
-            await strategy.ExecuteAsync(async () =>
+            await using var conn = CreateConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+            try
             {
-                using var transaction = db.Database.BeginTransaction();
-                try
+                if (modelo.id_modelo is null or 0)
                 {
-                    await db.Modelos.SingleMergeAsync(modelo);
-                    await db.SaveChangesAsync();
-                    transaction.Commit();
+                    modelo.id_modelo = await conn.ExecuteScalarAsync<long>(
+                        """
+                        INSERT INTO modelos.tbl_modelos
+                            (foto, tema, obs_modelo, aprovado, aprovado_por, data_aprovacao, alterado, data_alteracao,
+                             liberado, liberado_por, data_liberacao, codcompladicional, cadastrado_por, data_cadastro, qtd_fiada_cascata)
+                        VALUES
+                            (@foto, @tema, @obs_modelo, @aprovado, @aprovado_por, @data_aprovacao, @alterado, @data_alteracao,
+                             @liberado, @liberado_por, @data_liberacao, @codcompladicional, @cadastrado_por, @data_cadastro, @qtd_fiada_cascata)
+                        RETURNING id_modelo;
+                        """,
+                        modelo,
+                        transaction);
                 }
-                catch
+                else
                 {
-                    transaction.Rollback();
-                    throw;
+                    await conn.ExecuteAsync(
+                        """
+                        UPDATE modelos.tbl_modelos
+                        SET foto = @foto,
+                            tema = @tema,
+                            obs_modelo = @obs_modelo,
+                            aprovado = @aprovado,
+                            aprovado_por = @aprovado_por,
+                            data_aprovacao = @data_aprovacao,
+                            alterado = @alterado,
+                            data_alteracao = @data_alteracao,
+                            liberado = @liberado,
+                            liberado_por = @liberado_por,
+                            data_liberacao = @data_liberacao,
+                            codcompladicional = @codcompladicional,
+                            cadastrado_por = @cadastrado_por,
+                            data_cadastro = @data_cadastro,
+                            qtd_fiada_cascata = @qtd_fiada_cascata
+                        WHERE id_modelo = @id_modelo;
+                        """,
+                        modelo,
+                        transaction);
                 }
-            });
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
             return modelo;
         }
 
         public async Task<QryModeloModel> GetModelo(long? id_modelo)
         {
-            using DatabaseContext db = new();
-            return await db.qryModelos.Where(m => m.id_modelo == id_modelo).FirstOrDefaultAsync();
+            const string sql = """
+                SELECT *
+                FROM modelos.qrymodelos
+                WHERE id_modelo = @id_modelo
+                LIMIT 1;
+                """;
+
+            await using var conn = CreateConnection();
+            return await conn.QueryFirstOrDefaultAsync<QryModeloModel>(sql, new { id_modelo });
         }
     }
 }
+

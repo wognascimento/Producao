@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.ObjectModel;
@@ -37,7 +38,7 @@ namespace Producao.Views.Controlado
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -106,7 +107,6 @@ namespace Producao.Views.Controlado
                         writer.WriteLine($@"^FT141,160^A0B,15^FB121,8,0,C^FH\^FD{etiqueta.descricao_completa?.Replace("ÚNICO", "")}^FS");
                         writer.WriteLine($@"^PQ1,0,1,Y^XZ");
 
-                        //using DatabaseContext db = new();
                         //await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
                     }
                     await writer.FlushAsync();
@@ -122,7 +122,7 @@ namespace Producao.Views.Controlado
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 
@@ -158,12 +158,11 @@ namespace Producao.Views.Controlado
 
                 await writer.FlushAsync();
 
-                using DatabaseContext db = new();
-                await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
+                await vm.MarcarImpressoAsync(etiqueta.codigo);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
     }
@@ -193,8 +192,12 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ControladoEtiquetaImpressas.Where(x => x.codcompladicional == codcompladicional).ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<ControladoEtiquetaImpressaModel>(
+                    @"SELECT *
+                      FROM producao.qry_codigo_impresso
+                      WHERE codcompladicional = @codcompladicional;",
+                    new { codcompladicional });
                 return new ObservableCollection<ControladoEtiquetaImpressaModel>(data);
             }
             catch (Exception)
@@ -207,14 +210,28 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Impressoes.FirstOrDefaultAsync(i => i.codigo == codigo);
-                return data;
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                return await conn.QueryFirstOrDefaultAsync<QryImpressaoModel>(
+                    @"SELECT *
+                      FROM producao.qry_impressao
+                      WHERE codigo = @codigo
+                      LIMIT 1;",
+                    new { codigo });
             }
             catch (Exception)
             {
                 throw;
             }
+        }
+
+        public async Task MarcarImpressoAsync(long? codigo)
+        {
+            using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            await conn.ExecuteAsync(
+                @"UPDATE producao.tbl_barcodes
+                  SET impresso = '-1'
+                  WHERE codigo = @codigo;",
+                new { codigo });
         }
     }
 

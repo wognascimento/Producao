@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using Producao.Views.CentralModelos;
 using System;
@@ -46,7 +47,7 @@ namespace Producao.Views.Controlado
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -99,7 +100,7 @@ namespace Producao.Views.Controlado
                 catch (Exception ex)
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                 }
             }
         }
@@ -136,7 +137,7 @@ namespace Producao.Views.Controlado
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -196,8 +197,12 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.Requisicoes.FindAsync(num_requisicao);
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                return await conn.QueryFirstOrDefaultAsync<RequisicaoModel>(
+                    @"SELECT *
+                      FROM producao.t_requisicao
+                      WHERE num_requisicao = @num_requisicao;",
+                    new { num_requisicao });
             }
             catch (Exception)
             {
@@ -209,8 +214,12 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.TransformaRequisicoes.Where(c => c.num_requisicao == nRequisicao).ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<TransformaRequisicaoModel>(
+                    @"SELECT *
+                      FROM producao.qry_transforma_requisicao
+                      WHERE num_requisicao = @nRequisicao;",
+                    new { nRequisicao });
                 return new ObservableCollection<TransformaRequisicaoModel>(data);
             }
             catch (Exception)
@@ -223,8 +232,12 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.ControladosZebra.FindAsync(codigo);
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                return await conn.QueryFirstOrDefaultAsync<ControladoZebraModel>(
+                    @"SELECT *
+                      FROM producao.tbl_etiqueta_zebra
+                      WHERE codigo = @codigo;",
+                    new { codigo });
             }
             catch (Exception)
             {
@@ -236,8 +249,12 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.Barcodes.FindAsync(codigo);
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                return await conn.QueryFirstOrDefaultAsync<BarcodeModel>(
+                    @"SELECT *
+                      FROM producao.tbl_barcodes
+                      WHERE codigo = @codigo;",
+                    new { codigo });
             }
             catch (Exception)
             {
@@ -249,9 +266,17 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ControladoShoppings.AddAsync(controlado);
-                await db.SaveChangesAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                await conn.ExecuteAsync(
+                    @"INSERT INTO producao.tbl_controlado_shopping
+                        (num_requisicao, barcode, inserido_por, inserido_em, retorno)
+                      VALUES
+                        (@num_requisicao, @barcode, @inserido_por, @inserido_em, @retorno)
+                      ON CONFLICT (num_requisicao, barcode) DO UPDATE SET
+                        inserido_por = EXCLUDED.inserido_por,
+                        inserido_em = EXCLUDED.inserido_em,
+                        retorno = EXCLUDED.retorno;",
+                    controlado);
             }
             catch (Exception)
             {
@@ -263,12 +288,12 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-
-                var controlado = await db.ControladoShoppings.Where(x => x.num_requisicao == num_requisicao && x.barcode == barcode).FirstOrDefaultAsync();
-
-                await db.ControladoShoppings.SingleDeleteAsync(controlado);
-                await db.SaveChangesAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                await conn.ExecuteAsync(
+                    @"DELETE FROM producao.tbl_controlado_shopping
+                      WHERE num_requisicao = @num_requisicao
+                        AND barcode = @barcode;",
+                    new { num_requisicao, barcode });
             }
             catch (Exception)
             {
@@ -280,30 +305,35 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var parametros = new
+                {
+                    model.num_requisicao,
+                    model.codcompladicional,
+                    model.quantidade,
+                    data = DateTime.Now,
+                    alterado_por = Environment.UserName
+                };
 
-                var detReq = await db.RequisicaoDetalhes.Where(r => r.num_requisicao == model.num_requisicao && r.codcompladicional == model.codcompladicional).FirstOrDefaultAsync();
-                if (detReq != null)
+                var rows = await conn.ExecuteAsync(
+                    @"UPDATE producao.t_detalhes_req
+                      SET codcompladicional = @codcompladicional,
+                          quantidade = @quantidade,
+                          data = @data,
+                          alterado_por = @alterado_por
+                      WHERE num_requisicao = @num_requisicao
+                        AND codcompladicional = @codcompladicional;",
+                    parametros);
+
+                if (rows == 0)
                 {
-                    detReq.codcompladicional = model.codcompladicional;
-                    detReq.quantidade = model.quantidade;
-                    detReq.data = DateTime.Now;
-                    detReq.alterado_por = Environment.UserName;
-                    db.RequisicaoDetalhes.Update(detReq);
+                    await conn.ExecuteAsync(
+                        @"INSERT INTO producao.t_detalhes_req
+                            (num_requisicao, codcompladicional, quantidade, data, alterado_por)
+                          VALUES
+                            (@num_requisicao, @codcompladicional, @quantidade, @data, @alterado_por);",
+                        parametros);
                 }
-                else
-                {
-                    var det = new DetalheRequisicaoModel
-                    {
-                        num_requisicao = model.num_requisicao,
-                        codcompladicional = model.codcompladicional,
-                        quantidade = model.quantidade,
-                        data = DateTime.Now,
-                        alterado_por = Environment.UserName,
-                    };
-                    await db.RequisicaoDetalhes.AddAsync(det);
-                }
-                await db.SaveChangesAsync();
             }
             catch (Exception)
             {

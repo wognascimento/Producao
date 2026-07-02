@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("query_controle_solicao_geral", Schema = "kitsolucao")]
     public class ControleSolicaoGeralModel
     {

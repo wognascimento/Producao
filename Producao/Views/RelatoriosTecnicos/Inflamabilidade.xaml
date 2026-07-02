@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Producao.Views.RelatoriosTecnicos.Inflamabilidade"
+<UserControl x:Class="Producao.Views.RelatoriosTecnicos.Inflamabilidade"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -33,7 +33,7 @@
             OpenDropDownOnFocus="True"
             ItemsSource="{Binding Siglas}"
             SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            SelectionChanged="OnSiglaSelectionChanged"/>
+            SelectionChanged="OnSiglaSelectionChanged" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
         <telerik:RadComboBox
             Grid.Row="1"
@@ -46,7 +46,7 @@
             OpenDropDownOnFocus="True"
             ItemsSource="{Binding Responsaveis}"
             SelectedItem="{Binding Responsavel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            SelectionChanged="OnResponsavelSelectionChanged"/>
+            SelectionChanged="OnResponsavelSelectionChanged" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
         <telerik:RadWatermarkTextBox
             Grid.Row="2"
@@ -54,7 +54,7 @@
             HorizontalAlignment="Left"
             WatermarkContent="RG"
             Text="{Binding Responsavel.rg, Mode=OneWay}"
-            IsReadOnly="True"/>
+            IsReadOnly="True" Margin="0,0,2,2"/>
 
         <telerik:RadWatermarkTextBox
             Grid.Row="3"
@@ -62,7 +62,7 @@
             HorizontalAlignment="Left"
             WatermarkContent="CAU/SP"
             Text="{Binding Responsavel.cau_sp, Mode=OneWay}"
-            IsReadOnly="True"/>
+            IsReadOnly="True" Margin="0,0,2,2"/>
 
         <telerik:RadWatermarkTextBox
             Grid.Row="4"
@@ -70,7 +70,7 @@
             HorizontalAlignment="Left"
             WatermarkContent="RRT"
             Text="{Binding Inflamabilidade.rrt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            LostFocus="Rrt_LostFocus"/>
+            LostFocus="Rrt_LostFocus" Margin="0,0,2,2"/>
 
         <Grid Grid.Row="5">
             <Grid.ColumnDefinitions>
@@ -84,17 +84,17 @@
                 Grid.Column="0"
                 WatermarkContent="Data Conclusão"
                 Text="{Binding Inflamabilidade.data_conclusao, Mode=OneWay, StringFormat={}{0:dd/MM/yyyy}}"
-                IsReadOnly="True"/>
+                IsReadOnly="True" Margin="0,0,2,2"/>
 
 
             <telerik:RadWatermarkTextBox
                 Grid.Column="1"
                 WatermarkContent="Concluido Por"
                 Text="{Binding Inflamabilidade.concluido_por, Mode=OneWay}"
-                IsReadOnly="True"/>
+                IsReadOnly="True" Margin="0,0,2,2"/>
 
-            <telerik:RadButton Grid.Column="2" Content="Imprimir" Click="OnImprimirClick"/>
-            <telerik:RadButton Grid.Column="3" Content="Concluir" Click="OnConcluirClick"/>
+            <telerik:RadButton Grid.Column="2" Content="Imprimir" Click="OnImprimirClick" Margin="0,0,2,2"/>
+            <telerik:RadButton Grid.Column="3" Content="Concluir" Click="OnConcluirClick" Margin="0,0,2,2"/>
 
 
         </Grid>

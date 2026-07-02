@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.ObjectModel;
@@ -38,14 +39,14 @@ namespace Producao.Views.RelatoriosTecnicos
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
-                vm.Siglas = await Task.Run(vm.GetSiglasAsync);
-                vm.Responsaveis = await Task.Run(vm.GetResponsaveisAsync);
+                vm.Siglas = await vm.GetSiglasAsync();
+                vm.Responsaveis = await vm.GetResponsaveisAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -65,19 +66,22 @@ namespace Producao.Views.RelatoriosTecnicos
                 }
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Inflamabilidade = await Task.Run(() => vm.GetvInflamabilidadeAsync(vm.Sigla));
+                vm.Inflamabilidade = await vm.GetvInflamabilidadeAsync(vm.Sigla);
                 if (vm.Inflamabilidade == null)
-                    await Task.Run(() => vm.SaveInflamabilidadeAsync(vm.Sigla));
+                {
+                    await vm.SaveInflamabilidadeAsync(vm.Sigla);
+                    vm.Inflamabilidade = await vm.GetvInflamabilidadeAsync(vm.Sigla);
+                }
 
                 vm.Responsavel = vm.Responsaveis.FirstOrDefault(r => r.nome == vm.Inflamabilidade?.responsavel);
-                vm.Detalhes = await Task.Run(() => vm.GetDetalhesAsync(vm.Sigla));
+                vm.Detalhes = await vm.GetDetalhesAsync(vm.Sigla);
                 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -99,13 +103,13 @@ namespace Producao.Views.RelatoriosTecnicos
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.Inflamabilidade.responsavel = vm.Responsavel.nome;
-                await Task.Run(() => vm.SaveInflamabilidadeAsync(vm.Inflamabilidade));
+                await vm.SaveInflamabilidadeAsync(vm.Inflamabilidade);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -124,13 +128,13 @@ namespace Producao.Views.RelatoriosTecnicos
 
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                await Task.Run(() => vm.SaveDetalhesAsync(new InflamabilidadeDetalheModel { sigla = dado.sigla, tipo = dado.tipo, classificacao = dado.classificacao}));
+                await vm.SaveDetalhesAsync(new InflamabilidadeDetalheModel { sigla = dado.sigla, tipo = dado.tipo, classificacao = dado.classificacao});
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -140,13 +144,13 @@ namespace Producao.Views.RelatoriosTecnicos
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
-                await Task.Run(() => vm.SaveInflamabilidadeAsync(vm.Inflamabilidade));
+                await vm.SaveInflamabilidadeAsync(vm.Inflamabilidade);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -164,7 +168,7 @@ namespace Producao.Views.RelatoriosTecnicos
                 string cidade = "São Paulo";
 
 
-                vm.Cliente = await Task.Run(() => vm.GetClienteAsync(vm.Sigla));
+                vm.Cliente = await vm.GetClienteAsync(vm.Sigla);
 
                 // Formatar a data conforme desejado
                 string dataFormatada = $"{cidade}, {dataAtual:dd MMMM} de {dataAtual:yyyy}";
@@ -298,7 +302,7 @@ namespace Producao.Views.RelatoriosTecnicos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             
         }
@@ -361,13 +365,13 @@ namespace Producao.Views.RelatoriosTecnicos
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
                 vm.Inflamabilidade.concluido_por = Environment.UserName;
                 vm.Inflamabilidade.data_conclusao = DateTime.Now;
-                await Task.Run(() => vm.SaveInflamabilidadeAsync(vm.Inflamabilidade));
+                await vm.SaveInflamabilidadeAsync(vm.Inflamabilidade);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -379,6 +383,10 @@ namespace Producao.Views.RelatoriosTecnicos
 
     public class InflamabilidadeViewModel : INotifyPropertyChanged
     {
+        private static NpgsqlConnection CreateConnection()
+        {
+            return new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName) { this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName)); }
@@ -421,10 +429,12 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var query = await db.Clientes.FindAsync(sigla);
-
-                return query;
+                using var conn = CreateConnection();
+                return await conn.QueryFirstOrDefaultAsync<ClienteModel>(
+                    @"SELECT sigla, nome, endereco, cidade, bairro, est
+                      FROM comercial.clientes
+                      WHERE sigla = @sigla;",
+                    new { sigla });
             }
             catch (Exception)
             {
@@ -436,14 +446,13 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var query = from p in db.Siglas
-                                   group p by p.sigla
-                                   into g
-                                   orderby g.Key
-                                   select g.Key ;
-
-                return new ObservableCollection<string>(await query.ToListAsync());
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<string>(
+                    @"SELECT sigla
+                      FROM producao.view_sigla_chkgeral
+                      GROUP BY sigla
+                      ORDER BY sigla;");
+                return new ObservableCollection<string>(data);
             }
             catch (Exception)
             {
@@ -455,10 +464,12 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var query = await db.InflamabilidadeResponsaveis.ToListAsync();
-
-                return new ObservableCollection<InflamabilidadeResponsavelModel>(query);
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<InflamabilidadeResponsavelModel>(
+                    @"SELECT nome, rg, cau_sp
+                      FROM projetos.tbl_rpt_inflamabilidade_responsavel
+                      ORDER BY nome;");
+                return new ObservableCollection<InflamabilidadeResponsavelModel>(data);
             }
             catch (Exception)
             {
@@ -470,10 +481,12 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var query = await db.Inflamabilidades.FindAsync(sigla);
-
-                return query;
+                using var conn = CreateConnection();
+                return await conn.QueryFirstOrDefaultAsync<InflamabilidadeModel>(
+                    @"SELECT sigla, rrt, responsavel, data_conclusao, concluido_por
+                      FROM projetos.tbl_rpt_inflamabilidade
+                      WHERE sigla = @sigla;",
+                    new { sigla });
             }
             catch (Exception)
             {
@@ -485,23 +498,19 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                //var query = await db.InflamabilidadeResponsaveis.ToListAsync();
-                var resultado = from detalhes in db.InflamabilidadeDetalhes
-                                join materiais in db.MaterialPredominanteDecoracoes
-                                on detalhes.tipo equals materiais.tipo
-                                where detalhes.sigla == sigla
-                                select new InflamabilidadeDetalhe
-                                {
-                                    sigla = detalhes.sigla,
-                                    tipo = detalhes.tipo,
-                                    classificacao = detalhes.classificacao,
-                                    descritivo = materiais.descritivo
-                                };
-
-                var listaResultado = await resultado.ToListAsync();
-
-                return new ObservableCollection<InflamabilidadeDetalhe>(listaResultado);
+                using var conn = CreateConnection();
+                var data = await conn.QueryAsync<InflamabilidadeDetalhe>(
+                    @"SELECT d.sigla,
+                             d.tipo,
+                             d.classificacao,
+                             m.descritivo
+                      FROM projetos.tbl_rpt_inflamabilidade_detalhes d
+                      JOIN projetos.tbl_materiais_predominantes_decoracao m
+                        ON d.tipo = m.tipo
+                      WHERE d.sigla = @sigla
+                      ORDER BY d.tipo;",
+                    new { sigla });
+                return new ObservableCollection<InflamabilidadeDetalhe>(data);
             }
             catch (Exception)
             {
@@ -513,9 +522,21 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                db.Inflamabilidades.Update(inflamabilidade);
-                await db.SaveChangesAsync();
+                if (inflamabilidade?.sigla == null)
+                    return;
+
+                using var conn = CreateConnection();
+                await conn.ExecuteAsync(
+                    @"INSERT INTO projetos.tbl_rpt_inflamabilidade
+                        (sigla, rrt, responsavel, data_conclusao, concluido_por)
+                      VALUES
+                        (@sigla, @rrt, @responsavel, @data_conclusao, @concluido_por)
+                      ON CONFLICT (sigla) DO UPDATE SET
+                        rrt = EXCLUDED.rrt,
+                        responsavel = EXCLUDED.responsavel,
+                        data_conclusao = EXCLUDED.data_conclusao,
+                        concluido_por = EXCLUDED.concluido_por;",
+                    inflamabilidade);
             }
             catch (Exception)
             {
@@ -527,9 +548,18 @@ namespace Producao.Views.RelatoriosTecnicos
         {
             try
             {
-                using DatabaseContext db = new();
-                db.InflamabilidadeDetalhes.Update(detalheModel);
-                await db.SaveChangesAsync();
+                if (detalheModel.sigla == null || detalheModel.tipo == null)
+                    return;
+
+                using var conn = CreateConnection();
+                await conn.ExecuteAsync(
+                    @"INSERT INTO projetos.tbl_rpt_inflamabilidade_detalhes
+                        (sigla, tipo, classificacao)
+                      VALUES
+                        (@sigla, @tipo, @classificacao)
+                      ON CONFLICT (sigla, tipo) DO UPDATE SET
+                        classificacao = EXCLUDED.classificacao;",
+                    detalheModel);
             }
             catch (Exception)
             {
@@ -539,33 +569,33 @@ namespace Producao.Views.RelatoriosTecnicos
 
         public async Task SaveInflamabilidadeAsync(string sigla)
         {
-
-            using DatabaseContext db = new();
-
-            var strategy = db.Database.CreateExecutionStrategy();
-            await strategy.ExecuteAsync(async () =>
+            await using var conn = CreateConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+            try
             {
-                using (var transaction = await db.Database.BeginTransactionAsync())
-                {
-                    try
-                    {
-                        await db.Inflamabilidades.AddAsync(new InflamabilidadeModel { sigla = sigla });
-                        await db.SaveChangesAsync();
-                        var materiais = await db.MaterialPredominanteDecoracoes.ToListAsync();
-                        foreach (var item in materiais)
-                        {
-                            await db.InflamabilidadeDetalhes.AddAsync(new InflamabilidadeDetalheModel { sigla = sigla, tipo = item.tipo });
-                        }
-                        await db.SaveChangesAsync();
-                        await transaction.CommitAsync();
-                    }
-                    catch (Exception)
-                    {
-                        await transaction.RollbackAsync();
-                        throw;
-                    }
-                }
-            });
+                await conn.ExecuteAsync(
+                    @"INSERT INTO projetos.tbl_rpt_inflamabilidade (sigla)
+                      VALUES (@sigla)
+                      ON CONFLICT (sigla) DO NOTHING;",
+                    new { sigla },
+                    transaction);
+
+                await conn.ExecuteAsync(
+                    @"INSERT INTO projetos.tbl_rpt_inflamabilidade_detalhes (sigla, tipo)
+                      SELECT @sigla, tipo
+                      FROM projetos.tbl_materiais_predominantes_decoracao
+                      ON CONFLICT (sigla, tipo) DO NOTHING;",
+                    new { sigla },
+                    transaction);
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Producao.Utils;
 using Producao.Views.PopUp;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,12 @@ namespace Producao.Views.OrdemServico.Produto
     /// </summary>
     public partial class SolicitacaoOrdemServicoProdutoAgrupado : UserControl
     {
+
+        static SolicitacaoOrdemServicoProdutoAgrupado()
+        {
+            SqlMapper.AddTypeHandler(new DateOnlyToDateTimeHandler());
+        }
+
         public SolicitacaoOrdemServicoProdutoAgrupado()
         {
             InitializeComponent();
@@ -44,7 +51,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -76,12 +83,12 @@ namespace Producao.Views.OrdemServico.Produto
                 }
                 catch (FormatException ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -119,7 +126,7 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -151,7 +158,7 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -179,7 +186,7 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -202,7 +209,7 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
 
         }
@@ -228,7 +235,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -299,7 +306,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 var toRemove = vm.ProdutoOSs.Where(x => x.num_os_produto == null).ToList();
                 foreach (var item in toRemove)
                     vm.ProdutoOSs.Remove(item);
@@ -353,7 +360,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 var toRemove = vm.ObsOSs.Where(x => x.cod_obs == null).ToList();
                 foreach (var item in toRemove)
                     vm.ObsOSs.Remove(item);
@@ -545,8 +552,8 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                return new ObservableCollection<RelplanModel>(await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync());
+                var data = await ProdutoOrdemRepository.GetPlanilhasAsync();
+                return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
             {
@@ -558,8 +565,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await (from s in db.SetorProducaos where s.inativo == "0    " orderby s.setor, s.galpao select new SetorModel { setor = s.setor + " - " + s.galpao, codigo_setor = s.codigo_setor }).ToListAsync();
+                var data = await ProdutoOrdemRepository.GetSetoresAsync();
                 return new ObservableCollection<SetorModel>(data);
             }
             catch (Exception)
@@ -572,8 +578,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Siglas.OrderBy(c => c.sigla_serv).ToListAsync();
+                var data = await ProdutoOrdemRepository.GetSiglasAsync();
                 return new ObservableCollection<SiglaChkListModel>(data);
             }
             catch (Exception)
@@ -586,8 +591,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.Descricoes.Where(d => d.inativo.Equals("0") && d.codcompladicional == codcompladicional).FirstOrDefaultAsync();
+                return await ProdutoOrdemRepository.GetDescricaoAsync(codcompladicional);
             }
             catch (Exception)
             {
@@ -600,12 +604,7 @@ namespace Producao.Views.OrdemServico.Produto
             try
             {
                 Produtos = new ObservableCollection<ProdutoModel>();
-                using DatabaseContext db = new();
-                var data = await db.Produtos
-                    .OrderBy(c => c.descricao)
-                    .Where(c => c.planilha.Equals(planilha))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                var data = await ProdutoOrdemRepository.GetProdutosAsync(planilha);
 
                 return new ObservableCollection<ProdutoModel>(data);
             }
@@ -620,12 +619,7 @@ namespace Producao.Views.OrdemServico.Produto
             try
             {
                 DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.DescAdicionais
-                    .OrderBy(c => c.descricao_adicional)
-                    .Where(c => c.codigoproduto.Equals(codigo))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                var data = await ProdutoOrdemRepository.GetDescAdicionaisAsync(codigo);
                 return new ObservableCollection<TabelaDescAdicionalModel>(data);
             }
             catch (Exception)
@@ -639,13 +633,7 @@ namespace Producao.Views.OrdemServico.Produto
             try
             {
                 CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.complementoadicional)
-                    .Where(c => c.coduniadicional.Equals(coduniadicional))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
-                //CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>(data);
+                var data = await ProdutoOrdemRepository.GetCompleAdicionaisAsync(coduniadicional);
                 return new ObservableCollection<TblComplementoAdicionalModel>(data);
             }
             catch (Exception)
@@ -658,10 +646,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ProdutoOs.SingleMergeAsync(produtoOs);
-                await db.SaveChangesAsync();
-                return produtoOs;
+                return await ProdutoOrdemRepository.SaveProdutoOsAsync(produtoOs);
             }
             catch (Exception)
             {
@@ -673,10 +658,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ObsOs.SingleMergeAsync(obsOs);
-                await db.SaveChangesAsync();
-                return obsOs;
+                return await ProdutoOrdemRepository.SaveObsOsAsync(obsOs);
             }
             catch (Exception)
             {
@@ -688,9 +670,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ObsOs.SingleDeleteAsync(obsOs);
-                await db.SaveChangesAsync();
+                await ProdutoOrdemRepository.DeleteObsOsAsync(obsOs);
             }
             catch (Exception)
             {
@@ -699,3 +679,4 @@ namespace Producao.Views.OrdemServico.Produto
         }
     }
 }
+

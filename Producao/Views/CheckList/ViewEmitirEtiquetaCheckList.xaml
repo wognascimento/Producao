@@ -26,7 +26,7 @@
             <StackPanel Orientation="Horizontal">
                 <telerik:RadComboBox x:Name="cbSiglaShopping"
                                      Width="260"
-                                     Margin="5"
+                                     Margin="0,0,2,2"
                                      EmptyText="Shopping"
                                      IsEditable="True"
                                      IsFilteringEnabled="True"
@@ -36,10 +36,10 @@
                                      SelectedValue="{Binding ComplementoCheckList.id_aprovado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      DisplayMemberPath="sigla_serv"
                                      SelectedValuePath="id_aprovado"
-                                     SelectionChanged="OnSiglaSelectionChanged"/>
+                                     SelectionChanged="OnSiglaSelectionChanged" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
                 <telerik:RadWatermarkTextBox Width="450"
-                                             Margin="5"
+                                             Margin="0,0,2,2"
                                              WatermarkContent="Tema"
                                              IsEnabled="False"
                                              Text="{Binding Sigla.tema}"/>

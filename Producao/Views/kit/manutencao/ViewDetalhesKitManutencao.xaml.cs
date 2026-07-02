@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Producao.Views.CadastroProduto;
 using Producao.Views.kit;
@@ -46,18 +45,18 @@ namespace Producao.Views.kit.solucao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 DetalhesKitManutencaoViewModel vm = (DetalhesKitManutencaoViewModel)DataContext;
-                vm.Planilhas = await Task.Run(vm.GetPlanilhasAsync);
-                vm.CheckListGerais = await Task.Run(async () => await vm.GetCheckListGeralAsync(OsKit.os));
-                vm.Classificacoes = await Task.Run(vm.GetClassificacoesAsync);
+                vm.Planilhas = await vm.GetPlanilhasAsync();
+                vm.CheckListGerais = await vm.GetCheckListGeralAsync(OsKit.os);
+                vm.Classificacoes = await vm.GetClassificacoesAsync();
 
-                vm.Sigla = await Task.Run(() => vm.GetSiglaAsync(OsKit.shopping[..^2]));
+                vm.Sigla = await vm.GetSiglaAsync(OsKit.shopping[..^2]);
 
                 inicializado = true;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -83,12 +82,12 @@ namespace Producao.Views.kit.solucao
                 cbDescricaoAdicional.SelectedItem = null;
                 cbDescricaoAdicional.Text = string.Empty;
 
-                vm.Produtos = await Task.Run(async () => await vm.GetProdutosAsync(vm.Planilha?.planilha));
+                vm.Produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -107,12 +106,12 @@ namespace Producao.Views.kit.solucao
                 vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
                 cbDescricaoAdicional.SelectedItem = null;
 
-                vm.DescAdicionais = await Task.Run(async () => await vm.GetDescAdicionaisAsync(vm.Produto?.codigo));
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Produto?.codigo);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -142,14 +141,14 @@ namespace Producao.Views.kit.solucao
 
                 ComplementoCheckListModel compl = await vm.AddComplementoCheckListAsync(vm.ComplementoCheckList);
 
-                vm.CheckListGerais = await Task.Run(() => vm.GetCheckListGeralAsync(this.OsKit.os));
+                vm.CheckListGerais = await vm.GetCheckListGeralAsync(this.OsKit.os);
 
                 SelectCheckListGeral(compl.codcompl);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro ao inserir", MessageBoxButton.OK, MessageBoxImage.Error);
+                Producao.ErrorDialog.Show(ex, "Erro ao inserir");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -166,7 +165,7 @@ namespace Producao.Views.kit.solucao
                 vm.ComplementoCheckList.alterado_em = DateTime.Now;
                 ComplementoCheckListModel compl = await vm.AddComplementoCheckListAsync(vm.ComplementoCheckList);
 
-                vm.CheckListGerais = await Task.Run(() => vm.GetCheckListGeralAsync(this.OsKit.os));
+                vm.CheckListGerais = await vm.GetCheckListGeralAsync(this.OsKit.os);
                 
                 SelectCheckListGeral(compl.codcompl);
                 dgCheckListGeral.Rebind();
@@ -175,7 +174,7 @@ namespace Producao.Views.kit.solucao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro ao inserir", MessageBoxButton.OK, MessageBoxImage.Error);
+                Producao.ErrorDialog.Show(ex, "Erro ao inserir");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -190,7 +189,7 @@ namespace Producao.Views.kit.solucao
 
                 //QryRequisicaoDetalheModel requi = (from r in vm.QryRequisicaoDetalhes select r).FirstOrDefault();
 
-                vm.ChkGerais = await Task.Run(() => vm.GetKitCheckListGeralAsync(this.OsKit.os));
+                vm.ChkGerais = await vm.GetKitCheckListGeralAsync(this.OsKit.os);
                 vm.ChkGeral = (from r in vm.ChkGerais select r).FirstOrDefault();
 
                 if (vm.ChkGeral == null)
@@ -206,7 +205,7 @@ namespace Producao.Views.kit.solucao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -234,7 +233,7 @@ namespace Producao.Views.kit.solucao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro ao inserir", MessageBoxButton.OK, MessageBoxImage.Error);
+                Producao.ErrorDialog.Show(ex, "Erro ao inserir");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -281,13 +280,13 @@ namespace Producao.Views.kit.solucao
                 };
 
                 vm.Planilha = (from p in vm.Planilhas where p.planilha == record?.planilha select p).FirstOrDefault();
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(vm?.Planilha?.planilha));
+                vm.Produtos = await vm.GetProdutosAsync(vm?.Planilha?.planilha);
                 vm.Produto = (from p in vm.Produtos where p.codigo == record?.codigo select p).FirstOrDefault();
-                vm.DescAdicionais = await Task.Run(() => vm.GetDescAdicionaisAsync(vm?.Produto?.codigo));
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm?.Produto?.codigo);
                 vm.DescAdicional = (from d in vm.DescAdicionais where d.coduniadicional == record?.coduniadicional select d).FirstOrDefault();
 
-                vm.CompleAdicionais = await Task.Run(() => vm.GetCompleAdicionaisAsync(vm?.CheckListGeral?.coduniadicional));
-                vm.CheckListGeralComplementos = await Task.Run(() => vm.GetCheckListGeralComplementoAsync(vm?.CheckListGeral?.codcompl));
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm?.CheckListGeral?.coduniadicional);
+                vm.CheckListGeralComplementos = await vm.GetCheckListGeralComplementoAsync(vm?.CheckListGeral?.codcompl);
 
                 cmbClassificacoes.SelectedItem = record?.class_solucao;
                 cmbMotivos.SelectedItem = record?.motivos;
@@ -297,7 +296,7 @@ namespace Producao.Views.kit.solucao
             catch (Exception ex)
             {
                 carregandoSelecaoGrid = false;
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -351,7 +350,7 @@ namespace Producao.Views.kit.solucao
                 vm.DetCompl.local_producao = "JACAREÍ";
                 vm.DetCompl.os = data.os;
 
-                vm.DetCompl = await Task.Run(() => vm.AddDetalhesComplementoCheckListAsync(vm.DetCompl));
+                vm.DetCompl = await vm.AddDetalhesComplementoCheckListAsync(vm.DetCompl);
                 //QryCheckListGeralComplementoModel record = (QryCheckListGeralComplementoModel)sfdatagrid.View.CurrentAddItem;
                 //record.coddetalhescompl = vm.DetCompl.coddetalhescompl;
                 data.coddetalhescompl = vm.DetCompl.coddetalhescompl;
@@ -360,7 +359,7 @@ namespace Producao.Views.kit.solucao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 var toRemove = vm.CheckListGeralComplementos.Where(x => x.coddetalhescompl == null).ToList();
                 foreach (var item in toRemove)
                     vm.CheckListGeralComplementos.Remove(item);
@@ -373,7 +372,7 @@ namespace Producao.Views.kit.solucao
 
         }
 
-        private async void ComboBoxAdv_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private async void OnClassificacaoSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             try
             {
@@ -381,12 +380,12 @@ namespace Producao.Views.kit.solucao
                 string classificacao = cmbClassificacoes.SelectedItem?.ToString();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 DetalhesKitManutencaoViewModel vm = (DetalhesKitManutencaoViewModel)DataContext;
-                vm.Motivos = await Task.Run(async () => await vm.GetMotivosAsync(classificacao));
+                vm.Motivos = await vm.GetMotivosAsync(classificacao);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -460,9 +459,9 @@ namespace Producao.Views.kit.solucao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 cbPlanilha.SelectedItem = (from p in vm.Planilhas where p.planilha == descricao.planilha select p).FirstOrDefault();
-                vm.Produtos = await Task.Run(() => vm.GetProdutosAsync(descricao.planilha));
+                vm.Produtos = await vm.GetProdutosAsync(descricao.planilha);
                 cbDescricao.SelectedItem = (from p in vm.Produtos where p.codigo == descricao.codigo select p).FirstOrDefault(); 
-                vm.DescAdicionais = await Task.Run(async () => await vm.GetDescAdicionaisAsync(descricao.codigo));
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(descricao.codigo);
                 cbDescricaoAdicional.SelectedItem = (from d in vm.DescAdicionais where d.coduniadicional == descricao.coduniadicional select d).FirstOrDefault();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
 
@@ -471,7 +470,7 @@ namespace Producao.Views.kit.solucao
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
     }
@@ -639,8 +638,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Siglas.Where(c => c.sigla_serv == sigla).FirstOrDefaultAsync();
+                var data = await KitDetalhesRepository.GetSiglaAsync(sigla);
                 return data;
             }
             catch (Exception)
@@ -653,8 +651,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync();
+                var data = await KitDetalhesRepository.GetPlanilhasAsync();
                 return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
@@ -667,11 +664,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.CheckListGerals
-                    .OrderBy(c => c.id)
-                    .Where(c => c.kp == kp)
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetCheckListGeralAsync(kp);
                 return new ObservableCollection<QryCheckListGeralModel>(data);
             }
             catch (Exception)
@@ -684,8 +677,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = db.ClassificacaoSolucaos.GroupBy(m => m.classificacao).OrderBy(c => c.Key).Select(g => g.Key).ToList();
+                var data = await KitDetalhesRepository.GetClassificacoesAsync();
                 return new ObservableCollection<string>(data);
             }
             catch (Exception)
@@ -698,8 +690,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ClassificacaoSolucaos.OrderBy(c => c.motivo).Where(c => c.classificacao == classificacao).Select(p => p.motivo).ToListAsync();
+                var data = await KitDetalhesRepository.GetMotivosAsync(classificacao);
                 return new ObservableCollection<string>(data);
             }
             catch (Exception)
@@ -712,12 +703,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Produtos
-                    .OrderBy(c => c.descricao)
-                    .Where(c => c.planilha.Equals(planilha))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetProdutosAsync(planilha);
                 return new ObservableCollection<ProdutoModel>(data);
             }
             catch (Exception)
@@ -730,12 +716,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.DescAdicionais
-                    .OrderBy(c => c.descricao_adicional)
-                    .Where(c => c.codigoproduto.Equals(codigo))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetDescAdicionaisAsync(codigo);
 
                 return new ObservableCollection<TabelaDescAdicionalModel>(data);
             }
@@ -749,49 +730,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                //db.Entry(ComplementoCheckList).State = ComplementoCheckList.codcompl == null ? EntityState.Added : EntityState.Modified;
-                var comple = await db.ComplementoCheckLists.FirstOrDefaultAsync(p => p.codcompl == compChkList.codcompl);
-                if (compChkList != null)
-                {
-                    if (compChkList.obs != "")
-                    {
-                        comple.obs = compChkList.obs;
-                        db.Entry(comple).Property(p => p.obs).IsModified = true;
-                    }
-                    if (compChkList.orient_montagem != "")
-                    {
-                        comple.orient_montagem = compChkList.orient_montagem;
-                        db.Entry(comple).Property(p => p.orient_montagem).IsModified = true;
-                    }
-                    if (compChkList.orient_desmont != "")
-                    {
-                        comple.orient_desmont = compChkList.orient_desmont;
-                        db.Entry(comple).Property(p => p.orient_desmont).IsModified = true;
-                    }
-                    if (compChkList.ordem != "")
-                    {
-                        comple.ordem = compChkList.ordem;
-                        db.Entry(comple).Property(p => p.ordem).IsModified = true;
-                    }
-                    if (compChkList.qtd != null)
-                    {
-                        comple.qtd = compChkList.qtd;
-                        db.Entry(comple).Property(p => p.qtd).IsModified = true;
-                    }
-                    if (compChkList.alterado_por != null)
-                    {
-                        comple.alterado_por = compChkList.alterado_por;
-                        db.Entry(comple).Property(p => p.alterado_por).IsModified = true;
-                    }
-                    if (compChkList.alterado_em != null)
-                    {
-                        comple.alterado_em = compChkList.alterado_em;
-                        db.Entry(comple).Property(p => p.alterado_em).IsModified = true;
-                    }
-
-                    await db.SaveChangesAsync();
-                }
+                await KitDetalhesRepository.EditComplementoCheckListAsync(compChkList);
             }
             catch (NpgsqlException)
             {
@@ -803,12 +742,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                //db.Entry(ComplementoCheckList).State = ComplementoCheckList.codcompl == null ? EntityState.Added : EntityState.Modified;
-                await db.ComplementoCheckLists.SingleMergeAsync(ComplementoCheckList);
-                await db.SaveChangesAsync();
-
-                return ComplementoCheckList;
+                return await KitDetalhesRepository.AddComplementoCheckListAsync(ComplementoCheckList);
             }
             catch (NpgsqlException)
             {
@@ -821,12 +755,7 @@ namespace Producao.Views.kit.solucao
             try
             {
                 CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
-                using DatabaseContext db = new();
-                var data = await db.ComplementoAdicionais
-                    .OrderBy(c => c.complementoadicional)
-                    .Where(c => c.coduniadicional.Equals(coduniadicional))
-                    .Where(c => c.inativo != "-1")
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetCompleAdicionaisAsync(coduniadicional);
 
                 return new ObservableCollection<TblComplementoAdicionalModel>(data);
             }
@@ -840,12 +769,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                //CheckListGeralComplementos = new ObservableCollection<QryCheckListGeralComplementoModel>();
-                using DatabaseContext db = new();
-                var data = await db.CheckListGeralComplementos
-                    .OrderBy(c => c.coddetalhescompl)
-                    .Where(c => c.codcompl == codcompl)
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetCheckListGeralComplementoAsync(codcompl);
 
                 return new ObservableCollection<QryCheckListGeralComplementoModel>(data);
             }
@@ -859,12 +783,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                //db.Entry(detCompl).State = detCompl.coddetalhescompl == null ? EntityState.Added : EntityState.Modified;
-                await db.DetalhesComplementos.SingleMergeAsync(detCompl);
-                await db.SaveChangesAsync();
-
-                return detCompl;
+                return await KitDetalhesRepository.AddDetalhesComplementoCheckListAsync(detCompl);
             }
             catch (NpgsqlException)
             {
@@ -876,12 +795,7 @@ namespace Producao.Views.kit.solucao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.KitChkGerals
-                    .OrderBy(c => c.planilha)
-                    .ThenBy(c => c.descricao_completa)
-                    .Where(c => c.os == os)
-                    .ToListAsync();
+                var data = await KitDetalhesRepository.GetKitCheckListGeralAsync(os);
 
                 return new ObservableCollection<KitChkGeralModel>(data);
             }
@@ -892,3 +806,4 @@ namespace Producao.Views.kit.solucao
         }
     }
 }
+

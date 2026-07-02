@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -31,7 +33,7 @@ namespace Producao.Views.CheckList
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
-                //vm.Siglas =  await Task.Run(vm.GetSiglasAsync);
+                //vm.Siglas =  await vm.GetSiglasAsync();
                 vm.Dados = await vm.GetItensAsync();
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -39,7 +41,7 @@ namespace Producao.Views.CheckList
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
             }
         }
@@ -51,14 +53,14 @@ namespace Producao.Views.CheckList
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
-                //vm.Dados = await Task.Run(() => vm.GetItensAsync(vm.Sigla.sigla_serv));
+                //vm.Dados = await vm.GetItensAsync(vm.Sigla.sigla_serv);
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
             }
         }
@@ -77,7 +79,7 @@ namespace Producao.Views.CheckList
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
             }
         }
@@ -116,7 +118,7 @@ namespace Producao.Views.CheckList
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -213,7 +215,7 @@ namespace Producao.Views.CheckList
                 catch (Exception ex)
                 {
                     e.Cancel = true;
-                    int num2 = (int)MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -246,7 +248,7 @@ namespace Producao.Views.CheckList
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -262,6 +264,16 @@ namespace Producao.Views.CheckList
 
     public class EtiquetaViewModel : INotifyPropertyChanged
     {
+        static EtiquetaViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return data.ToList();
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
@@ -332,8 +344,13 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Siglas.OrderBy(c => c.sigla_serv).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.view_sigla_chkgeral
+                    ORDER BY sigla_serv;
+                    """;
+
+                var data = await QueryAsync<SiglaChkListModel>(sql);
                 return new ObservableCollection<SiglaChkListModel>(data);
             }
             catch (Exception)
@@ -346,11 +363,15 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.EtiquetaCheckLists
-                    .Where(e => e.qtd_detalhe > 0 && e.qtd_nao_expedida > 0)
-                    .OrderBy(c => c.item_memorial)
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qryetiquetachkgeral
+                    WHERE qtd_detalhe > 0
+                      AND qtd_nao_expedida > 0
+                    ORDER BY item_memorial;
+                    """;
+
+                var data = await QueryAsync<EtiquetaCheckListModel>(sql);
                 return new ObservableCollection<EtiquetaCheckListModel>(data);
             }
             catch (Exception)
@@ -363,8 +384,14 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.EtiquetaProducaos.Where(e => e.coddetalhescompl == coddetalhescompl ).OrderBy(c => c.codvol).ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.tbl_etiqueta_producao
+                    WHERE coddetalhescompl = @coddetalhescompl
+                    ORDER BY codvol;
+                    """;
+
+                var data = await QueryAsync<EtiquetaProducaoModel>(sql, new { coddetalhescompl });
                 return new ObservableCollection<EtiquetaProducaoModel>(data);
             }
             catch (Exception)
@@ -377,11 +404,14 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.EtiquetaEmitidas
-                    .Where(e => e.coddetalhescompl == coddetalhescompl)
-                    .OrderBy(e => e.codvol)
-                    .ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.etiqueta_emitida
+                    WHERE coddetalhescompl = @coddetalhescompl
+                    ORDER BY codvol;
+                    """;
+
+                var data = await QueryAsync<EtiquetaEmitidaModel>(sql, new { coddetalhescompl });
                 return new ObservableCollection<EtiquetaEmitidaModel>(data);
             }
             catch (Exception)
@@ -394,12 +424,45 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                /*db.Entry(Etiqueta).State = Etiqueta.codvol == null ?
-                                   EntityState.Added :
-                                   EntityState.Modified;*/
-                await db.EtiquetaProducaos.SingleMergeAsync(etiqueta);
-                await db.SaveChangesAsync();
+                await using var conn = CreateConnection();
+
+                if (etiqueta.codvol is null or 0)
+                {
+                    const string insertSql = """
+                        INSERT INTO producao.tbl_etiqueta_producao
+                            (coddetalhescompl, volumes, volumes_total, qtd, largura, altura, profundidade,
+                             peso_bruto, peso_liquido, impresso, impresso_por, impresso_em, criado_por, criado_em)
+                        VALUES
+                            (@coddetalhescompl, @volumes, @volumes_total, @qtd, @largura, @altura, @profundidade,
+                             @peso_bruto, @peso_liquido, @impresso, @impresso_por, @impresso_em, @criado_por, @criado_em)
+                        RETURNING codvol;
+                        """;
+
+                    etiqueta.codvol = await conn.ExecuteScalarAsync<long>(insertSql, etiqueta);
+                }
+                else
+                {
+                    const string updateSql = """
+                        UPDATE producao.tbl_etiqueta_producao
+                        SET coddetalhescompl = @coddetalhescompl,
+                            volumes = @volumes,
+                            volumes_total = @volumes_total,
+                            qtd = @qtd,
+                            largura = @largura,
+                            altura = @altura,
+                            profundidade = @profundidade,
+                            peso_bruto = @peso_bruto,
+                            peso_liquido = @peso_liquido,
+                            impresso = @impresso,
+                            impresso_por = @impresso_por,
+                            impresso_em = @impresso_em,
+                            criado_por = @criado_por,
+                            criado_em = @criado_em
+                        WHERE codvol = @codvol;
+                        """;
+
+                    await conn.ExecuteAsync(updateSql, etiqueta);
+                }
 
                 return etiqueta;
             }
@@ -413,10 +476,10 @@ namespace Producao.Views.CheckList
         {
             try
             {
-                using DatabaseContext db = new();
-                db.Entry(etiqueta).State = EntityState.Deleted;
-                int num = await db.SaveChangesAsync();
-                db.Entry(etiqueta).State = EntityState.Detached;
+                await using var conn = CreateConnection();
+                await conn.ExecuteAsync(
+                    "DELETE FROM producao.tbl_etiqueta_producao WHERE codvol = @codvol;",
+                    new { etiqueta.codvol });
             }
             catch (Exception)
             {
@@ -425,3 +488,4 @@ namespace Producao.Views.CheckList
         }
     }
 }
+

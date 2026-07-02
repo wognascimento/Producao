@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Producao.Views.Construcao.CadastroPeca"
+<UserControl x:Class="Producao.Views.Construcao.CadastroPeca"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -37,10 +37,10 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="2" Grid.Column="0">
-            <TextBlock Margin="4,0,4,2" Text="PLANILHA"/>
+            <TextBlock Margin="0,0,2,2" Text="PLANILHA"/>
             <telerik:RadComboBox
                 x:Name="txtPlanilha"
-                Margin="4"
+                Margin="0,0,2,2"
                 IsEditable="True"
                 IsFilteringEnabled="True"
                 OpenDropDownOnFocus="True"
@@ -48,14 +48,14 @@
                 ItemsSource="{Binding Planilhas}"
                 DisplayMemberPath="planilha"
                 SelectedValuePath="planilha"
-                SelectionChanged="OnSelectedPlanilha"/>
+                SelectionChanged="OnSelectedPlanilha" IsTextSearchEnabled="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.Column="2">
-            <TextBlock Margin="4,0,4,2" Text="DESCRIÇÃO"/>
+            <TextBlock Margin="0,0,2,2" Text="DESCRIÇÃO"/>
             <telerik:RadComboBox
                 x:Name="txtDescricao"
-                Margin="4"
+                Margin="0,0,2,2"
                 IsEditable="True"
                 IsFilteringEnabled="True"
                 OpenDropDownOnFocus="True"
@@ -63,14 +63,14 @@
                 ItemsSource="{Binding Produtos}"
                 DisplayMemberPath="descricao"
                 SelectedValuePath="codigo"
-                SelectionChanged="OnSelectedDescricao"/>
+                SelectionChanged="OnSelectedDescricao" IsTextSearchEnabled="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3">
-            <TextBlock Margin="4,0,4,2" Text="DESCRIÇÃO ADICIONAL"/>
+            <TextBlock Margin="0,0,2,2" Text="DESCRIÇÃO ADICIONAL"/>
             <telerik:RadComboBox
                 x:Name="txtDescricaoAdicional"
-                Margin="4"
+                Margin="0,0,2,2"
                 IsEditable="True"
                 IsFilteringEnabled="True"
                 OpenDropDownOnFocus="True"
@@ -78,14 +78,14 @@
                 ItemsSource="{Binding DescAdicionais}"
                 DisplayMemberPath="descricao_adicional"
                 SelectedValuePath="coduniadicional"
-                SelectionChanged="OnSelectedDescricaoAdicional"/>
+                SelectionChanged="OnSelectedDescricaoAdicional" IsTextSearchEnabled="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
-            <TextBlock Margin="4,0,4,2" Text="COMPLEMENTO ADICIONAL"/>
+            <TextBlock Margin="0,0,2,2" Text="COMPLEMENTO ADICIONAL"/>
             <telerik:RadComboBox
                 x:Name="txtComplementoAdicional"
-                Margin="4"
+                Margin="0,0,2,2"
                 IsEditable="True"
                 IsFilteringEnabled="True"
                 OpenDropDownOnFocus="True"
@@ -93,7 +93,7 @@
                 ItemsSource="{Binding CompleAdicionais}"
                 DisplayMemberPath="complementoadicional"
                 SelectedValuePath="codcompladicional"
-                SelectionChanged="OnSelectedComplementoAdicional"/>
+                SelectionChanged="OnSelectedComplementoAdicional" IsTextSearchEnabled="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
 

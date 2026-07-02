@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
 using Npgsql;
 using Producao.DataBase.Model;
 using System;
@@ -38,7 +38,7 @@ namespace Producao.Views.Controlado
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -86,7 +86,7 @@ namespace Producao.Views.Controlado
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 if (e.Row?.Item is QryControladoEtiquetaRetornoModel itemComErro)
                 {
                     var toRemove = vm.Retornos.Where(x => x.codigo == itemComErro.codigo).ToList();
@@ -128,7 +128,7 @@ namespace Producao.Views.Controlado
                 if (e.Column.MappingName == "codigo")
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    var saida = await Task.Run(() => vm.GetSaidaAsync(long.Parse(Convert.ToString(e.NewValue))));
+                    var saida = await vm.GetSaidaAsync(long.Parse(Convert.ToString(e.NewValue)));
                     if (saida == null)
                     {
                         MessageBox.Show("Por favor, verifique se a etiqueta foi marcada como 'saída' ou se já retornou.");
@@ -145,7 +145,7 @@ namespace Producao.Views.Controlado
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
             */
         }
@@ -191,9 +191,10 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.qryControladoEtiquetaRetornos
-                    .ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<QryControladoEtiquetaRetornoModel>(
+                    @"SELECT codigo, planilha, descricao_completa
+                      FROM producao.qry_controlado_etiqueta_retorno;");
                 return new ObservableCollection<QryControladoEtiquetaRetornoModel>(data);
             }
             catch (Exception)
@@ -206,9 +207,13 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.qryGeralRequisicaos.Where(s => s.retorno == null && s.codigo == codigo).FirstOrDefaultAsync();
-                return data;
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                return await conn.QueryFirstOrDefaultAsync<QryGeralRequisicaoModel>(
+                    @"SELECT *
+                      FROM producao.qry_geral_requisicao
+                      WHERE retorno IS NULL
+                        AND codigo = @codigo;",
+                    new { codigo });
             }
             catch (Exception)
             {
@@ -220,9 +225,15 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ControladoShoppingRetornos.SingleMergeAsync(controlado);
-                await db.SaveChangesAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                await conn.ExecuteAsync(
+                    @"INSERT INTO producao.tbl_controlado_shopping_retorno
+                        (barcode, inserido_por, inserido_em)
+                      VALUES
+                        (@barcode, @inserido_por, @inserido_em)
+                      ON CONFLICT (barcode, inserido_em) DO UPDATE SET
+                        inserido_por = EXCLUDED.inserido_por;",
+                    controlado);
                 return controlado;
             }
             catch (NpgsqlException)

@@ -17,7 +17,7 @@
 
         <telerik:RadWatermarkTextBox
             x:Name="txtBusca"
-            Margin="5"
+            Margin="0,0,2,2"
             WatermarkContent="Buscar Produto" />
 
         <telerik:RadGridView

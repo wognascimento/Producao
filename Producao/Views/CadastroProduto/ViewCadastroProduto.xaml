@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Producao.Views.CadastroProduto.ViewCadastroProduto"
+<UserControl x:Class="Producao.Views.CadastroProduto.ViewCadastroProduto"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -24,7 +24,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Margin="5">
-            <TextBlock Margin="4,0,4,2" Text="PLANILHA"/>
+            <TextBlock Margin="0,0,2,2" Text="PLANILHA"/>
             <telerik:RadComboBox
                 x:Name="cbPlanilha"
                 IsEditable="True"
@@ -35,7 +35,7 @@
                 DisplayMemberPath="planilha"
                 SelectedValuePath="planilha"
                 SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                SelectionChanged="OnPlanilhaSelectionChanged"/>
+                SelectionChanged="OnPlanilhaSelectionChanged" Margin="0,0,2,2" IsTextSearchEnabled="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
 
@@ -92,7 +92,7 @@
                             <telerik:RadButton 
                                     Content="Adicional" 
                                     Command="{Binding DataContext.RowDataCommand, RelativeSource={RelativeSource AncestorType={x:Type telerik:RadGridView}}}" 
-                                    CommandParameter="{Binding}"/>
+                                    CommandParameter="{Binding}" Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>

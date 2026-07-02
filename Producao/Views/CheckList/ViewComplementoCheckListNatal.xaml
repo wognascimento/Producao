@@ -34,7 +34,7 @@
             </Grid.ColumnDefinitions>
 
             <telerik:RadComboBox x:Name="cbSigla"
-                                 Margin="0,0,5,0"
+                                 Margin="0,0,2,2"
                                  EmptyText="SIGLA"
                                  IsEditable="True"
                                  IsFilteringEnabled="True"
@@ -43,11 +43,11 @@
                                  DisplayMemberPath="sigla_serv"
                                  SelectedValuePath="id_aprovado"
                                  SelectedItem="{Binding Sigla, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 SelectionChanged="OnSiglaSelectionChanged"/>
+                                 SelectionChanged="OnSiglaSelectionChanged" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
             <telerik:RadComboBox x:Name="cbPlanilha"
                                  Grid.Column="1"
-                                 Margin="0,0,11,0"
+                                 Margin="0,0,2,2"
                                  EmptyText="PLANILHA"
                                  IsEditable="True"
                                  IsFilteringEnabled="True"
@@ -56,7 +56,7 @@
                                  DisplayMemberPath="planilha"
                                  SelectedValuePath="planilha"
                                  SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 SelectionChanged="OnPlanilhaSelectionChanged"/>
+                                 SelectionChanged="OnPlanilhaSelectionChanged" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
             <telerik:RadComboBox x:Name="cbGrupo"
                                  Grid.Column="2"
@@ -65,7 +65,7 @@
                                  IsFilteringEnabled="True"
                                  OpenDropDownOnFocus="True"
                                  ItemsSource="{Binding Grupos}"
-                                 SelectionChanged="OnGrupoSelectionChanged"/>
+                                 SelectionChanged="OnGrupoSelectionChanged" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </Grid>
 
         <telerik:RadGridView x:Name="dgCheckListGeral"
@@ -161,7 +161,7 @@
                         <telerik:GridViewDataColumn.CellTemplate>
                             <DataTemplate>
                                 <telerik:RadButton Content="{Binding num_os_produto, Converter={StaticResource NameButtonConverter}}"
-                                                   Click="OnRequisicaoClick"/>
+                                                   Click="OnRequisicaoClick" Margin="0,0,2,2"/>
                             </DataTemplate>
                         </telerik:GridViewDataColumn.CellTemplate>
                     </telerik:GridViewDataColumn>

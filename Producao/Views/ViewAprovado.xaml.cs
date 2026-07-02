@@ -1,5 +1,6 @@
 using Dapper;
 using Npgsql;
+using Producao.Utils;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -36,7 +37,7 @@ public partial class ViewAprovado : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
         finally
         {
@@ -57,7 +58,7 @@ public partial class ViewAprovado : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
         finally
         {
@@ -181,23 +182,5 @@ public class ViewAprovadoViewModel : INotifyPropertyChanged
     public void RaisePropertyChanged(string propName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-    }
-}
-
-public class DateOnlyToDateTimeHandler : SqlMapper.TypeHandler<DateTime>
-{
-    public override DateTime Parse(object value)
-    {
-        return value switch
-        {
-            DateOnly dateOnly => dateOnly.ToDateTime(TimeOnly.MinValue),
-            DateTime dateTime => dateTime,
-            _ => Convert.ToDateTime(value)
-        };
-    }
-
-    public override void SetValue(System.Data.IDbDataParameter parameter, DateTime value)
-    {
-        parameter.Value = value;
     }
 }

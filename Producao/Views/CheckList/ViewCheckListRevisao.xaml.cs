@@ -1,6 +1,9 @@
 using ClosedXML.Excel;
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
+using Producao.Utils;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -14,7 +17,6 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using Telerik.Windows.Controls;
-using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views;
 
@@ -24,6 +26,10 @@ namespace Producao.Views;
 public partial class ViewCheckListRevisao : UserControl
 {
 
+    static ViewCheckListRevisao()
+    {
+        SqlMapper.AddTypeHandler(new DateOnlyToDateTimeHandler());
+    }
 
     public ViewCheckListRevisao()
     {
@@ -45,7 +51,7 @@ public partial class ViewCheckListRevisao : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
     }
 
@@ -95,7 +101,7 @@ public partial class ViewCheckListRevisao : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
     }
@@ -117,7 +123,7 @@ public partial class ViewCheckListRevisao : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
     }
@@ -135,7 +141,7 @@ public partial class ViewCheckListRevisao : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
         }
     }
 
@@ -143,6 +149,7 @@ public partial class ViewCheckListRevisao : UserControl
     {
         using var workbook = new XLWorkbook();
         var worksheet = workbook.Worksheets.Add("Revisão");
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
         var columns = grid.Columns
             .Cast<Telerik.Windows.Controls.GridViewColumn>()
             .Where(column => column.IsVisible && !string.IsNullOrWhiteSpace(column.UniqueName))
@@ -177,6 +184,17 @@ public partial class ViewCheckListRevisao : UserControl
 
 public class ViewModel : INotifyPropertyChanged
 {
+    static ViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+    private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+    private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+    {
+        await using var conn = CreateConnection();
+        var data = await conn.QueryAsync<T>(sql, param);
+        return data.ToList();
+    }
+
     private ObservableCollection<ControleMemorialModel> _dados;
     public ObservableCollection<ControleMemorialModel> Dados
     {
@@ -200,8 +218,12 @@ public class ViewModel : INotifyPropertyChanged
     {
         try
         {
-            using DatabaseContext db = new();
-            var data = await db.ControleMemorials.ToListAsync();
+            const string sql = """
+                SELECT *
+                FROM producao.view_controle_memorial;
+                """;
+
+            var data = await QueryAsync<ControleMemorialModel>(sql);
             Dados = new ObservableCollection<ControleMemorialModel>(data);
 
         }
@@ -215,8 +237,13 @@ public class ViewModel : INotifyPropertyChanged
     {
         try
         {
-            using DatabaseContext db = new();
-            var data = await db.Revisores.OrderBy(r => r.revisores).ToListAsync();
+            const string sql = """
+                SELECT *
+                FROM producao.tbl_revisores
+                ORDER BY revisores;
+                """;
+
+            var data = await QueryAsync<RevisorModel>(sql);
             Revisores = new ObservableCollection<RevisorModel>(data);
         }
         catch (Exception)
@@ -229,12 +256,80 @@ public class ViewModel : INotifyPropertyChanged
     {
         try
         {
-            using DatabaseContext db = new();
-            db.Entry(controle).State = controle.cod_linha_qdfecha == null ?
-                               EntityState.Added :
-                               EntityState.Modified;
+            await using var conn = CreateConnection();
 
-            await db.SaveChangesAsync();
+            if (controle.cod_linha_qdfecha is null or 0)
+            {
+                const string insertSql = """
+                    INSERT INTO producao.view_controle_memorial
+                        (data_aprovado, sigla, sigla_serv, memo_data, data_memo_visual, item, tema, familia, qtd,
+                         descricaocomercial, dimensao, bloco, data_revisado, obs_memorial, obs_fecha, obs_interna,
+                         obs_alteracao, status, liberado, ok, resp_revisao, prazo_revisao, obs_revisao, local,
+                         altera_ok, confirma_alteracao_por, confirma_alteracao_data, memorial_alterado_por,
+                         memorial_data_alterado, fechamento_shopp, revisado_por, data_revisado_por,
+                         data_de_expedicao, conclusao_planta_pca, motivo_alt_pos_revisao, ok_revisao_alterada,
+                         revisao_alt_por, data_alt_revisao, detalhe_local, pendencia)
+                    VALUES
+                        (@data_aprovado, @sigla, @sigla_serv, @memo_data, @data_memo_visual, @item, @tema, @familia, @qtd,
+                         @descricaocomercial, @dimensao, @bloco, @data_revisado, @obs_memorial, @obs_fecha, @obs_interna,
+                         @obs_alteracao, @status, @liberado, @ok, @resp_revisao, @prazo_revisao, @obs_revisao, @local,
+                         @altera_ok, @confirma_alteracao_por, @confirma_alteracao_data, @memorial_alterado_por,
+                         @memorial_data_alterado, @fechamento_shopp, @revisado_por, @data_revisado_por,
+                         @data_de_expedicao, @conclusao_planta_pca, @motivo_alt_pos_revisao, @ok_revisao_alterada,
+                         @revisao_alt_por, @data_alt_revisao, @detalhe_local, @pendencia);
+                    """;
+
+                await conn.ExecuteAsync(insertSql, controle);
+            }
+            else
+            {
+                const string updateSql = """
+                    UPDATE producao.view_controle_memorial
+                    SET data_aprovado = @data_aprovado,
+                        sigla = @sigla,
+                        sigla_serv = @sigla_serv,
+                        memo_data = @memo_data,
+                        data_memo_visual = @data_memo_visual,
+                        item = @item,
+                        tema = @tema,
+                        familia = @familia,
+                        qtd = @qtd,
+                        descricaocomercial = @descricaocomercial,
+                        dimensao = @dimensao,
+                        bloco = @bloco,
+                        data_revisado = @data_revisado,
+                        obs_memorial = @obs_memorial,
+                        obs_fecha = @obs_fecha,
+                        obs_interna = @obs_interna,
+                        obs_alteracao = @obs_alteracao,
+                        status = @status,
+                        liberado = @liberado,
+                        ok = @ok,
+                        resp_revisao = @resp_revisao,
+                        prazo_revisao = @prazo_revisao,
+                        obs_revisao = @obs_revisao,
+                        local = @local,
+                        altera_ok = @altera_ok,
+                        confirma_alteracao_por = @confirma_alteracao_por,
+                        confirma_alteracao_data = @confirma_alteracao_data,
+                        memorial_alterado_por = @memorial_alterado_por,
+                        memorial_data_alterado = @memorial_data_alterado,
+                        fechamento_shopp = @fechamento_shopp,
+                        revisado_por = @revisado_por,
+                        data_revisado_por = @data_revisado_por,
+                        data_de_expedicao = @data_de_expedicao,
+                        conclusao_planta_pca = @conclusao_planta_pca,
+                        motivo_alt_pos_revisao = @motivo_alt_pos_revisao,
+                        ok_revisao_alterada = @ok_revisao_alterada,
+                        revisao_alt_por = @revisao_alt_por,
+                        data_alt_revisao = @data_alt_revisao,
+                        detalhe_local = @detalhe_local,
+                        pendencia = @pendencia
+                    WHERE cod_linha_qdfecha = @cod_linha_qdfecha;
+                    """;
+
+                await conn.ExecuteAsync(updateSql, controle);
+            }
         }
         catch (Exception)
         {
@@ -309,5 +404,6 @@ public class SiglaColorConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
 
 

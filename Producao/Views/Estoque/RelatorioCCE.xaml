@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Producao.Views.Estoque.RelatorioCCE"
+<UserControl x:Class="Producao.Views.Estoque.RelatorioCCE"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -20,17 +20,17 @@
         <telerik:RadComboBox
             x:Name="txtPlanilha"
             Grid.Column="0"
-            Margin="5"
+            Margin="0,0,2,2"
             EmptyText="SELECIONE A PLANILHA"
             DisplayMemberPath="planilha"
             IsEditable="True"
             IsTextSearchEnabled="True"
             ItemsSource="{Binding Planilhas}"
-            SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
         <telerik:RadButton
             Grid.Column="1"
-            Margin="5" 
+            Margin="0,0,2,2" 
             Content="EXPORTAR EXCEL"
             Click="OnExportarExcel" />
 

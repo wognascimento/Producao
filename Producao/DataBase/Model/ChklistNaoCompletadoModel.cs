@@ -1,4 +1,3 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Producao.DataBase.Model
 {
-    [Keyless]
     [Table("qry_chklist_nao_completado", Schema = "producao")]
     public class ChklistNaoCompletadoModel
     {

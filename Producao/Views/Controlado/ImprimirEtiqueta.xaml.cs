@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using Producao.DataBase.Model;
 using System;
 using System.Collections.ObjectModel;
@@ -11,7 +12,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Telerik.Windows.Controls;
-using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.Controlado
 {
@@ -37,7 +37,7 @@ namespace Producao.Views.Controlado
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -55,52 +55,50 @@ namespace Producao.Views.Controlado
                 return;
             }
 
-            var printer = ThermalPrinterConfiguration.Load();
-            TcpClient? client = new();
-            try
+            RadWindow.Prompt(new DialogParameters
             {
-                await client.ConnectAsync(printer.IpAddress, printer.Port);
-                await using var writer = new StreamWriter(client.GetStream());
-
-                RadWindow.Prompt(new DialogParameters
+                Content = "Informa a quantidade de etiquetas:",
+                Header = "Imprimir Etiqueta(s)",
+                OkButtonContent = "IMPRIMIR",
+                DefaultPromptResultValue = "1",
+                Closed = async (_, args) =>
                 {
-                    Content = "Informa a quantidade de etiquetas:",
-                    Header = "Imprimir Etiqueta(s)",
-                    OkButtonContent = "IMPRIMIR",
-                    DefaultPromptResultValue = "1",
-                    Closed = async (_, args) =>
+                    if (string.IsNullOrWhiteSpace(args.PromptResult) || !int.TryParse(args.PromptResult, out var quantidade))
                     {
-                        if (string.IsNullOrWhiteSpace(args.PromptResult) || !int.TryParse(args.PromptResult, out var quantidade))
-                        {
-                            MessageBox.Show("Por favor, insira um número válido.");
-                            return;
-                        }
+                        MessageBox.Show("Por favor, insira um número válido.");
+                        return;
+                    }
 
-                        if (quantidade > record.etiquetas)
-                        {
-                            MostrarAlertaEtiqueta("Está informando uma quantidade maior do que as etiquetas disponíveis.");
-                            return;
-                        }
+                    if (quantidade > record.etiquetas)
+                    {
+                        MostrarAlertaEtiqueta("Está informando uma quantidade maior do que as etiquetas disponíveis.");
+                        return;
+                    }
+
+                    var printer = ThermalPrinterConfiguration.Load();
+                    try
+                    {
+                        using var client = new TcpClient();
+                        await client.ConnectAsync(printer.IpAddress, printer.Port);
+                        await using var writer = new StreamWriter(client.GetStream());
 
                         for (var i = 0; i < quantidade; i++)
                         {
                             var etiqueta = await vm.GetImprimirAsync(record.codcompladicional);
                             EscreverEtiqueta(writer, etiqueta);
-
-                            using DatabaseContext db = new();
-                            await db.Database.ExecuteSqlRawAsync("UPDATE producao.tbl_barcodes SET impresso = '-1' WHERE codigo = {0}", etiqueta.codigo);
+                            await vm.MarcarImpressoAsync(etiqueta.codigo);
                             record.impressas += 1;
                         }
 
                         await writer.FlushAsync();
                         ProdutosGrid.Items.Refresh();
                     }
-                });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+                    catch (Exception ex)
+                    {
+                        Producao.ErrorDialog.Show(ex, "Erro");
+                    }
+                }
+            });
         }
 
         private void OnAdicionarEtiquetaClick(object sender, RoutedEventArgs e)
@@ -153,7 +151,7 @@ namespace Producao.Views.Controlado
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message);
+                        Producao.ErrorDialog.Show(ex, "Erro");
                     }
                     finally
                     {
@@ -225,8 +223,8 @@ namespace Producao.Views.Controlado
 
         private ObservableCollection<ControladoEtiquetaModel> _produtos;
         public ObservableCollection<ControladoEtiquetaModel> Produtos
-        { 
-            get { return _produtos; } 
+        {
+            get { return _produtos; }
             set { _produtos = value; RaisePropertyChanged("Produtos"); }
         }
 
@@ -255,8 +253,10 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ControladoEtiquetas.ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<ControladoEtiquetaModel>(
+                    @"SELECT *
+                      FROM producao.qry_etiquetas_form;");
                 return [.. data];
             }
             catch (Exception)
@@ -269,8 +269,12 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ControladoEtiquetaLivres.Take(limit).ToListAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<ControladoEtiquetaLivreModel>(
+                    @"SELECT *
+                      FROM producao.qry_codigos_livres
+                      LIMIT @limit;",
+                    new { limit });
                 return [.. data];
             }
             catch (Exception)
@@ -283,9 +287,13 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ControladosZebra.AddAsync(controlado);
-                await db.SaveChangesAsync();
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                await conn.ExecuteAsync(
+                    @"INSERT INTO producao.tbl_etiqueta_zebra
+                        (codigo, codcompladicional, etiqueta)
+                      VALUES
+                        (@codigo, @codcompladicional, @etiqueta);",
+                    controlado);
             }
             catch (Exception)
             {
@@ -297,9 +305,14 @@ namespace Producao.Views.Controlado
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Impressoes.FirstOrDefaultAsync(i => i.codcompladicional == codcompladicional && i.impresso == "0");
-                return data;
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                return await conn.QueryFirstOrDefaultAsync<QryImpressaoModel>(
+                    @"SELECT *
+                      FROM producao.qry_impressao
+                      WHERE codcompladicional = @codcompladicional
+                        AND impresso = '0'
+                      LIMIT 1;",
+                    new { codcompladicional });
             }
             catch (Exception)
             {
@@ -307,5 +320,14 @@ namespace Producao.Views.Controlado
             }
         }
 
+        public async Task MarcarImpressoAsync(long? codigo)
+        {
+            using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            await conn.ExecuteAsync(
+                @"UPDATE producao.tbl_barcodes
+                  SET impresso = '-1'
+                  WHERE codigo = @codigo;",
+                new { codigo });
+        }
     }
 }

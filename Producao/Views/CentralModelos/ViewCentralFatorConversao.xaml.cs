@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,7 +31,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
         }
@@ -67,7 +67,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
         }
@@ -125,39 +125,38 @@ namespace Producao.Views.CentralModelos
 
         public async Task<ObservableCollection<ModeloTabelaConversaoModel>> GetItensAsync()
         {
-            using DatabaseContext db = new();
-            var data = await db.TabelaConversoes.ToListAsync();
+            using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            var data = await conn.QueryAsync<ModeloTabelaConversaoModel>(
+                @"SELECT *
+                  FROM modelos.tbl_conversao;");
             return new ObservableCollection<ModeloTabelaConversaoModel>(data);
         }
 
         public async Task<ObservableCollection<ProdutoPAModel>> GetProdutosAsync()
         {
-            using DatabaseContext db = new();
-            var results = await (from s in db.Descricoes
-                                 where s.inativo != "-1   "
-                                 select new ProdutoPAModel
-                                 {
-                                     codcompladicional = s.codcompladicional,
-                                     descricao = s.descricao_completa
-                                 }).ToListAsync();
+            using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            var results = await conn.QueryAsync<ProdutoPAModel>(
+                @"SELECT codcompladicional,
+                         descricao_completa AS descricao
+                  FROM producao.qry3descricoes
+                  WHERE inativo <> '-1   '
+                  ORDER BY descricao_completa;");
 
             return new ObservableCollection<ProdutoPAModel>(results);
         }
 
         public async Task SaveAsync(ModeloTabelaConversaoModel model)
         {
-            using DatabaseContext db = new();
-            var result = await db.TabelaConversoes.FindAsync(model.codcompladicional);
-            if (result == null)
-            {
-                await db.TabelaConversoes.AddAsync(model);
-            }
-            else
-            {
-                await db.TabelaConversoes.SingleUpdateAsync(model);
-            }
-
-            await db.SaveChangesAsync();
+            using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            await conn.ExecuteAsync(
+                @"INSERT INTO modelos.tbl_conversao
+                    (codcompladicional, multiplica, soma)
+                  VALUES
+                    (@codcompladicional, @multiplica, @soma)
+                  ON CONFLICT (codcompladicional) DO UPDATE SET
+                    multiplica = EXCLUDED.multiplica,
+                    soma = EXCLUDED.soma;",
+                model);
         }
     }
 }

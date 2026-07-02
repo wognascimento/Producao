@@ -26,13 +26,13 @@
 
         <StackPanel Grid.Row="0" Orientation="Vertical">
             <StackPanel Orientation="Horizontal">
-                <telerik:RadWatermarkTextBox x:Name="cbSiglaShopping" Width="260" IsEnabled="False" WatermarkContent="Shopping"/>
+                <telerik:RadWatermarkTextBox x:Name="cbSiglaShopping" Width="260" IsEnabled="False" WatermarkContent="Shopping" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
-                <telerik:RadWatermarkTextBox x:Name="tbId" Width="150" IsEnabled="False" WatermarkContent="ID"/>
-                <telerik:RadWatermarkTextBox x:Name="tbItem" Width="100" IsEnabled="False" WatermarkContent="ITEM"/>
-                <telerik:RadWatermarkTextBox x:Name="tbLocalShopping" Width="470" IsEnabled="False" WatermarkContent="LOCAL DO SHOPPING"/>
+                <telerik:RadWatermarkTextBox x:Name="tbId" Width="150" IsEnabled="False" WatermarkContent="ID" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="tbItem" Width="100" IsEnabled="False" WatermarkContent="ITEM" Margin="0,0,2,2"/>
+                <telerik:RadWatermarkTextBox x:Name="tbLocalShopping" Width="470" IsEnabled="False" WatermarkContent="LOCAL DO SHOPPING" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
@@ -46,7 +46,7 @@
                                      SelectedValuePath="planilha"
                                      ItemsSource="{Binding Planilhas}"
                                      SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     SelectionChanged="OnPlanilhaSelectionChanged"/>
+                                     SelectionChanged="OnPlanilhaSelectionChanged" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
                 <telerik:RadComboBox x:Name="cbDescricao"
                                      Width="450"
@@ -60,7 +60,7 @@
                                      ItemsSource="{Binding Produtos}"
                                      SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      SelectedValue="{Binding ComplementoCheckList.codproduto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     SelectionChanged="OnDescricaoSelectionChanged"/>
+                                     SelectionChanged="OnDescricaoSelectionChanged" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
@@ -75,9 +75,9 @@
                                      SelectedValuePath="coduniadicional"
                                      ItemsSource="{Binding DescAdicionais}"
                                      SelectedItem="{Binding DescAdicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     SelectedValue="{Binding ComplementoCheckList.coduniadicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                     SelectedValue="{Binding ComplementoCheckList.coduniadicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
-                <telerik:RadButton Content="..."  Width="50" Click="OnProdutos"/>
+                <telerik:RadButton Content="..."  Width="50" Click="OnProdutos" Margin="0,0,2,2"/>
 
                 <telerik:RadNumericUpDown x:Name="tbQtde"
                                           Width="110"
@@ -85,7 +85,7 @@
                                           NullValue="{x:Null}"
                                           Minimum="0"
                                           NumberDecimalDigits="2"
-                                          Value="{Binding ComplementoCheckList.qtd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                          Value="{Binding ComplementoCheckList.qtd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
@@ -93,7 +93,7 @@
                                              Width="720"
                                              
                                              WatermarkContent="ORIENTAÇÃO DE PRODUÇÃO"
-                                             Text="{Binding ComplementoCheckList.obs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                             Text="{Binding ComplementoCheckList.obs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
@@ -101,7 +101,7 @@
                                              Width="720"
                                              
                                              WatermarkContent="ORIENTAÇÃO DE MONTAGEM"
-                                             Text="{Binding ComplementoCheckList.orient_montagem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                             Text="{Binding ComplementoCheckList.orient_montagem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
@@ -109,7 +109,7 @@
                                              Width="720"
                                              
                                              WatermarkContent="ORIENTAÇÃO DE DESMONTAGEM"
-                                             Text="{Binding ComplementoCheckList.orient_desmont, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                             Text="{Binding ComplementoCheckList.orient_desmont, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Height="Auto">
@@ -118,20 +118,20 @@
                                      
                                      EmptyText="CLASSIFICAÇÃO"
                                      ItemsSource="{Binding Classificacoes}"
-                                     SelectionChanged="ComboBoxAdv_SelectionChanged"/>
+                                     SelectionChanged="OnClassificacaoSelectionChanged" Margin="0,0,2,2"/>
 
                 <telerik:RadComboBox x:Name="cmbMotivos"
                                      Width="260"
                                      
                                      EmptyText="MOTIVO"
-                                     ItemsSource="{Binding Motivos}"/>
+                                     ItemsSource="{Binding Motivos}" Margin="0,0,2,2"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
-                <telerik:RadButton Content="LIMPAR" Click="OnLimparClick"/>
-                <telerik:RadButton Content="ADICIONAR" Click="OnAdicionar_Click"/>
-                <telerik:RadButton Content="EDITAR" Click="OnEditClick"/>
-                <telerik:RadButton Content="IMPRIMIR" Click="OnPrintClick"/>
+                <telerik:RadButton Content="LIMPAR" Click="OnLimparClick" Margin="0,0,2,2"/>
+                <telerik:RadButton Content="ADICIONAR" Click="OnAdicionar_Click" Margin="0,0,2,2"/>
+                <telerik:RadButton Content="EDITAR" Click="OnEditClick" Margin="0,0,2,2"/>
+                <telerik:RadButton Content="IMPRIMIR" Click="OnPrintClick" Margin="0,0,2,2"/>
             </StackPanel>
         </StackPanel>
 
@@ -197,7 +197,7 @@
                                                  IsEditable="True"
                                                  IsFilteringEnabled="True"
                                                  OpenDropDownOnFocus="True"
-                                                 SelectionChanged="OnComplementoAdicionalSelectionChanged"/>
+                                                 SelectionChanged="OnComplementoAdicionalSelectionChanged" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>
@@ -208,7 +208,7 @@
                     <telerik:GridViewDataColumn.CellTemplate>
                         <DataTemplate>
                             <CheckBox HorizontalAlignment="Center"
-                                      IsChecked="{Binding confirmado, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                      IsChecked="{Binding confirmado, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>

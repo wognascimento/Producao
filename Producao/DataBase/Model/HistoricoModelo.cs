@@ -1,4 +1,3 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Producao
 {
-    [Keyless]
     [Table("view_historico_modelo", Schema = "modelos")]
     public class HistoricoModelo
     {

@@ -36,7 +36,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Grid.Column="0">
-            <TextBlock Text="PLANILHA"/>
+            <TextBlock Text="PLANILHA" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtPlanilha"
                                  
                                  IsEditable="True"
@@ -46,11 +46,11 @@
                                  ItemsSource="{Binding Planilhas}"
                                  DisplayMemberPath="planilha"
                                  SelectedValuePath="planilha"
-                                 SelectionChanged="OnSelectedPlanilha"/>
+                                 SelectionChanged="OnSelectedPlanilha" Margin="0,0,2,2" IsTextSearchEnabled="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="0">
-            <TextBlock Text="DESCRIÇÃO"/>
+            <TextBlock Text="DESCRIÇÃO" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtDescricao"
                                  
                                  IsEditable="True"
@@ -60,11 +60,11 @@
                                  ItemsSource="{Binding Produtos}"
                                  DisplayMemberPath="descricao"
                                  SelectedValuePath="codigo"
-                                 SelectionChanged="OnSelectedDescricao"/>
+                                 SelectionChanged="OnSelectedDescricao" Margin="0,0,2,2" IsTextSearchEnabled="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.Column="0">
-            <TextBlock Text="DESCRIÇÃO ADICIONAL"/>
+            <TextBlock Text="DESCRIÇÃO ADICIONAL" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtDescricaoAdicional"
                                  
                                  IsEditable="True"
@@ -74,11 +74,11 @@
                                  ItemsSource="{Binding DescAdicionais}"
                                  DisplayMemberPath="descricao_adicional"
                                  SelectedValuePath="coduniadicional"
-                                 SelectionChanged="OnSelectedDescricaoAdicional"/>
+                                 SelectionChanged="OnSelectedDescricaoAdicional" Margin="0,0,2,2" IsTextSearchEnabled="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <StackPanel Grid.Row="3" Grid.Column="0">
-            <TextBlock Text="COMPLEMENTO ADICIONAL"/>
+            <TextBlock Text="COMPLEMENTO ADICIONAL" Margin="0,0,2,2"/>
             <telerik:RadComboBox x:Name="txtComplementoAdicional"
                                  
                                  IsEditable="True"
@@ -88,7 +88,7 @@
                                  ItemsSource="{Binding CompleAdicionais}"
                                  DisplayMemberPath="complementoadicional"
                                  SelectedValuePath="codcompladicional"
-                                 SelectionChanged="OnSelectedComplementoAdicional"/>
+                                 SelectionChanged="OnSelectedComplementoAdicional" Margin="0,0,2,2" IsTextSearchEnabled="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
         <Grid Grid.Row="0" Grid.RowSpan="4" Grid.Column="2" Width="160" HorizontalAlignment="Left">
@@ -109,47 +109,47 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Row="0" Grid.Column="0">
-                        <TextBlock Text="Largura (m)"/>
-                        <telerik:RadWatermarkTextBox x:Name="txt_largura" />
+                        <TextBlock Text="Largura (m)" Margin="0,0,2,2"/>
+                        <telerik:RadWatermarkTextBox x:Name="txt_largura"  Margin="0,0,2,2"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="2">
-                        <TextBlock Text="Área (m²)"/>
-                        <telerik:RadWatermarkTextBox x:Name="txt_area" />
+                        <TextBlock Text="Área (m²)" Margin="0,0,2,2"/>
+                        <telerik:RadWatermarkTextBox x:Name="txt_area"  Margin="0,0,2,2"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="0">
-                        <TextBlock Text="Profundidade (m)"/>
-                        <telerik:RadWatermarkTextBox x:Name="txt_profundidade" />
+                        <TextBlock Text="Profundidade (m)" Margin="0,0,2,2"/>
+                        <telerik:RadWatermarkTextBox x:Name="txt_profundidade"  Margin="0,0,2,2"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="2">
-                        <TextBlock Text="Volume (m³)"/>
-                        <telerik:RadWatermarkTextBox x:Name="txt_volume" />
+                        <TextBlock Text="Volume (m³)" Margin="0,0,2,2"/>
+                        <telerik:RadWatermarkTextBox x:Name="txt_volume"  Margin="0,0,2,2"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="0">
-                        <TextBlock Text="Altura (m)"/>
-                        <telerik:RadWatermarkTextBox x:Name="txt_altura" />
+                        <TextBlock Text="Altura (m)" Margin="0,0,2,2"/>
+                        <telerik:RadWatermarkTextBox x:Name="txt_altura"  Margin="0,0,2,2"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="2">
-                        <TextBlock Text="Peso (kg)"/>
-                        <telerik:RadWatermarkTextBox x:Name="txt_peso" />
+                        <TextBlock Text="Peso (kg)" Margin="0,0,2,2"/>
+                        <telerik:RadWatermarkTextBox x:Name="txt_peso"  Margin="0,0,2,2"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3">
-                        <TextBlock Text="Tamanho"/>
+                        <TextBlock Text="Tamanho" Margin="0,0,2,2"/>
                         <telerik:RadComboBox x:Name="txt_tamanho"
                                              
-                                             ItemsSource="{Binding Tamanhos}"/>
+                                             ItemsSource="{Binding Tamanhos}" Margin="0,0,2,2"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
-                        <TextBlock Text="Dificuldade"/>
+                        <TextBlock Text="Dificuldade" Margin="0,0,2,2"/>
                         <telerik:RadComboBox x:Name="txt_dificuldade"
                                              
-                                             ItemsSource="{Binding Dificuldades}"/>
+                                             ItemsSource="{Binding Dificuldades}" Margin="0,0,2,2"/>
                     </StackPanel>
                 </Grid>
             </GroupBox>
@@ -183,9 +183,9 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
 
-            <telerik:RadButton Grid.Column="0" Content="ETIQUETA" Click="OnEtiquetaClick"/>
-            <telerik:RadButton Grid.Column="2" Content="DESCRIÇÃO" Click="OnDescricaoClick"/>
-            <telerik:RadButton Grid.Column="4" Content="TÉRMICA" Click="OnEtiquetaTermicaClick"/>
+            <telerik:RadButton Grid.Column="0" Content="ETIQUETA" Click="OnEtiquetaClick" Margin="0,0,2,2"/>
+            <telerik:RadButton Grid.Column="2" Content="DESCRIÇÃO" Click="OnDescricaoClick" Margin="0,0,2,2"/>
+            <telerik:RadButton Grid.Column="4" Content="TÉRMICA" Click="OnEtiquetaTermicaClick" Margin="0,0,2,2"/>
         </Grid>
 
         <telerik:RadGridView x:Name="itens"

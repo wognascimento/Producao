@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Npgsql;
 using System;
 using System.Collections.ObjectModel;
@@ -42,12 +42,12 @@ public partial class ViewProdutoShopping : UserControl
         }
         catch (NpgsqlException ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
     }
@@ -66,12 +66,12 @@ public partial class ViewProdutoShopping : UserControl
         }
         catch (NpgsqlException ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            Producao.ErrorDialog.Show(ex, "Erro");
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }
 

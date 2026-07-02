@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     //[Table("qry_geral_requisicao_producao", Schema = "producao")]
     [Table("qry_requisicao_producao", Schema = "producao")]
     public class GeralRequisicaoProducaoModel

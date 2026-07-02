@@ -18,28 +18,28 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0">
-            <TextBlock Text="NÚMERO DE SERVIÇO"/>
-            <telerik:RadWatermarkTextBox TextAlignment="Center" PreviewKeyDown="OnPreviewKeyDown"/>
+            <TextBlock Text="NÚMERO DE SERVIÇO" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox TextAlignment="Center" PreviewKeyDown="OnPreviewKeyDown" Margin="0,0,2,2"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1">
-            <TextBlock Text="SETOR"/>
-            <telerik:RadWatermarkTextBox Text="{Binding TGlobal.descricao_setor}" IsEnabled="False" TextAlignment="Center"/>
+            <TextBlock Text="SETOR" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox Text="{Binding TGlobal.descricao_setor}" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2">
-            <TextBlock Text="DATA"/>
-            <telerik:RadWatermarkTextBox x:Name="txtData" IsEnabled="False" TextAlignment="Center"/>
+            <TextBlock Text="DATA" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox x:Name="txtData" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
         </StackPanel>
 
         <StackPanel Grid.Row="3">
-            <TextBlock Text="EMITENTE"/>
-            <telerik:RadWatermarkTextBox x:Name="txtEmitente" IsEnabled="False" TextAlignment="Center"/>
+            <TextBlock Text="EMITENTE" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox x:Name="txtEmitente" IsEnabled="False" TextAlignment="Center" Margin="0,0,2,2"/>
         </StackPanel>
 
         <StackPanel Grid.Row="4">
-            <TextBlock Text="NÚMERO DA REQUISIÇÃO"/>
-            <telerik:RadWatermarkTextBox TextAlignment="Center" MouseDoubleClick="OnMouseDoubleClick"/>
+            <TextBlock Text="NÚMERO DA REQUISIÇÃO" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox TextAlignment="Center" MouseDoubleClick="OnMouseDoubleClick" Margin="0,0,2,2"/>
         </StackPanel>
     </Grid>
 </UserControl>

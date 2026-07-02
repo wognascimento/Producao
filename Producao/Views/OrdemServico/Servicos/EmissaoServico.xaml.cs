@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Producao.Views.CentralModelos.Compat;
 using System;
 using System.Collections.ObjectModel;
@@ -41,7 +40,7 @@ namespace Producao.Views.OrdemServico.Servicos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -67,10 +66,12 @@ namespace Producao.Views.OrdemServico.Servicos
 
                 IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("ORDEM_SERVICO_SERVICO_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
 
 
                 IWorkbook wbPt = excelEngine.Excel.Workbooks.Open(BaseSettings.ResolveModeloPath("PERMISSAO_TRABALHO.xlsx"));
                 IWorksheet wsPt = wbPt.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(wsPt);
 
 
 
@@ -116,7 +117,7 @@ namespace Producao.Views.OrdemServico.Servicos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -204,14 +205,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                //var data = await (from tipo in db.tblTipoOs select new { tipo.tipo_servico }).ToListAsync();
-
-                var result = await db.tblTipoOs
-                   .OrderBy(a => a.tipo_servico)
-                   .GroupBy(cGrp => new { cGrp.tipo_servico })
-                   .Select (cGrp =>  cGrp.Key.tipo_servico )
-                   .ToListAsync();
+                var result = await ServicoOrdemRepository.GetTiposAsync();
 
                 return new ObservableCollection<string>(result);
             }
@@ -225,14 +219,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var dados = await db.SetorProducaos.OrderBy(c => c.setor).Where(c => c.inativo.Equals("0")).ToListAsync();
-                var data = new ObservableCollection<SetorProducaoModel>();
-                foreach (var dado in dados)
-                {
-                    dado.setor = $"{dado.setor} - {dado.galpao}";
-                    data.Add(dado);
-                }
+                var data = await ServicoOrdemRepository.GetSetoresAsync();
 
                 return new ObservableCollection<SetorProducaoModel>(data);
             }
@@ -246,8 +233,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync();
+                var data = await ServicoOrdemRepository.GetPlanilhasAsync();
                 return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
@@ -260,8 +246,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Siglas.OrderBy(c => c.sigla_serv).ToListAsync();
+                var data = await ServicoOrdemRepository.GetSiglasAsync();
                 return new ObservableCollection<SiglaChkListModel>(data);
             }
             catch (Exception)
@@ -274,10 +259,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.tblServicos.SingleMergeAsync(model);
-                await db.SaveChangesAsync();
-                return model;
+                return await ServicoOrdemRepository.SaveServicoAsync(model);
             }
             catch (Exception)
             {
@@ -287,3 +269,4 @@ namespace Producao.Views.OrdemServico.Servicos
 
     }
 }
+

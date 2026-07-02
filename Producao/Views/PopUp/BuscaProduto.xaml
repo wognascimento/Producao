@@ -1,10 +1,10 @@
-﻿<Window
+<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Producao.Views.PopUp"
-        xmlns:Syncfusion="http://schemas.syncfusion.com/wpf" 
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
         x:Class="Producao.Views.PopUp.BuscaProduto"
         mc:Ignorable="d"
         Title="BUSCA DE PRODUTO" Height="450" Width="850" 
@@ -20,30 +20,36 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <Syncfusion:SfTextInputLayout 
-            Grid.Row="0" 
-            ContainerType="Outlined" 
-            InputViewPadding="4" 
-            CharCountVisibility="Collapsed"
-            Hint="BUSCAR PRODUTO" >
-            <TextBox x:Name="txtDescricao" TextChanged="txtDescricao_TextChanged"/>
-        </Syncfusion:SfTextInputLayout>
+        <Grid Grid.Row="0" Margin="0,0,0,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="BUSCAR PRODUTO" FontWeight="SemiBold" Margin="0,0,2,2"/>
+            <telerik:RadWatermarkTextBox
+                x:Name="txtDescricao"
+                Grid.Row="1"
+                WatermarkContent="Digite para pesquisar"
+                TextChanged="txtDescricao_TextChanged" Margin="0,0,2,2"/>
+        </Grid>
         
-        <Syncfusion:SfDataGrid 
+        <telerik:RadGridView
             x:Name="dgDescricores"
             Grid.Row="1" 
-            AllowResizingColumns="True" 
-            AllowDraggingColumns="True" 
+            CanUserResizeColumns="True"
+            CanUserReorderColumns="True"
             AutoGenerateColumns="False" 
             FontSize="10" 
-            ItemsSource="{Binding Path=Descricoes}" MouseDoubleClick="dgDescricores_MouseDoubleClick">
-            <Syncfusion:SfDataGrid.Columns>
-                <Syncfusion:GridTextColumn HeaderText="CÓDIGO" ColumnSizer="SizeToCells" MappingName="codcompladicional"/>
-                <Syncfusion:GridTextColumn HeaderText="PLANILHA" ColumnSizer="SizeToHeader" MappingName="planilha"/>
-                <Syncfusion:GridTextColumn HeaderText="DESCRIÇÃO COMPLETA" ColumnSizer="AutoWithLastColumnFill" MappingName="descricao_completa"/>
-                <Syncfusion:GridTextColumn HeaderText="UNID" ColumnSizer="SizeToCells" MappingName="unidade"/>
-            </Syncfusion:SfDataGrid.Columns>
-        </Syncfusion:SfDataGrid>
+            IsReadOnly="True"
+            ShowGroupPanel="False"
+            MouseDoubleClick="dgDescricores_MouseDoubleClick">
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="CÓDIGO" DataMemberBinding="{Binding codcompladicional}" Width="Auto"/>
+                <telerik:GridViewDataColumn Header="PLANILHA" DataMemberBinding="{Binding planilha}" Width="Auto"/>
+                <telerik:GridViewDataColumn Header="DESCRIÇÃO COMPLETA" DataMemberBinding="{Binding descricao_completa}" Width="*"/>
+                <telerik:GridViewDataColumn Header="UNID" DataMemberBinding="{Binding unidade}" Width="Auto"/>
+            </telerik:RadGridView.Columns>
+        </telerik:RadGridView>
 
     </Grid>
 </Window>

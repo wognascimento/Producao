@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_checklist_prduto_construcao", Schema = "projetos")]
     public class ChecklistPrdutoConstrucaoModel
     {

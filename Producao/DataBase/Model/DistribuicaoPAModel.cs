@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 //using Microsoft.Office.Interop.Excel;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_detalhes_modelo_distribuicao_pa_excel", Schema = "modelos")]
     public class DistribuicaoPAModel
     {

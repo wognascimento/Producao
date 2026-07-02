@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,7 +31,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
         }
@@ -67,7 +67,7 @@ namespace Producao.Views.CentralModelos
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             }
         }
@@ -125,39 +125,66 @@ namespace Producao.Views.CentralModelos
 
         public async Task<ObservableCollection<ModeloTabelaPAModel>> GetItensAsync()
         {
-            using DatabaseContext db = new();
-            var data = await db.TabelaPAs.ToListAsync();
+            using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            var data = await conn.QueryAsync<ModeloTabelaPAModel>(
+                @"SELECT *
+                  FROM modelos.tbl_pa;");
             return new ObservableCollection<ModeloTabelaPAModel>(data);
         }
 
         public async Task<ObservableCollection<ProdutoPAModel>> GetProdutosAsync()
         {
-            using DatabaseContext db = new();
-            var results = await (from s in db.Descricoes
-                                 where s.planilha == "KIT ENF PA" && s.descricao == "PA" && s.inativo != "-1   "
-                                 select new ProdutoPAModel
-                                 {
-                                     codcompladicional = s.codcompladicional,
-                                     descricao = s.descricao_adicional + " " + s.complementoadicional
-                                 }).ToListAsync();
+            using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            var results = await conn.QueryAsync<ProdutoPAModel>(
+                @"SELECT codcompladicional,
+                         CONCAT(descricao_adicional, ' ', complementoadicional) AS descricao
+                  FROM producao.qry3descricoes
+                  WHERE planilha = 'KIT ENF PA'
+                    AND descricao = 'PA'
+                    AND inativo <> '-1   '
+                  ORDER BY descricao;");
 
             return new ObservableCollection<ProdutoPAModel>(results);
         }
 
         public async Task SaveAsync(ModeloTabelaPAModel model)
         {
-            using DatabaseContext db = new();
-            var result = await db.TabelaPAs.FindAsync(model.codcompladicional);
-            if (result == null)
-            {
-                await db.TabelaPAs.AddAsync(model);
-            }
-            else
-            {
-                await db.TabelaPAs.SingleUpdateAsync(model);
-            }
-
-            await db.SaveChangesAsync();
+            using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            await conn.ExecuteAsync(
+                @"INSERT INTO modelos.tbl_pa
+                    (codcompladicional, ponga, tripe, anel_1, anel_2, anel_3, anel_4, anel_5,
+                     anel_6, anel_7, anel_8, anel_9, anel_10, anel_11, anel_12, anel_13,
+                     anel_14, anel_15, anel_16, anel_17, anel_18, anel_19, anel_20, anel_21, anel_22)
+                  VALUES
+                    (@codcompladicional, @ponga, @tripe, @anel_1, @anel_2, @anel_3, @anel_4, @anel_5,
+                     @anel_6, @anel_7, @anel_8, @anel_9, @anel_10, @anel_11, @anel_12, @anel_13,
+                     @anel_14, @anel_15, @anel_16, @anel_17, @anel_18, @anel_19, @anel_20, @anel_21, @anel_22)
+                  ON CONFLICT (codcompladicional) DO UPDATE SET
+                    ponga = EXCLUDED.ponga,
+                    tripe = EXCLUDED.tripe,
+                    anel_1 = EXCLUDED.anel_1,
+                    anel_2 = EXCLUDED.anel_2,
+                    anel_3 = EXCLUDED.anel_3,
+                    anel_4 = EXCLUDED.anel_4,
+                    anel_5 = EXCLUDED.anel_5,
+                    anel_6 = EXCLUDED.anel_6,
+                    anel_7 = EXCLUDED.anel_7,
+                    anel_8 = EXCLUDED.anel_8,
+                    anel_9 = EXCLUDED.anel_9,
+                    anel_10 = EXCLUDED.anel_10,
+                    anel_11 = EXCLUDED.anel_11,
+                    anel_12 = EXCLUDED.anel_12,
+                    anel_13 = EXCLUDED.anel_13,
+                    anel_14 = EXCLUDED.anel_14,
+                    anel_15 = EXCLUDED.anel_15,
+                    anel_16 = EXCLUDED.anel_16,
+                    anel_17 = EXCLUDED.anel_17,
+                    anel_18 = EXCLUDED.anel_18,
+                    anel_19 = EXCLUDED.anel_19,
+                    anel_20 = EXCLUDED.anel_20,
+                    anel_21 = EXCLUDED.anel_21,
+                    anel_22 = EXCLUDED.anel_22;",
+                model);
         }
     }
 }

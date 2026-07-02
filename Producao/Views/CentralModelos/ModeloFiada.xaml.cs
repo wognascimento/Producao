@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -37,7 +38,7 @@ namespace Producao.Views.CentralModelos
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -92,7 +93,7 @@ namespace Producao.Views.CentralModelos
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -123,13 +124,17 @@ namespace Producao.Views.CentralModelos
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
     }
 
     public class ModeloFiadaViewModel : INotifyPropertyChanged
     {
+        static ModeloFiadaViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public void RaisePropertyChanged(string propName)
@@ -160,47 +165,71 @@ namespace Producao.Views.CentralModelos
 
         public async Task<ObservableCollection<ModeloFiadaModel>> GetModelosFiadaAsync(QryModeloModel? modelo)
         {
-            using DatabaseContext db = new();
-            var data = await db.ModelosFiada
-                .OrderBy(c => c.modelofiada)
-                .Where(c => c.id_modelo == modelo.id_modelo)
-                .ToListAsync();
+            const string sql = """
+                SELECT *
+                FROM modelos.tbl_modelo_fiada
+                WHERE id_modelo = @id_modelo
+                ORDER BY modelofiada;
+                """;
+
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<ModeloFiadaModel>(sql, new { modelo.id_modelo });
             return new ObservableCollection<ModeloFiadaModel>(data);
         }
 
         public async Task<ModeloFiadaModel> SaveModelosFiadaAsync(ModeloFiadaModel modelo)
         {
-            using DatabaseContext db = new();
-            await db.ModelosFiada.SingleMergeAsync(modelo);
-            await db.SaveChangesAsync();
+            await using var conn = CreateConnection();
+            if (modelo.id is null or 0)
+            {
+                modelo.id = await conn.ExecuteScalarAsync<long>(
+                    """
+                    INSERT INTO modelos.tbl_modelo_fiada
+                        (id_modelo, modelofiada, qtdmodelofiada)
+                    VALUES
+                        (@id_modelo, @modelofiada, @qtdmodelofiada)
+                    RETURNING id;
+                    """,
+                    modelo);
+            }
+            else
+            {
+                await conn.ExecuteAsync(
+                    """
+                    UPDATE modelos.tbl_modelo_fiada
+                    SET id_modelo = @id_modelo,
+                        modelofiada = @modelofiada,
+                        qtdmodelofiada = @qtdmodelofiada
+                    WHERE id = @id;
+                    """,
+                    modelo);
+            }
+
             return modelo;
         }
 
         public async Task<ModeloModel> AddModeloAsync(long? id_modelo, int? qtd_fiada_cascata)
         {
-            using DatabaseContext db = new();
-            var strategy = db.Database.CreateExecutionStrategy();
-            ModeloModel modelo = new();
+            await using var conn = CreateConnection();
+            await conn.ExecuteAsync(
+                """
+                UPDATE modelos.tbl_modelos
+                SET qtd_fiada_cascata = @qtd_fiada_cascata
+                WHERE id_modelo = @id_modelo;
+                """,
+                new { id_modelo, qtd_fiada_cascata });
 
-            await strategy.ExecuteAsync(async () =>
-            {
-                using var transaction = db.Database.BeginTransaction();
-                try
-                {
-                    modelo = await db.Modelos.FindAsync(id_modelo);
-                    modelo.qtd_fiada_cascata = qtd_fiada_cascata;
-                    await db.Modelos.SingleMergeAsync(modelo);
-                    await db.SaveChangesAsync();
-                    transaction.Commit();
-                }
-                catch
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-            });
+            var modelo = await conn.QueryFirstOrDefaultAsync<ModeloModel>(
+                """
+                SELECT *
+                FROM modelos.tbl_modelos
+                WHERE id_modelo = @id_modelo
+                LIMIT 1;
+                """,
+                new { id_modelo });
 
             return modelo;
         }
     }
 }
+

@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Producao.Views.CentralModelos.Compat;
 using Producao.Views.OrdemServico;
 using System;
@@ -44,7 +43,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -81,7 +80,7 @@ namespace Producao.Views.OrdemServico.Produto
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Producao.ErrorDialog.Show(ex, "Erro");
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -121,7 +120,7 @@ namespace Producao.Views.OrdemServico.Produto
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 var toRemove = vm.ObsOSs.Where(x => x.cod_obs == null).ToList();
                 foreach (var item in toRemove)
                     vm.ObsOSs.Remove(item);
@@ -151,12 +150,12 @@ namespace Producao.Views.OrdemServico.Produto
                 MessageBox.Show("Informe uma orientação para o Setor.");
                 return false;
             }
-            else if (rowData.orientacao_caminho == "")
+            else if (string.IsNullOrWhiteSpace(rowData.distribuir_os))
             {
                 MessageBox.Show("Informe como será distribuida a O.S.");
                 return false;
             }
-            else if (rowData.cliente == "")
+            else if (string.IsNullOrWhiteSpace(rowData.cliente))
             {
                 MessageBox.Show("Informe o cliente da O.S.");
                 return false;
@@ -196,7 +195,7 @@ namespace Producao.Views.OrdemServico.Produto
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
 
@@ -273,6 +272,7 @@ namespace Producao.Views.OrdemServico.Produto
 
             using IWorkbook wbPt = excelEngine.Excel.Workbooks.Open(BaseSettings.ResolveModeloPath("PERMISSAO_TRABALHO.xlsx"));
             IWorksheet wsPt = wbPt.Worksheets[0];
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(wsPt);
             wsPt.Range["G1"].Number = (double)servico.num_os_servico;
             var caminhoPt = BaseSettings.ResolveImpressosPath($"PERMISSAO_TRABALHO_{servico.num_os_servico}.xlsx");
             wbPt.SaveAs(caminhoPt);
@@ -294,6 +294,7 @@ namespace Producao.Views.OrdemServico.Produto
 
         private static void ConfigurarImpressao(IWorksheet worksheet, string areaImpressao)
         {
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
             worksheet.PageSetup.PrintArea = areaImpressao;
             worksheet.PageSetup.CenterHorizontally = true;
             worksheet.PageSetup.CenterVertically = false;
@@ -401,8 +402,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await (from s in db.SetorProducaos where s.inativo == "0    " orderby s.setor, s.galpao select new SetorModel { setor = s.setor + " - " + s.galpao, codigo_setor = s.codigo_setor }).ToListAsync();
+                var data = await ProdutoOrdemRepository.GetSetoresAsync();
                 return new ObservableCollection<SetorModel>(data);
             }
             catch (Exception)
@@ -415,8 +415,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.Siglas.OrderBy(c => c.sigla_serv).ToListAsync();
+                var data = await ProdutoOrdemRepository.GetSiglasAsync();
                 return new ObservableCollection<SiglaChkListModel>(data);
             }
             catch (Exception)
@@ -429,8 +428,8 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                return new ObservableCollection<RelplanModel>(await db.Relplans.OrderBy(c => c.planilha).Where(c => c.ativo.Equals("1")).ToListAsync());
+                var data = await ProdutoOrdemRepository.GetPlanilhasAsync();
+                return new ObservableCollection<RelplanModel>(data);
             }
             catch (Exception)
             {
@@ -442,8 +441,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                return await db.AlteraSolicitacaoOsProducaos.Where(c => c.num_os_produto == num_os_produto).FirstOrDefaultAsync();
+                return await ProdutoOrdemRepository.GetAlteracaoSolicitacaoAsync(num_os_produto);
             }
             catch (Exception)
             {
@@ -455,10 +453,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ProdutoOs.SingleMergeAsync(produtoOs);
-                await db.SaveChangesAsync();
-                return produtoOs;
+                return await ProdutoOrdemRepository.SaveProdutoOsAsync(produtoOs);
             }
             catch (Exception)
             {
@@ -470,10 +465,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                await db.ObsOs.SingleMergeAsync(obsOs);
-                await db.SaveChangesAsync();
-                return obsOs;
+                return await ProdutoOrdemRepository.SaveObsOsAsync(obsOs);
             }
             catch (Exception)
             {
@@ -485,8 +477,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ObsOs.OrderBy(c => c.num_caminho).Where(c => c.num_os_produto == num_os_produto).ToListAsync();
+                var data = await ProdutoOrdemRepository.GetCaminhosOsAsync(num_os_produto);
                 return new ObservableCollection<ObsOsModel>(data);
             }
             catch (Exception)
@@ -497,14 +488,9 @@ namespace Producao.Views.OrdemServico.Produto
 
         public async Task<ObservableCollection<OsEmissaoProducaoImprimirModel>> GetOsEmitidas(long? num_os_produto, List<long?> list)
         {
-            //List<long?> list = new List<long?>();
-            //var customerIds = deserializedCustomers.Select(x => x.CustomerID).ToList();
-            //var customers = context.Customers.Where(x => customerIds.Contains(x.CustomerID)).ToList();
-            //&& ids.Contains(i.num_caminho)
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ImprimirOsS.OrderBy(o => o.num_os_servico).Where(i => i.num_os_produto == num_os_produto && list.Contains(i.num_caminho)).ToListAsync();
+                var data = await ProdutoOrdemRepository.GetOsEmitidasAsync(num_os_produto, list);
                 return new ObservableCollection<OsEmissaoProducaoImprimirModel>(data);
             }
             catch (Exception)
@@ -517,8 +503,7 @@ namespace Producao.Views.OrdemServico.Produto
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.ProdutoServicos.Where(i => i.num_os_produto == num_os_produto).ToListAsync();
+                var data = await ProdutoOrdemRepository.GetServicosAsync(num_os_produto);
                 return new ObservableCollection<ProdutoServicoModel>(data);
             }
             catch (Exception)
@@ -534,3 +519,4 @@ namespace Producao.Views.OrdemServico.Produto
         }
     }
 }
+

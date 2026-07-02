@@ -1,21 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.UI.Xaml.Grid;
+using Dapper;
+using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace Producao.Views.PopUp
 {
     /// <summary>
-    /// Lógica interna para BuscaProduto.xaml
+    /// Logica interna para BuscaProduto.xaml
     /// </summary>
     public partial class BuscaProduto : Window
     {
+        private ICollectionView? descricoesView;
+
         public BuscaProduto()
         {
             InitializeComponent();
@@ -27,19 +29,22 @@ namespace Producao.Views.PopUp
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait;});
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
-                this.DataContext = new BuscaProdutoViewModel();
-                BuscaProdutoViewModel?  vm = (BuscaProdutoViewModel)DataContext;
-                vm.Descricoes = await Task.Run(vm.GetDescricoesAsync);
+                DataContext = new BuscaProdutoViewModel();
+                BuscaProdutoViewModel? vm = (BuscaProdutoViewModel)DataContext;
+                vm.Descricoes = await vm.GetDescricoesAsync();
+                descricoesView = CollectionViewSource.GetDefaultView(vm.Descricoes);
+                dgDescricores.ItemsSource = descricoesView;
+                AplicarFiltroDescricao();
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -53,58 +58,87 @@ namespace Producao.Views.PopUp
 
         private void txtDescricao_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string text = ((TextBox)sender).Text;
+            AplicarFiltroDescricao();
+        }
 
-            if (this.dgDescricores.SearchHelper.SearchText.Equals(text))
+        private void AplicarFiltroDescricao()
+        {
+            var text = txtDescricao.Text?.Trim() ?? string.Empty;
+            if (descricoesView is null)
+            {
+                if (DataContext is not BuscaProdutoViewModel vm || vm.Descricoes is null)
+                    return;
+
+                descricoesView = CollectionViewSource.GetDefaultView(vm.Descricoes);
+                dgDescricores.ItemsSource = descricoesView;
+            }
+
+            if (descricoesView is null)
                 return;
 
-            //this.dgDescricores.SearchHelper.AllowCaseSensitiveSearch = true;
-            this.dgDescricores.SearchHelper.SearchType = SearchType.Contains;
-            this.dgDescricores.SearchHelper.AllowFiltering = true;
-            this.dgDescricores.SearchHelper.Search(text);
+            descricoesView.Filter = item =>
+            {
+                if (string.IsNullOrWhiteSpace(text))
+                    return true;
+
+                if (item is not QryDescricao descricao)
+                    return false;
+
+                return Contains(descricao.codcompladicional?.ToString(), text)
+                    || Contains(descricao.planilha, text)
+                    || Contains(descricao.descricao_completa, text)
+                    || Contains(descricao.unidade, text);
+            };
+            descricoesView.Refresh();
         }
+
+        private static bool Contains(string? value, string text) =>
+            value?.IndexOf(text, StringComparison.CurrentCultureIgnoreCase) >= 0;
 
         private void dgDescricores_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            this.descricao = (QryDescricao)dgDescricores.SelectedItem;
-            this.DialogResult = true;
+            if (dgDescricores.SelectedItem is not QryDescricao item)
+                return;
+
+            descricao = item;
+            DialogResult = true;
         }
     }
 
     public class BuscaProdutoViewModel : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public void RaisePropertyChanged(string propName)
         {
-            if (this.PropertyChanged != null)
-                this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
-        private QryDescricao _descricao;
-        public QryDescricao Descricao
+        private QryDescricao? _descricao;
+        public QryDescricao? Descricao
         {
             get { return _descricao; }
-            set { _descricao = value; RaisePropertyChanged("Descricao"); }
+            set { _descricao = value; RaisePropertyChanged(nameof(Descricao)); }
         }
-        private ObservableCollection<QryDescricao> descricoes;
-        public ObservableCollection<QryDescricao> Descricoes
+
+        private ObservableCollection<QryDescricao>? descricoes;
+        public ObservableCollection<QryDescricao>? Descricoes
         {
             get { return descricoes; }
-            set { descricoes = value; RaisePropertyChanged("Descricoes"); }
+            set { descricoes = value; RaisePropertyChanged(nameof(Descricoes)); }
         }
 
         public async Task<ObservableCollection<QryDescricao>> GetDescricoesAsync()
         {
-            try
-            {
-                using DatabaseContext db = new();
-                var data = await db.Descricoes.Where(c => c.inativo.Equals("0")).ToListAsync();
-                return new ObservableCollection<QryDescricao>(data);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            const string sql = @"
+                SELECT *
+                FROM producao.qry3descricoes
+                WHERE inativo = '0'
+                ORDER BY descricao_completa;";
+
+            await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+            var data = await conn.QueryAsync<QryDescricao>(sql);
+            return new ObservableCollection<QryDescricao>(data);
         }
     }
 }

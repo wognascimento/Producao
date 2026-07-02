@@ -1,5 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using Npgsql;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -31,7 +33,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -39,6 +41,17 @@ namespace Producao.Views.OrdemServico.Requisicao
 
     class RequisicaoMaterialEmitidasViewModel : INotifyPropertyChanged
     {
+        static RequisicaoMaterialEmitidasViewModel() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
+
+        private static async Task<List<T>> QueryAsync<T>(string sql, object? param = null)
+        {
+            await using var conn = CreateConnection();
+            var data = await conn.QueryAsync<T>(sql, param);
+            return new List<T>(data);
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
@@ -62,8 +75,12 @@ namespace Producao.Views.OrdemServico.Requisicao
         {
             try
             {
-                using DatabaseContext db = new();
-                var data = await db.RequisicoesProducao.ToListAsync();
+                const string sql = """
+                    SELECT *
+                    FROM producao.qry_requisicao_producao;
+                    """;
+
+                var data = await QueryAsync<GeralRequisicaoProducaoModel>(sql);
                 return new ObservableCollection<GeralRequisicaoProducaoModel>(data);
             }
             catch (Exception)
@@ -73,3 +90,4 @@ namespace Producao.Views.OrdemServico.Requisicao
         }
     }
 }
+

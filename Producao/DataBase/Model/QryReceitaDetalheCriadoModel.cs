@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("qry_receita_detalhes_criado", Schema = "modelos")]
     public class QryReceitaDetalheCriadoModel
     {

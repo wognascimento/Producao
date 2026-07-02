@@ -38,7 +38,7 @@ namespace Producao.Views.Estoque
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
@@ -57,6 +57,7 @@ namespace Producao.Views.Estoque
                 var filePath = BaseSettings.ResolveImpressosPath("SALDO_ESTOQUE_DETALHADO.xlsx");
                 using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("Saldo");
+            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.Cell(1, 1).InsertTable(vm.SaldoDetalhados, "SaldoEstoqueDetalhado", true);
                 worksheet.Columns().AdjustToContents();
                 workbook.SaveAs(filePath);
@@ -70,7 +71,7 @@ namespace Producao.Views.Estoque
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }

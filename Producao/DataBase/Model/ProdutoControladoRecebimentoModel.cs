@@ -1,10 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("view_produtos_controlas_recebimento", Schema = "expedicao")]
     public class ProdutoControladoRecebimentoModel
     {

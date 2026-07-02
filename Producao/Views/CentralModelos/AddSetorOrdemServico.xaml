@@ -20,7 +20,7 @@
 
         <telerik:RadComboBox
             Grid.Row="0"
-            Margin="5"
+            Margin="0,0,2,2"
             ItemsSource="{Binding Setores}"
             DisplayMemberPath="setor"
             SelectedItem="{Binding Setor}"
@@ -29,7 +29,7 @@
         <telerik:RadWatermarkTextBox
             x:Name="txtObservacao"
             Grid.Row="1"
-            Margin="5"
+            Margin="0,0,2,2"
             TextWrapping="Wrap"
             AcceptsReturn="True"
             VerticalScrollBarVisibility="Visible"
@@ -37,7 +37,7 @@
 
         <telerik:RadButton
             Grid.Row="2"
-            Margin="5"
+            Margin="0,0,2,2"
             Height="30"
             VerticalAlignment="Bottom"
             Content="GRAVAR"

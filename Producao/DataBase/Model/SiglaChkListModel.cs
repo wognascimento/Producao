@@ -1,11 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Syncfusion.Windows.Shared;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
-    [Keyless]
     [Table("view_sigla_chkgeral", Schema = "producao")]
     public class SiglaChkListModel
     {
