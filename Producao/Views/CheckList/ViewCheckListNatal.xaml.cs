@@ -724,6 +724,21 @@ namespace Producao.Views.CheckList
             
         }
 
+        private void OnRequisicaoComplementoClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CheckListViewModel vm ||
+                sender is not RadButton { DataContext: QryCheckListGeralComplementoModel complemento })
+            {
+                return;
+            }
+
+            vm.CheckListGeralComplemento = complemento;
+            dgComplemento.SelectedItem = complemento;
+
+            if (vm.RowDataCommand?.CanExecute(this) == true)
+                vm.RowDataCommand.Execute(this);
+        }
+
         private async void dgComplemento_RowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
             CheckListViewModel vm = (CheckListViewModel)DataContext;

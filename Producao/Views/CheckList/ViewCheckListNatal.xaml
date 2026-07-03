@@ -295,8 +295,8 @@
                     <telerik:GridViewDataColumn.CellTemplate>
                         <DataTemplate>
                             <telerik:RadButton Content="{Binding num_os_produto, Converter={StaticResource NameButtonConverter}}"
-                                               Command="{Binding DataContext.RowDataCommand, ElementName=dgComplemento}"
-                                               CommandParameter="{Binding ElementName=chklist}" Margin="0,0,2,2"/>
+                                               Click="OnRequisicaoComplementoClick"
+                                               Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>

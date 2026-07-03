@@ -70,8 +70,8 @@
                         <DataTemplate>
                             <telerik:RadButton 
                                 Content="DETALHES" 
-                                Command="{Binding DataContext.RowDetalhesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                CommandParameter="{Binding}" Margin="0,0,2,2"/>
+                                Click="OnDetalhesClick"
+                                Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewColumn.CellTemplate>
                 </telerik:GridViewColumn>

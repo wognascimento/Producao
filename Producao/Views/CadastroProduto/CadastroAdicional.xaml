@@ -46,8 +46,8 @@
                         <DataTemplate>
                             <telerik:RadButton
                                 Content="Complemento"
-                                Command="{Binding Path=DataContext.RowDataCommand, RelativeSource={RelativeSource AncestorType={x:Type telerik:RadGridView}}}"
-                                CommandParameter="{Binding}"  Margin="0,0,2,2"/>
+                                Click="OnComplementoClick"
+                                Margin="0,0,2,2"/>
                         </DataTemplate>
                     </telerik:GridViewColumn.CellTemplate>
                 </telerik:GridViewColumn>

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.GridView;
 
@@ -66,6 +67,66 @@ namespace Producao.Views.OrdemServico.Produto
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
+        }
+
+        private void ItensGrid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var row = FindVisualParent<GridViewRow>(e.OriginalSource as DependencyObject);
+            if (row?.Item is BaixaOsProducaoModel item)
+                itensGrid.SelectedItem = item;
+        }
+
+        private async void OnCancelarClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not BaixaOrdemServicoProdutoViewModel vm ||
+                itensGrid.SelectedItem is not BaixaOsProducaoModel item)
+            {
+                MessageBox.Show(
+                    "Selecione uma O.S para cancelar.",
+                    "Cancelar O.S",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            var confirmar = MessageBox.Show(
+                $"Deseja cancelar a O.S {item.num_os_servico}?",
+                "Cancelar O.S",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirmar != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                item.cancelada_os = "-1";
+                await vm.CancelarAsync(item);
+                vm.Itens = await vm.GetItensAsync();
+            }
+            catch (Exception ex)
+            {
+                Producao.ErrorDialog.Show(ex, "Erro");
+            }
+            finally
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+        }
+
+        private static T? FindVisualParent<T>(DependencyObject? element)
+            where T : DependencyObject
+        {
+            while (element is not null)
+            {
+                if (element is T typed)
+                    return typed;
+
+                element = VisualTreeHelper.GetParent(element);
+            }
+
+            return null;
         }
     }
 

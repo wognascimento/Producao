@@ -20,20 +20,20 @@
     <Grid>
 
         <telerik:RadGridView
+            x:Name="itensGrid"
             AutoGenerateColumns="False"
             IsFilteringAllowed="True"
             ShowGroupPanel="False"
             GroupRenderMode="Flat"
             ItemsSource="{Binding Itens}"
             CanUserResizeColumns="True" 
+            PreviewMouseRightButtonDown="ItensGrid_PreviewMouseRightButtonDown"
             RowEditEnded="RadGridView_RowEditEnded" >
 
             <telerik:RadGridView.ContextMenu>
                 <ContextMenu Style="{x:Null}">
 
-                    <MenuItem Command="{Binding Source={x:Static Member=local:ContextMenuCommandsBaixaOrdemServicoProduto.CancelarOS}}"
-                              CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                              Header="Cancelar"/>
+                    <MenuItem Header="Cancelar" Click="OnCancelarClick"/>
 
                 </ContextMenu>
             </telerik:RadGridView.ContextMenu>

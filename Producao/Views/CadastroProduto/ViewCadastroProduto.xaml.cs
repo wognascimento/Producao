@@ -142,6 +142,20 @@ namespace Producao.Views.CadastroProduto
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
         }
 
+        private void OnAdicionalClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CadastroProdutoViewModel vm ||
+                sender is not RadButton { DataContext: ProdutoModel produto })
+            {
+                return;
+            }
+
+            vm.Produto = produto;
+
+            if (vm.RowDataCommand?.CanExecute(produto) == true)
+                vm.RowDataCommand.Execute(produto);
+        }
+
         private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
         {
             e.ValidationResults.Add(new GridViewCellValidationResult

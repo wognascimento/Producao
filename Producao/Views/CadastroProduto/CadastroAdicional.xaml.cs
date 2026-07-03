@@ -104,6 +104,20 @@ namespace Producao.Views.CadastroProduto
                 AddValidation(e, nameof(TabelaDescAdicionalModel.descricao_adicional), "Informe a DESCRIÇÃO ADICIONAL");
         }
 
+        private void OnComplementoClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not CadastroAdicionalViewModel vm ||
+                sender is not RadButton { DataContext: TabelaDescAdicionalModel adicional })
+            {
+                return;
+            }
+
+            vm.ProdutoAdicional = adicional;
+
+            if (vm.RowDataCommand?.CanExecute(adicional) == true)
+                vm.RowDataCommand.Execute(adicional);
+        }
+
         private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
         {
             e.ValidationResults.Add(new GridViewCellValidationResult

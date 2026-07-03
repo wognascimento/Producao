@@ -128,6 +128,20 @@ namespace Producao.Views.kit.desmontagem
                 Mouse.OverrideCursor = null;
             }
         }
+
+        private void OnDetalhesClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not ViewKitDesmontagemViewModel vm ||
+                sender is not RadButton { DataContext: OsKitSolucaoModel osKit })
+            {
+                return;
+            }
+
+            vm.OsKit = osKit;
+
+            if (vm.RowDetalhesCommand?.CanExecute(osKit) == true)
+                vm.RowDetalhesCommand.Execute(osKit);
+        }
     }
 
     public class ViewKitDesmontagemViewModel : INotifyPropertyChanged
