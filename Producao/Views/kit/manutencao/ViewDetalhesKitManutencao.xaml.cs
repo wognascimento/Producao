@@ -82,6 +82,10 @@ namespace Producao.Views.kit.solucao
                 cbDescricaoAdicional.SelectedItem = null;
                 cbDescricaoAdicional.Text = string.Empty;
 
+                vm.ComplementoCheckList.codcompl = null;
+                vm.Compledicional = null;
+                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
+
                 vm.Produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -105,6 +109,11 @@ namespace Producao.Views.kit.solucao
                 vm.ComplementoCheckList.coduniadicional = null;
                 vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
                 cbDescricaoAdicional.SelectedItem = null;
+                cbDescricaoAdicional.Text = string.Empty;
+
+                vm.ComplementoCheckList.codcompl = null;
+                vm.Compledicional = null;
+                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
 
                 vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Produto?.codigo);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -248,7 +257,10 @@ namespace Producao.Views.kit.solucao
                 var record = vm.CheckListGeral;
 
                 if (record == null)
+                {
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     return;
+                }
 
                 carregandoSelecaoGrid = true;
                 vm.ComplementoCheckList = new ComplementoCheckListModel
@@ -458,11 +470,19 @@ namespace Producao.Views.kit.solucao
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                cbPlanilha.SelectedItem = (from p in vm.Planilhas where p.planilha == descricao.planilha select p).FirstOrDefault();
-                vm.Produtos = await vm.GetProdutosAsync(descricao.planilha);
-                cbDescricao.SelectedItem = (from p in vm.Produtos where p.codigo == descricao.codigo select p).FirstOrDefault(); 
-                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(descricao.codigo);
-                cbDescricaoAdicional.SelectedItem = (from d in vm.DescAdicionais where d.coduniadicional == descricao.coduniadicional select d).FirstOrDefault();
+                carregandoSelecaoGrid = true;
+                try
+                {
+                    cbPlanilha.SelectedItem = (from p in vm.Planilhas where p.planilha == descricao.planilha select p).FirstOrDefault();
+                    vm.Produtos = await vm.GetProdutosAsync(descricao.planilha);
+                    cbDescricao.SelectedItem = (from p in vm.Produtos where p.codigo == descricao.codigo select p).FirstOrDefault(); 
+                    vm.DescAdicionais = await vm.GetDescAdicionaisAsync(descricao.codigo);
+                    cbDescricaoAdicional.SelectedItem = (from d in vm.DescAdicionais where d.coduniadicional == descricao.coduniadicional select d).FirstOrDefault();
+                }
+                finally
+                {
+                    carregandoSelecaoGrid = false;
+                }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
 
                 tbQtde.Focus();

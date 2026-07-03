@@ -18,7 +18,7 @@ namespace Producao
         {
             BaseSettings.LoadFromConfiguration();
             RegistrarHandlersDapper();
-            StyleManager.ApplicationTheme = new FluentTheme();
+            StyleManager.ApplicationTheme = new Office2016Theme();
             AplicarCulturaPadrao();
 
             LocalizationManager.Manager = new LocalizationManager

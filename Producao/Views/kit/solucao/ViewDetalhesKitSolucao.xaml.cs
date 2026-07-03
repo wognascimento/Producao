@@ -82,6 +82,10 @@ namespace Producao.Views.kit.solucao
                 cbDescricaoAdicional.SelectedItem = null;
                 cbDescricaoAdicional.Text = string.Empty;
 
+                vm.ComplementoCheckList.codcompl = null;
+                vm.Compledicional = null;
+                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
+
                 vm.Produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -105,6 +109,11 @@ namespace Producao.Views.kit.solucao
                 vm.ComplementoCheckList.coduniadicional = null;
                 vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
                 cbDescricaoAdicional.SelectedItem = null;
+                cbDescricaoAdicional.Text = string.Empty;
+
+                vm.ComplementoCheckList.codcompl = null;
+                vm.Compledicional = null;
+                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
 
                 vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Produto?.codigo);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -250,49 +259,58 @@ namespace Producao.Views.kit.solucao
 
                 
                 if (record == null)
+                {
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     return;
+                }
 
                 carregandoSelecaoGrid = true;
-                vm.ComplementoCheckList = new ComplementoCheckListModel
+                try
                 {
-                    ordem = vm?.CheckListGeral?.id,
-                    sigla = vm?.CheckListGeral?.sigla,
-                    local_shoppings = vm?.CheckListGeral?.local_shoppings,
-                    codproduto = vm?.CheckListGeral?.codigo,
-                    obs = vm?.CheckListGeral?.obs,
-                    dataalteracaodesc = vm?.CheckListGeral?.dataalteracaodesc,
-                    alteradopor = vm?.CheckListGeral?.alteradopor,
-                    orient_montagem = vm?.CheckListGeral?.orient_montagem,
-                    item_memorial = vm?.CheckListGeral?.item_memorial,
-                    incluidopordesc = vm?.CheckListGeral?.incluidopordesc,
-                    kp = vm?.CheckListGeral?.kp,
-                    orient_desmont = vm?.CheckListGeral?.orient_desmont,
-                    qtd = vm?.CheckListGeral.qtd,
-                    coduniadicional = vm?.CheckListGeral?.coduniadicional,
-                    codcompl = vm?.CheckListGeral?.codcompl,
-                    nivel = vm?.CheckListGeral?.nivel,
-                    carga = vm?.CheckListGeral?.carga,
-                    class_solucao = vm?.CheckListGeral?.class_solucao,
-                    motivos = vm?.CheckListGeral?.motivos,
-                    id_aprovado = vm?.CheckListGeral?.id_aprovado,
-                    historico = vm?.CheckListGeral?.historico,
-                    agrupar = vm?.CheckListGeral?.agrupar,
-                    inserido_por = vm?.CheckListGeral?.inserido_por,
-                    inserido_em = vm?.CheckListGeral?.inserido_em,
-                };
+                    vm.ComplementoCheckList = new ComplementoCheckListModel
+                    {
+                        ordem = vm?.CheckListGeral?.id,
+                        sigla = vm?.CheckListGeral?.sigla,
+                        local_shoppings = vm?.CheckListGeral?.local_shoppings,
+                        codproduto = vm?.CheckListGeral?.codigo,
+                        obs = vm?.CheckListGeral?.obs,
+                        dataalteracaodesc = vm?.CheckListGeral?.dataalteracaodesc,
+                        alteradopor = vm?.CheckListGeral?.alteradopor,
+                        orient_montagem = vm?.CheckListGeral?.orient_montagem,
+                        item_memorial = vm?.CheckListGeral?.item_memorial,
+                        incluidopordesc = vm?.CheckListGeral?.incluidopordesc,
+                        kp = vm?.CheckListGeral?.kp,
+                        orient_desmont = vm?.CheckListGeral?.orient_desmont,
+                        qtd = vm?.CheckListGeral.qtd,
+                        coduniadicional = vm?.CheckListGeral?.coduniadicional,
+                        codcompl = vm?.CheckListGeral?.codcompl,
+                        nivel = vm?.CheckListGeral?.nivel,
+                        carga = vm?.CheckListGeral?.carga,
+                        class_solucao = vm?.CheckListGeral?.class_solucao,
+                        motivos = vm?.CheckListGeral?.motivos,
+                        id_aprovado = vm?.CheckListGeral?.id_aprovado,
+                        historico = vm?.CheckListGeral?.historico,
+                        agrupar = vm?.CheckListGeral?.agrupar,
+                        inserido_por = vm?.CheckListGeral?.inserido_por,
+                        inserido_em = vm?.CheckListGeral?.inserido_em,
+                    };
 
-                vm.Planilha = (from p in vm.Planilhas where p.planilha == record?.planilha select p).FirstOrDefault();
-                vm.Produtos = await vm.GetProdutosAsync(vm?.Planilha?.planilha);
-                vm.Produto = (from p in vm.Produtos where p.codigo == record?.codigo select p).FirstOrDefault();
-                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm?.Produto?.codigo);
-                vm.DescAdicional = (from d in vm.DescAdicionais where d.coduniadicional == record?.coduniadicional select d).FirstOrDefault();
+                    vm.Planilha = (from p in vm.Planilhas where p.planilha == record?.planilha select p).FirstOrDefault();
+                    vm.Produtos = await vm.GetProdutosAsync(vm?.Planilha?.planilha);
+                    vm.Produto = (from p in vm.Produtos where p.codigo == record?.codigo select p).FirstOrDefault();
+                    vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm?.Produto?.codigo);
+                    vm.DescAdicional = (from d in vm.DescAdicionais where d.coduniadicional == record?.coduniadicional select d).FirstOrDefault();
 
-                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm?.CheckListGeral?.coduniadicional);
-                vm.CheckListGeralComplementos = await vm.GetCheckListGeralComplementoAsync(vm?.CheckListGeral?.codcompl);
+                    vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm?.CheckListGeral?.coduniadicional);
+                    vm.CheckListGeralComplementos = await vm.GetCheckListGeralComplementoAsync(vm?.CheckListGeral?.codcompl);
 
-                cmbClassificacoes.SelectedItem = record?.class_solucao;
-                cmbMotivos.SelectedItem = record?.motivos;
-                carregandoSelecaoGrid = false;
+                    cmbClassificacoes.SelectedItem = record?.class_solucao;
+                    cmbMotivos.SelectedItem = record?.motivos;
+                }
+                finally
+                {
+                    carregandoSelecaoGrid = false;
+                }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -473,11 +491,19 @@ namespace Producao.Views.kit.solucao
                     return;
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                cbPlanilha.SelectedItem = (from p in vm.Planilhas where p.planilha == descricao.planilha select p).FirstOrDefault();
-                vm.Produtos = await vm.GetProdutosAsync(descricao.planilha);
-                cbDescricao.SelectedItem = (from p in vm.Produtos where p.codigo == descricao.codigo select p).FirstOrDefault(); 
-                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(descricao.codigo);
-                cbDescricaoAdicional.SelectedItem = (from d in vm.DescAdicionais where d.coduniadicional == descricao.coduniadicional select d).FirstOrDefault();
+                carregandoSelecaoGrid = true;
+                try
+                {
+                    cbPlanilha.SelectedItem = (from p in vm.Planilhas where p.planilha == descricao.planilha select p).FirstOrDefault();
+                    vm.Produtos = await vm.GetProdutosAsync(descricao.planilha);
+                    cbDescricao.SelectedItem = (from p in vm.Produtos where p.codigo == descricao.codigo select p).FirstOrDefault(); 
+                    vm.DescAdicionais = await vm.GetDescAdicionaisAsync(descricao.codigo);
+                    cbDescricaoAdicional.SelectedItem = (from d in vm.DescAdicionais where d.coduniadicional == descricao.coduniadicional select d).FirstOrDefault();
+                }
+                finally
+                {
+                    carregandoSelecaoGrid = false;
+                }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
 
                 tbQtde.Focus();

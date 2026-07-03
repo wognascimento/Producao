@@ -199,6 +199,7 @@ namespace Producao.Views.OrdemServico.Produto
                 vm.Compledicional = e.AddedItems.Count > 0 ? e.AddedItems[0] as TblComplementoAdicionalModel : null;
                 if (vm.Compledicional is null)
                 {
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     return;
                 }
 

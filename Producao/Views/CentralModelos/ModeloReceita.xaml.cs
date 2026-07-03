@@ -151,6 +151,18 @@ namespace Producao.Views.CentralModelos
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
                 RelplanModel? planilha = txtPlanilha.SelectedItem as RelplanModel;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
+                vm.Produtos = new ObservableCollection<ProdutoModel>();
+                txtDescricao.SelectedItem = null;
+                txtDescricao.Text = string.Empty;
+
+                vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
+                txtDescricaoAdicional.SelectedItem = null;
+                txtDescricaoAdicional.Text = string.Empty;
+
+                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
+                txtComplementoAdicional.SelectedItem = null;
+                txtComplementoAdicional.Text = string.Empty;
+
                 vm.Produtos = await vm.GetProdutosAsync(planilha?.planilha);
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 txtDescricao.Focus();
@@ -168,6 +180,14 @@ namespace Producao.Views.CentralModelos
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
                 ProdutoModel? produto = txtDescricao.SelectedItem as ProdutoModel;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
+                vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
+                txtDescricaoAdicional.SelectedItem = null;
+                txtDescricaoAdicional.Text = string.Empty;
+
+                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
+                txtComplementoAdicional.SelectedItem = null;
+                txtComplementoAdicional.Text = string.Empty;
+
                 vm.DescAdicionais = await vm.GetDescAdicionaisAsync(produto?.codigo);
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 txtDescricaoAdicional.Focus();
@@ -185,6 +205,10 @@ namespace Producao.Views.CentralModelos
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
                 TabelaDescAdicionalModel? adicional = txtDescricaoAdicional.SelectedItem as TabelaDescAdicionalModel;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
+                vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
+                txtComplementoAdicional.SelectedItem = null;
+                txtComplementoAdicional.Text = string.Empty;
+
                 vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(adicional?.coduniadicional);
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 txtComplementoAdicional.Focus();

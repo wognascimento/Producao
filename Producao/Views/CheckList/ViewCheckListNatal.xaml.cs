@@ -21,7 +21,7 @@ namespace Producao.Views.CheckList
     /// </summary>
     public partial class ViewCheckListNatal : UserControl
     {
-        private bool dbClick;
+        private bool suppressComboCascade;
 
         DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
@@ -77,7 +77,6 @@ namespace Producao.Views.CheckList
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                dbClick = true;
                 /*
                 var visualcontainer = this.dgCheckListGeral.GetVisualContainer();
                 var rowColumnIndex = visualcontainer.PointToCellRowColumnIndex(e.GetPosition(visualcontainer));
@@ -89,7 +88,11 @@ namespace Producao.Views.CheckList
                 var record = vm.CheckListGeral;
 
                 if (record == null)
+                {
+                    ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     return;
+                }
 
                 vm.ComplementoCheckList = new ComplementoCheckListModel
                 {
@@ -119,11 +122,19 @@ namespace Producao.Views.CheckList
                     inserido_em = vm?.CheckListGeral?.inserido_em,
                 };
 
-                vm.Planilha = (from p in vm.Planilhas where p.planilha == record?.planilha select p).FirstOrDefault();
-                vm.Produtos = await vm.GetProdutosAsync(vm?.Planilha?.planilha);
-                vm.Produto = (from p in vm.Produtos where p.codigo == record?.codigo select p).FirstOrDefault();
-                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm?.Produto?.codigo);
-                vm.DescAdicional = (from d in vm.DescAdicionais where d.coduniadicional == record?.coduniadicional select d).FirstOrDefault();
+                suppressComboCascade = true;
+                try
+                {
+                    vm.Planilha = (from p in vm.Planilhas where p.planilha == record?.planilha select p).FirstOrDefault();
+                    vm.Produtos = await vm.GetProdutosAsync(vm?.Planilha?.planilha);
+                    vm.Produto = (from p in vm.Produtos where p.codigo == record?.codigo select p).FirstOrDefault();
+                    vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm?.Produto?.codigo);
+                    vm.DescAdicional = (from d in vm.DescAdicionais where d.coduniadicional == record?.coduniadicional select d).FirstOrDefault();
+                }
+                finally
+                {
+                    suppressComboCascade = false;
+                }
 
                 vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm?.CheckListGeral?.coduniadicional);
                 vm.CheckListGeralComplementos = await vm.GetCheckListGeralComplementoAsync(vm?.CheckListGeral?.codcompl);
@@ -143,65 +154,30 @@ namespace Producao.Views.CheckList
 
         }
 
-        private async void OnPlanilhaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            try
-            {
-                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                CheckListViewModel vm = (CheckListViewModel)DataContext;
-
-                vm.ComplementoCheckList.codproduto = null;
-                vm.Produtos = new ObservableCollection<ProdutoModel>();
-                cbDescricao.SelectedItem = null;
-                cbDescricao.Text = string.Empty;
-
-                vm.ComplementoCheckList.coduniadicional = null;
-                vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
-                cbDescricaoAdicional.SelectedItem = null;
-                cbDescricaoAdicional.Text = string.Empty;
-
-                //if (!dbClick)
-                vm.Produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
-                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-            catch (Exception ex)
-            {
-                Producao.ErrorDialog.Show(ex, "Erro");
-                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-            }
-        }
-
         private async void OnPlanilhaSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            CheckListViewModel vm = (CheckListViewModel)DataContext;
-            if (!dbClick)
-                vm.Produtos = await vm.GetProdutosAsync(vm.Planilha.planilha);
+            if (suppressComboCascade)
+                return;
 
-        }
-
-        private async void OnDescricaoSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
             try
             {
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
 
-                vm.ComplementoCheckList.coduniadicional = null;
-                vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
-                cbDescricaoAdicional.SelectedItem = null;
+                LimparDescricao();
+                LimparDescricaoAdicional();
 
-                //if (!dbClick)
-                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Produto?.codigo);
-                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                vm.Produtos = string.IsNullOrWhiteSpace(vm.Planilha?.planilha)
+                    ? new ObservableCollection<ProdutoModel>()
+                    : await vm.GetProdutosAsync(vm.Planilha.planilha);
             }
             catch (Exception ex)
             {
                 Producao.ErrorDialog.Show(ex, "Erro");
+            }
+            finally
+            {
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -209,10 +185,64 @@ namespace Producao.Views.CheckList
 
         private async void OnDescricaoSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            CheckListViewModel vm = (CheckListViewModel)DataContext;
-            if (!dbClick)
-                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Produto.codigo);
+            if (suppressComboCascade)
+                return;
 
+            try
+            {
+                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                CheckListViewModel vm = (CheckListViewModel)DataContext;
+
+                LimparDescricaoAdicional();
+
+                vm.DescAdicionais = vm.Produto?.codigo is null
+                    ? new ObservableCollection<TabelaDescAdicionalModel>()
+                    : await vm.GetDescAdicionaisAsync(vm.Produto.codigo);
+            }
+            catch (Exception ex)
+            {
+                Producao.ErrorDialog.Show(ex, "Erro");
+            }
+            finally
+            {
+                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+        }
+
+        private void LimparDescricao()
+        {
+            CheckListViewModel vm = (CheckListViewModel)DataContext;
+
+            vm.Produto = null;
+            if (vm.ComplementoCheckList is not null)
+                vm.ComplementoCheckList.coduniadicional = null;
+
+            if (vm.ComplementoCheckList is not null)
+                vm.ComplementoCheckList.codproduto = null;
+
+            cbDescricao.SelectedItem = null;
+            cbDescricao.Text = string.Empty;
+        }
+
+        private void LimparDescricaoAdicional()
+        {
+            CheckListViewModel vm = (CheckListViewModel)DataContext;
+
+            vm.DescAdicional = null;
+            if (vm.ComplementoCheckList is not null)
+                vm.ComplementoCheckList.coduniadicional = null;
+
+            vm.DescAdicionais = new ObservableCollection<TabelaDescAdicionalModel>();
+            cbDescricaoAdicional.SelectedItem = null;
+            cbDescricaoAdicional.Text = string.Empty;
+
+            if (vm.ComplementoCheckList is not null)
+                vm.ComplementoCheckList.codcompl = null;
+
+            vm.Compledicional = null;
+            vm.CompleAdicionais = [];
         }
 
         private async void OnSiglaSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -289,25 +319,42 @@ namespace Producao.Views.CheckList
         {
             CheckListViewModel vm = (CheckListViewModel)DataContext;
 
-            tbId.Text = string.Empty;
-            tbItem.Text = string.Empty;
-            tbLocalShopping.Text = string.Empty;
-            cbPlanilha.SelectedItem = null;
-            cbPlanilha.Text = string.Empty;
-            cbDescricao.SelectedItem = null;
-            cbDescricao.Text = string.Empty;
-            cbDescricaoAdicional.SelectedItem = null;
-            cbDescricaoAdicional.Text = string.Empty;
-            tbQtde.Value = null;
-            tbOrientacaoProducao.Text = string.Empty;
-            tbOrientacaoMontagem.Text = string.Empty;
-            tbOrientacaoDesmontagem.Text = string.Empty;
+            suppressComboCascade = true;
+            try
+            {
+                tbId.Text = string.Empty;
+                tbItem.Text = string.Empty;
+                tbLocalShopping.Text = string.Empty;
+                cbPlanilha.SelectedItem = null;
+                cbPlanilha.Text = string.Empty;
+                cbDescricao.SelectedItem = null;
+                cbDescricao.Text = string.Empty;
+                cbDescricaoAdicional.SelectedItem = null;
+                cbDescricaoAdicional.Text = string.Empty;
+                tbQtde.Value = null;
+                tbOrientacaoProducao.Text = string.Empty;
+                tbOrientacaoMontagem.Text = string.Empty;
+                tbOrientacaoDesmontagem.Text = string.Empty;
 
-            dgCheckListGeral.SelectedItem = null;
-            dgComplemento.SelectedItem = null;
-            //btnAddicionar.Visibility = Visibility.Collapsed;
+                dgCheckListGeral.SelectedItem = null;
+                dgComplemento.SelectedItem = null;
+                //btnAddicionar.Visibility = Visibility.Collapsed;
 
-            vm.ComplementoCheckList = new ComplementoCheckListModel();
+                vm.Produto = null;
+                vm.DescAdicional = null;
+                vm.Compledicional = null;
+                vm.Produtos = [];
+                vm.DescAdicionais = [];
+                vm.CompleAdicionais = [];
+                vm.CheckListGeralComplementos = [];
+                vm.ComplementoCheckList = new();
+            }
+            finally
+            {
+                suppressComboCascade = false;
+                ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
 
             tbId.Focus();
         }
@@ -320,12 +367,15 @@ namespace Producao.Views.CheckList
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
-                dbClick = true;
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
                 var record = vm.CheckListGeral;
 
                 if (record is null)
+                {
+                    ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     return;
+                }
 
                 vm.ComplementoCheckList = new ComplementoCheckListModel
                 {
@@ -352,11 +402,19 @@ namespace Producao.Views.CheckList
                     agrupar = vm.CheckListGeral.agrupar
                 };
 
-                vm.Planilha = (from p in vm.Planilhas where p.planilha == record.planilha select p).FirstOrDefault();
-                vm.Produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
-                vm.Produto = (from p in vm.Produtos where p.codigo == record.codigo select p).FirstOrDefault();
-                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Produto?.codigo);
-                vm.DescAdicional = (from d in vm.DescAdicionais where d.coduniadicional == record.coduniadicional select d).FirstOrDefault();
+                suppressComboCascade = true;
+                try
+                {
+                    vm.Planilha = (from p in vm.Planilhas where p.planilha == record.planilha select p).FirstOrDefault();
+                    vm.Produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
+                    vm.Produto = (from p in vm.Produtos where p.codigo == record.codigo select p).FirstOrDefault();
+                    vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Produto?.codigo);
+                    vm.DescAdicional = (from d in vm.DescAdicionais where d.coduniadicional == record.coduniadicional select d).FirstOrDefault();
+                }
+                finally
+                {
+                    suppressComboCascade = false;
+                }
 
                 vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.CheckListGeral.coduniadicional);
                 vm.CheckListGeralComplementos = await vm.GetCheckListGeralComplementoAsync(vm.CheckListGeral.codcompl);
@@ -677,11 +735,6 @@ namespace Producao.Views.CheckList
             // Abre como modal
             radWindow.ShowDialog();
 
-        }
-
-        private void OnDropDownOpened(object sender, EventArgs e)
-        {
-            dbClick = false;
         }
 
         private async void dgComplemento_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
