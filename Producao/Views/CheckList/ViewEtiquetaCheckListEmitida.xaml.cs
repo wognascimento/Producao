@@ -48,7 +48,11 @@ namespace Producao.Views.CheckList
         private void OnImprimirClick(object sender, RoutedEventArgs e)
         {
             EtiquetaEmitidaViewModel vm = (EtiquetaEmitidaViewModel)DataContext;
-            ImprimirEtiquetas(vm.Etiquetas, vm.BaseSettings);
+            var etiquetasFiltradas = dgEtiquetasEmitidas.Items
+                .OfType<EtiquetaEmitidaModel>()
+                .ToList();
+
+            ImprimirEtiquetas(etiquetasFiltradas, vm.BaseSettings);
         }
 
         private enum Etiqueta
