@@ -802,18 +802,29 @@ namespace Producao.Views.CheckList
             CheckListViewModel vm = (CheckListViewModel)DataContext;
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 if (e.Row.Item is not QryCheckListGeralComplementoModel data)
                 {
                     return;
                 }
 
+                if (!ComplementoTemDadosParaSalvar(data))
+                {
+                    CancelarLinhaComplementoVazia(vm.CheckListGeralComplementos, data, dgComplemento);
+                    return;
+                }
+
+                if (!ComplementoEstaValido(data))
+                {
+                    return;
+                }
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.DetCompl = new()
                 {
                     coddetalhescompl = data?.coddetalhescompl,
                     codcompl = data.codcompl,
                     codcompladicional = data.codcompladicional,
-                    qtd = data.qtd,
+                    qtd = data.qtd.GetValueOrDefault(),
                     confirmado = data.confirmado,
                     confirmado_data = data.confirmado == "-1" ? DateTime.Now : null,
                     confirmado_por = data.confirmado == "-1" ? Environment.UserName : null,
@@ -845,6 +856,11 @@ namespace Producao.Views.CheckList
                 return;
             }
 
+            if (!ComplementoTemDadosParaSalvar(rowData))
+            {
+                return;
+            }
+
             if (!rowData.codcompl.HasValue)
             {
                 AddValidation(e, "codcompladicional", "Erro ao selecionar a linha.");
@@ -854,10 +870,42 @@ namespace Producao.Views.CheckList
             {
                 AddValidation(e, "codcompladicional", "Seleciona o COMPLEMENTO ADICIONAL.");
             }
-            else if (rowData.qtd == null)
+            else if (!QuantidadeComplementoInformada(rowData))
             {
                 AddValidation(e, "qtd", "Informa a QTDE.");
             }
+        }
+
+        private static bool ComplementoTemDadosParaSalvar(QryCheckListGeralComplementoModel rowData)
+        {
+            return rowData.codcompladicional.HasValue || QuantidadeComplementoInformada(rowData);
+        }
+
+        private static bool ComplementoEstaValido(QryCheckListGeralComplementoModel rowData)
+        {
+            return rowData.codcompl.HasValue &&
+                   rowData.codcompladicional.HasValue &&
+                   QuantidadeComplementoInformada(rowData);
+        }
+
+        private static bool QuantidadeComplementoInformada(QryCheckListGeralComplementoModel rowData)
+        {
+            return rowData.qtd.HasValue;
+        }
+
+        private static void CancelarLinhaComplementoVazia(ObservableCollection<QryCheckListGeralComplementoModel>? itens, QryCheckListGeralComplementoModel rowData, RadGridView grid)
+        {
+            if (rowData.coddetalhescompl != null || itens is null)
+                return;
+
+            grid.Dispatcher.BeginInvoke(() =>
+            {
+                if (itens.Contains(rowData))
+                    itens.Remove(rowData);
+
+                grid.CancelEdit();
+                grid.Rebind();
+            });
         }
 
         private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
@@ -875,7 +923,8 @@ namespace Producao.Views.CheckList
 
             e.NewObject = new QryCheckListGeralComplementoModel
             {
-                codcompl = vm.CheckListGeral?.codcompl
+                codcompl = vm.CheckListGeral?.codcompl,
+                qtd = null
             };
         }
 

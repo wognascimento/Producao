@@ -79,7 +79,6 @@
                              ItemsSource="{Binding Itens}"
                              SelectedItem="{Binding Chklist, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              SelectionChanged="OnSelectionChanged"
-                             FontSize="10"
                              MouseDoubleClick="dgCheckListGeral_MouseDoubleClick">
             <telerik:RadGridView.Columns>
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding sigla}" Header="sigla" IsReadOnly="True"/>

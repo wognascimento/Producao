@@ -207,7 +207,7 @@ namespace Producao.Views.kit.solucao
             }
 
             OsKit = osKit;
-            ((MainWindow)Application.Current.MainWindow).adicionarFilho(new ViewDetalhesKitSolucao(osKit), $"DETALHES KIT SOLUÇÃO {osKit.os}", "DETALHES_KIT_SOLUCAO");
+            ((MainWindow)Application.Current.MainWindow).adicionarFilho(new ViewDetalhesKitSolucao(osKit), $"DETALHES KIT SOLUÇÃO {osKit.os}", $"DETALHES_KIT_SOLUCAO_{osKit.os}");
         }
 
         public async Task<ObservableCollection<TblServicoModel>> GetSiglasAsync()

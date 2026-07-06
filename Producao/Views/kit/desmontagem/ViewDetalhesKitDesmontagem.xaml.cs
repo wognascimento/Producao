@@ -323,7 +323,8 @@ namespace Producao.Views.kit.desmontagem
                 ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
                 e.NewObject = new QryCheckListGeralComplementoModel
                 {
-                    codcompl = vm.CheckListGeral?.codcompl
+                    codcompl = vm.CheckListGeral?.codcompl,
+                    qtd = null
                 };
             }
             catch (Exception ex)
@@ -364,14 +365,23 @@ namespace Producao.Views.kit.desmontagem
             ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 if (e.Row.Item is not QryCheckListGeralComplementoModel data)
                     return;
 
+                if (!ComplementoTemDadosParaSalvar(data))
+                {
+                    CancelarLinhaComplementoVazia(vm.CheckListGeralComplementos, data, dgComplemento);
+                    return;
+                }
+
+                if (!ComplementoEstaValido(data))
+                    return;
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.DetCompl.coddetalhescompl = data.coddetalhescompl;
                 vm.DetCompl.codcompl = data.codcompl;
                 vm.DetCompl.codcompladicional = data.codcompladicional;
-                vm.DetCompl.qtd = data.qtd;
+                vm.DetCompl.qtd = data.qtd.GetValueOrDefault();
                 vm.DetCompl.confirmado = data.confirmado;
                 vm.DetCompl.confirmado_data = data.confirmado == "-1" ? DateTime.Now : null;
                 vm.DetCompl.confirmado_por = data.confirmado == "-1" ? Environment.UserName : null;
@@ -399,7 +409,66 @@ namespace Producao.Views.kit.desmontagem
 
         private void dgComplemento_RowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
+            if (e.Row.Item is not QryCheckListGeralComplementoModel rowData)
+                return;
 
+            if (!ComplementoTemDadosParaSalvar(rowData))
+                return;
+
+            if (!rowData.codcompl.HasValue)
+            {
+                AddValidation(e, "codcompladicional", "Erro ao selecionar a linha.");
+                AddValidation(e, "qtd", "Erro ao selecionar a linha.");
+            }
+            else if (!rowData.codcompladicional.HasValue)
+            {
+                AddValidation(e, "codcompladicional", "Seleciona o COMPLEMENTO ADICIONAL.");
+            }
+            else if (!QuantidadeComplementoInformada(rowData))
+            {
+                AddValidation(e, "qtd", "Informa a QTDE.");
+            }
+        }
+
+        private static bool ComplementoTemDadosParaSalvar(QryCheckListGeralComplementoModel rowData)
+        {
+            return rowData.codcompladicional.HasValue || QuantidadeComplementoInformada(rowData);
+        }
+
+        private static bool ComplementoEstaValido(QryCheckListGeralComplementoModel rowData)
+        {
+            return rowData.codcompl.HasValue &&
+                   rowData.codcompladicional.HasValue &&
+                   QuantidadeComplementoInformada(rowData);
+        }
+
+        private static bool QuantidadeComplementoInformada(QryCheckListGeralComplementoModel rowData)
+        {
+            return rowData.qtd.HasValue;
+        }
+
+        private static void CancelarLinhaComplementoVazia(ObservableCollection<QryCheckListGeralComplementoModel>? itens, QryCheckListGeralComplementoModel rowData, RadGridView grid)
+        {
+            if (rowData.coddetalhescompl != null || itens is null)
+                return;
+
+            grid.Dispatcher.BeginInvoke(() =>
+            {
+                if (itens.Contains(rowData))
+                    itens.Remove(rowData);
+
+                grid.CancelEdit();
+                grid.Rebind();
+            });
+        }
+
+        private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
+        {
+            e.ValidationResults.Add(new GridViewCellValidationResult
+            {
+                PropertyName = propertyName,
+                ErrorMessage = message
+            });
         }
 
         private async void OnClassificacaoSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

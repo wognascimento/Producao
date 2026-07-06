@@ -8,7 +8,7 @@ namespace Producao
     {
         public long? coddetalhescompl { get; set; }
         public long? codcompladicional { get; set; }
-        public double qtd { get; set; }
+        public double? qtd { get; set; }
         public double? saldoestoque { get; set; }
         public DateTime? data_alteracao { get; set; }
         public string? alterado_por { get; set; }

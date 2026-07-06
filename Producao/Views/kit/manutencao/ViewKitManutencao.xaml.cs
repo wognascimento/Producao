@@ -207,7 +207,7 @@ namespace Producao.Views.kit.manutencao
             }
 
             OsKit = osKit;
-            ((MainWindow)Application.Current.MainWindow).adicionarFilho(new ViewDetalhesKitManutencao(osKit), $"DETALHES KIT MANUTENÇÃO {osKit.os}", "DETALHES_KIT_MANUTENCAO");
+            ((MainWindow)Application.Current.MainWindow).adicionarFilho(new ViewDetalhesKitManutencao(osKit), $"DETALHES KIT MANUTENÇÃO {osKit.os}", $"DETALHES_KIT_MANUTENCAO_{osKit.os}");
         }
 
         public async Task<ObservableCollection<TblServicoModel>> GetSiglasAsync()

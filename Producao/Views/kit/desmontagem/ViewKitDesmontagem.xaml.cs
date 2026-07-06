@@ -206,7 +206,7 @@ namespace Producao.Views.kit.desmontagem
             }
 
             OsKit = osKit;
-            ((MainWindow)Application.Current.MainWindow).adicionarFilho(new ViewDetalhesKitDesmontagem(osKit), $"DETALHES KIT DESMONTAGEM {osKit.os}", "DETALHES_KIT_DESMONTAGEM");
+            ((MainWindow)Application.Current.MainWindow).adicionarFilho(new ViewDetalhesKitDesmontagem(osKit), $"DETALHES KIT DESMONTAGEM {osKit.os}", $"DETALHES_KIT_DESMONTAGEM_{osKit.os}");
         }
 
         public async Task<ObservableCollection<TblServicoModel>> GetSiglasAsync()

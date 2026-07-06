@@ -20,6 +20,8 @@ namespace Producao.Views.CheckList
     public partial class ViewComplementoCheckListNatal : UserControl
     {
         private bool _dadosCarregados;
+        private bool _carregandoComplementos;
+        private long? _ultimoCodComplCarregado;
 
         public ViewComplementoCheckListNatal()
         {
@@ -107,12 +109,32 @@ namespace Producao.Views.CheckList
 
         private async void dgCheckListGeral_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            await CarregarComplementosSelecionadosAsync();
+        }
+
+        private async Task CarregarComplementosSelecionadosAsync()
+        {
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
-                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm?.Chklist?.coduniadicional);
-                vm.CheckListGeralComplementos = await vm.GetCheckListGeralComplementoAsync(vm?.Chklist?.codcompl);
+                if (_carregandoComplementos || vm.Chklist is null)
+                    return;
+
+                if (_ultimoCodComplCarregado == vm.Chklist.codcompl)
+                    return;
+
+                _carregandoComplementos = true;
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                dgComplemento.CancelEdit();
+                RemoverLinhasComplementoVazias(vm.CheckListGeralComplementos);
+
+                var compleAdicionais = await vm.GetCompleAdicionaisAsync(vm?.Chklist?.coduniadicional);
+                var complementos = await vm.GetCheckListGeralComplementoAsync(vm?.Chklist?.codcompl);
+
+                AtualizarColecao(vm.CompleAdicionais, compleAdicionais);
+                AtualizarColecao(vm.CheckListGeralComplementos, complementos);
+                _ultimoCodComplCarregado = vm.Chklist.codcompl;
+                dgComplemento.Rebind();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -120,11 +142,15 @@ namespace Producao.Views.CheckList
                 Producao.ErrorDialog.Show(ex, "Erro");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+            finally
+            {
+                _carregandoComplementos = false;
+            }
         }
 
-        private void OnSelectionChanged(object sender, SelectionChangeEventArgs e)
+        private async void OnSelectionChanged(object sender, SelectionChangeEventArgs e)
         {
-
+            await CarregarComplementosSelecionadosAsync();
         }
 
         private void dgComplemento_AddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
@@ -133,7 +159,8 @@ namespace Producao.Views.CheckList
 
             e.NewObject = new QryCheckListGeralComplementoModel
             {
-                codcompl = vm.Chklist?.codcompl
+                codcompl = vm.Chklist?.codcompl,
+                qtd = null
             };
         }
 
@@ -176,18 +203,29 @@ namespace Producao.Views.CheckList
             ViewComplementoCheckListNatalViewModel vm = (ViewComplementoCheckListNatalViewModel)DataContext;
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 if (e.Row.Item is not QryCheckListGeralComplementoModel data)
                 {
                     return;
                 }
 
+                if (!ComplementoTemDadosParaSalvar(data))
+                {
+                    CancelarLinhaComplementoVazia(vm.CheckListGeralComplementos, data, dgComplemento);
+                    return;
+                }
+
+                if (!ComplementoEstaValido(data))
+                {
+                    return;
+                }
+
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.DetCompl = new()
                 {
                     coddetalhescompl = data?.coddetalhescompl,
                     codcompl = data.codcompl,
                     codcompladicional = data.codcompladicional,
-                    qtd = data.qtd,
+                    qtd = data.qtd.GetValueOrDefault(),
                     confirmado = data.confirmado,
                     confirmado_data = data.confirmado == "-1" ? DateTime.Now : null,
                     confirmado_por = data.confirmado == "-1" ? Environment.UserName : null,
@@ -264,6 +302,11 @@ namespace Producao.Views.CheckList
                 return;
             }
 
+            if (!ComplementoTemDadosParaSalvar(rowData))
+            {
+                return;
+            }
+
             if (!rowData.codcompl.HasValue)
             {
                 AddValidation(e, "codcompladicional", "Erro ao selecionar a linha.");
@@ -273,10 +316,66 @@ namespace Producao.Views.CheckList
             {
                 AddValidation(e, "codcompladicional", "Seleciona o COMPLEMENTO ADICIONAL.");
             }
-            else if (rowData.qtd == null)
+            else if (!QuantidadeComplementoInformada(rowData))
             {
                 AddValidation(e, "qtd", "Informa a QTDE.");
             }
+        }
+
+        private static bool ComplementoTemDadosParaSalvar(QryCheckListGeralComplementoModel rowData)
+        {
+            return rowData.codcompladicional.HasValue || QuantidadeComplementoInformada(rowData);
+        }
+
+        private static bool ComplementoEstaValido(QryCheckListGeralComplementoModel rowData)
+        {
+            return rowData.codcompl.HasValue &&
+                   rowData.codcompladicional.HasValue &&
+                   QuantidadeComplementoInformada(rowData);
+        }
+
+        private static bool QuantidadeComplementoInformada(QryCheckListGeralComplementoModel rowData)
+        {
+            return rowData.qtd.HasValue;
+        }
+
+        private static void CancelarLinhaComplementoVazia(ObservableCollection<QryCheckListGeralComplementoModel>? itens, QryCheckListGeralComplementoModel rowData, RadGridView grid)
+        {
+            if (rowData.coddetalhescompl != null || itens is null)
+                return;
+
+            grid.Dispatcher.BeginInvoke(() =>
+            {
+                if (itens.Contains(rowData))
+                    itens.Remove(rowData);
+
+                grid.CancelEdit();
+                grid.Rebind();
+            });
+        }
+
+        private static void RemoverLinhasComplementoVazias(ObservableCollection<QryCheckListGeralComplementoModel>? itens)
+        {
+            if (itens is null)
+                return;
+
+            var linhasVazias = itens
+                .Where(x => x.coddetalhescompl == null && !ComplementoTemDadosParaSalvar(x))
+                .ToList();
+
+            foreach (var item in linhasVazias)
+                itens.Remove(item);
+        }
+
+        private static void AtualizarColecao<T>(ObservableCollection<T> destino, ObservableCollection<T>? origem)
+        {
+            destino.Clear();
+
+            if (origem is null)
+                return;
+
+            foreach (var item in origem)
+                destino.Add(item);
         }
 
         private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
@@ -290,6 +389,11 @@ namespace Producao.Views.CheckList
 
         public class ViewComplementoCheckListNatalViewModel : INotifyPropertyChanged
         {
+            public ViewComplementoCheckListNatalViewModel()
+            {
+                CompleAdicionais = [];
+                CheckListGeralComplementos = [];
+            }
 
             private ObservableCollection<SiglaChkListModel> _siglas;
             public ObservableCollection<SiglaChkListModel> Siglas
@@ -633,7 +737,6 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
                     const string sql = """
                         SELECT *
                         FROM producao.tblcomplementoadicional
