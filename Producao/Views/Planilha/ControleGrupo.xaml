@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
              xmlns:vewModel="clr-namespace:Producao"
+             xmlns:converter="clr-namespace:Producao.Views.Converters"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800"
@@ -13,11 +14,13 @@
 
     <UserControl.Resources>
         <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
+        <converter:RowIndexConverter x:Key="RowIndexConverter"/>
     </UserControl.Resources>
 
     <Grid>
         <telerik:RadGridView x:Name="adicionais"
                              Grid.Row="1"
+                             
                              AutoGenerateColumns="False"
                              ShowGroupPanel="False"
                              ShowSearchPanel="False"
@@ -28,8 +31,11 @@
                              SelectedItem="{Binding ControlePlanilhaGrupo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              RowEditEnded="OnRowEditEnded"
                              RowValidating="OnRowValidating"
-                             CellEditEnded="OnCellEditEnded">
+                             CellEditEnded="OnCellEditEnded"
+                             Filtered="OnGridViewViewChanged"
+                             Sorted="OnGridViewViewChanged">
             <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding sequencia}" Header="#" Width="50" IsReadOnly="True" TextAlignment="Center"/>
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding agrupamento}" Header="agrupamento"/>
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding caminhao}" Header="caminhao"/>
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding revisado}" Header="revisado"/>

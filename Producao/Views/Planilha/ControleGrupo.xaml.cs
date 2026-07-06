@@ -2,13 +2,15 @@ using Dapper;
 using Npgsql;
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Telerik.Windows.Controls;
-using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.Planilha
 {
@@ -17,6 +19,9 @@ namespace Producao.Views.Planilha
     /// </summary>
     public partial class ControleGrupo : UserControl
     {
+        private ICollectionView? _gridView;
+        private bool _atualizandoSequencia;
+
         public ControleGrupo()
         {
             InitializeComponent();
@@ -30,6 +35,8 @@ namespace Producao.Views.Planilha
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ControleGrupoViewModel vm = (ControleGrupoViewModel)DataContext;
                 vm.ControlePlanilhaGrupos = await vm.GetItensAsync();
+                VincularAtualizacaoSequencia();
+                AtualizarSequencia();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
@@ -87,7 +94,61 @@ namespace Producao.Views.Planilha
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            DesvincularAtualizacaoSequencia();
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
+        }
+
+        private void VincularAtualizacaoSequencia()
+        {
+            DesvincularAtualizacaoSequencia();
+            _gridView = CollectionViewSource.GetDefaultView(adicionais.ItemsSource);
+
+            if (_gridView is INotifyCollectionChanged notifyCollectionChanged)
+                notifyCollectionChanged.CollectionChanged += OnGridViewCollectionChanged;
+        }
+
+        private void DesvincularAtualizacaoSequencia()
+        {
+            if (_gridView is INotifyCollectionChanged notifyCollectionChanged)
+                notifyCollectionChanged.CollectionChanged -= OnGridViewCollectionChanged;
+
+            _gridView = null;
+        }
+
+        private void OnGridViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            AgendarAtualizacaoSequencia();
+        }
+
+        private void OnGridViewViewChanged(object sender, EventArgs e)
+        {
+            AgendarAtualizacaoSequencia();
+        }
+
+        private void AgendarAtualizacaoSequencia()
+        {
+            Dispatcher.BeginInvoke(new Action(AtualizarSequencia));
+        }
+
+        private void AtualizarSequencia()
+        {
+            if (_atualizandoSequencia || adicionais.ItemsSource == null)
+                return;
+
+            try
+            {
+                _atualizandoSequencia = true;
+                var sequencia = 1;
+
+                foreach (var grupo in adicionais.Items.OfType<ControlePlanilhaGrupoModel>())
+                {
+                    grupo.sequencia = sequencia++;
+                }
+            }
+            finally
+            {
+                _atualizandoSequencia = false;
+            }
         }
     }
 

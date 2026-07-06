@@ -1,12 +1,29 @@
-﻿using System;
+using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Producao
 {
     [Table("view_controle_planilha_grupo", Schema = "producao")]
-    public class ControlePlanilhaGrupoModel
+    public class ControlePlanilhaGrupoModel : INotifyPropertyChanged
     {
+        private int _sequencia;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public int sequencia
+        {
+            get => _sequencia;
+            set
+            {
+                if (_sequencia == value)
+                    return;
+
+                _sequencia = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(sequencia)));
+            }
+        }
         [Key]
         public long? coddetalhescompl { get; set; }
         public DateTime? data_de_expedicao { get; set; }
