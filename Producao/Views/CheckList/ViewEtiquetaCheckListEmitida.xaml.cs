@@ -18,6 +18,8 @@ namespace Producao.Views.CheckList
     /// </summary>
     public partial class ViewEtiquetaCheckListEmitida : UserControl
     {
+        private bool _dadosCarregados;
+
         public ViewEtiquetaCheckListEmitida()
         {
             InitializeComponent();
@@ -26,11 +28,15 @@ namespace Producao.Views.CheckList
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_dadosCarregados)
+                return;
+
             try
             {
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 EtiquetaEmitidaViewModel vm = (EtiquetaEmitidaViewModel)DataContext;
                 await vm.GetEtiquetasAsync();
+                _dadosCarregados = true;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
             }
             catch (Exception ex)

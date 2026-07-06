@@ -19,6 +19,8 @@ namespace Producao.Views.CheckList
     /// </summary>
     public partial class ViewComplementoCheckListNatal : UserControl
     {
+        private bool _dadosCarregados;
+
         public ViewComplementoCheckListNatal()
         {
             InitializeComponent();
@@ -27,6 +29,9 @@ namespace Producao.Views.CheckList
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_dadosCarregados)
+                return;
+
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
@@ -34,6 +39,7 @@ namespace Producao.Views.CheckList
                 vm.Siglas = await vm.GetSiglasAsync();
                 vm.Planilhas = await vm.GetPlanilhasAsync();
                 vm.Grupos = await vm.GetGruposAsync();
+                _dadosCarregados = true;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)

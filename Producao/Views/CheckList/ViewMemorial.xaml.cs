@@ -26,6 +26,7 @@ namespace Producao.Views.CheckList
     {
         PropostaFechaSiglaModel sigla;
         PropostaFechaTemaModel tema;
+        private bool _dadosCarregados;
 
         static ViewMemorial()
         {
@@ -41,11 +42,15 @@ namespace Producao.Views.CheckList
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_dadosCarregados)
+                return;
+
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
                 vm.Siglas = await vm.GetSiglasAsync();
+                _dadosCarregados = true;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)

@@ -22,6 +22,7 @@ namespace Producao.Views.CheckList
     public partial class ViewCheckListNatal : UserControl
     {
         private bool suppressComboCascade;
+        private bool _dadosCarregados;
 
         DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
@@ -40,6 +41,9 @@ namespace Producao.Views.CheckList
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
+            if (_dadosCarregados)
+                return;
+
             try
             {
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
@@ -47,6 +51,7 @@ namespace Producao.Views.CheckList
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
                 vm.Siglas = await vm.GetSiglasAsync();
                 vm.Planilhas = await vm.GetPlanilhasAsync();
+                _dadosCarregados = true;
                 
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });

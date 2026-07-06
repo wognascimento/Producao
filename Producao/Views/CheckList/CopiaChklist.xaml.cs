@@ -19,6 +19,7 @@ namespace Producao.Views.CheckList;
 public partial class CopiaChklist : UserControl
 {
     private SiglaChkListModel siglaChk;
+    private bool _dadosCarregados;
 
     public CopiaChklist(SiglaChkListModel _siglaChk)
     {
@@ -30,12 +31,16 @@ public partial class CopiaChklist : UserControl
 
     private async void CopiaChklist_Loaded(object sender, RoutedEventArgs e)
     {
+        if (_dadosCarregados)
+            return;
+
         try
         {
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
             CopiaChklistViewModel vm = (CopiaChklistViewModel)DataContext;
 
             await vm.CarregarSiglas();
+            _dadosCarregados = true;
 
             Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
         }

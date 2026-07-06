@@ -25,6 +25,7 @@ namespace Producao.Views;
 /// </summary>
 public partial class ViewCheckListRevisao : UserControl
 {
+    private bool _dadosCarregados;
 
     static ViewCheckListRevisao()
     {
@@ -40,12 +41,16 @@ public partial class ViewCheckListRevisao : UserControl
 
     private async void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
+        if (_dadosCarregados)
+            return;
+
         try
         {
             ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
             ViewModel vm = (ViewModel)DataContext;
             await vm.GetDados();
             await vm.GetRevisores();
+            _dadosCarregados = true;
             //itens.Columns["ok"].FilterPredicates.Add(new FilterPredicate() { FilterType = FilterType.Equals, FilterValue = "0    " });
             ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
         }

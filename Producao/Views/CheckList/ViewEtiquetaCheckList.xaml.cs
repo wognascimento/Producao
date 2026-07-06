@@ -20,6 +20,8 @@ namespace Producao.Views.CheckList
     public partial class ViewEtiquetaCheckList : UserControl
     {
         private int etiqueta = 1;
+        private bool _dadosCarregados;
+
         public ViewEtiquetaCheckList()
         {
             InitializeComponent();
@@ -28,6 +30,9 @@ namespace Producao.Views.CheckList
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_dadosCarregados)
+                return;
+
             try
             {
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
@@ -35,6 +40,7 @@ namespace Producao.Views.CheckList
                 EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
                 //vm.Siglas =  await vm.GetSiglasAsync();
                 vm.Dados = await vm.GetItensAsync();
+                _dadosCarregados = true;
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }

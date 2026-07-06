@@ -17,6 +17,8 @@ namespace Producao.Views.CheckList
     /// </summary>
     public partial class ViewEmitirEtiquetaCheckList : UserControl
     {
+        private bool _dadosCarregados;
+
         public ViewEmitirEtiquetaCheckList()
         {
             this.DataContext = new EmitirEtiquetaViewModel();
@@ -25,12 +27,16 @@ namespace Producao.Views.CheckList
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_dadosCarregados)
+                return;
+
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EmitirEtiquetaViewModel vm = (EmitirEtiquetaViewModel)DataContext;
                 vm.Siglas = await vm.GetSiglasAsync();
                 vm.Itens = await vm.GetItensAsync("");
+                _dadosCarregados = true;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
