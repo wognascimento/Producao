@@ -243,9 +243,6 @@ namespace Producao.Views.CheckList
             cbDescricaoAdicional.SelectedItem = null;
             cbDescricaoAdicional.Text = string.Empty;
 
-            if (vm.ComplementoCheckList is not null)
-                vm.ComplementoCheckList.codcompl = null;
-
             vm.Compledicional = null;
             vm.CompleAdicionais = [];
         }
@@ -475,6 +472,10 @@ namespace Producao.Views.CheckList
             try
             {
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
+
+                if (!PrepararComplementoParaEdicao(vm))
+                    return;
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.ComplementoCheckList.alterado_por = Environment.UserName;
                 vm.ComplementoCheckList.alterado_em = DateTime.Now;
@@ -494,6 +495,22 @@ namespace Producao.Views.CheckList
                 Producao.ErrorDialog.Show(ex, "Erro ao alterar");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+        }
+
+        private bool PrepararComplementoParaEdicao(CheckListViewModel vm)
+        {
+            if (vm.ComplementoCheckList?.codcompl is > 0)
+                return true;
+
+            if (vm.CheckListGeral?.codcompl is > 0)
+            {
+                vm.ComplementoCheckList ??= new ComplementoCheckListModel();
+                vm.ComplementoCheckList.codcompl = vm.CheckListGeral.codcompl;
+                return true;
+            }
+
+            MessageBox.Show("Selecione uma linha do checklist antes de editar.", "Editar checklist", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
         }
 
         private void SelecionarCheckListPorCodCompl(CheckListViewModel vm, long? codcompl)

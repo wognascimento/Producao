@@ -1217,7 +1217,7 @@ namespace Producao
             try
             {
                 await using var conn = CreateConnection();
-                if (ComplementoCheckList.codcompl is null or 0)
+                if (ComplementoCheckList.codcompl is null)
                 {
                     ComplementoCheckList.codcompl = await conn.ExecuteScalarAsync<long>(
                         """
