@@ -83,7 +83,6 @@ namespace Producao.Views.kit.desmontagem
                 cbDescricaoAdicional.SelectedItem = null;
                 cbDescricaoAdicional.Text = string.Empty;
 
-                vm.ComplementoCheckList.codcompl = null;
                 vm.Compledicional = null;
                 vm.CompleAdicionais = [];
 
@@ -112,7 +111,6 @@ namespace Producao.Views.kit.desmontagem
                 cbDescricaoAdicional.SelectedItem = null;
                 cbDescricaoAdicional.Text = string.Empty;
 
-                vm.ComplementoCheckList.codcompl = null;
                 vm.Compledicional = null;
                 vm.CompleAdicionais = [];
 
@@ -168,6 +166,10 @@ namespace Producao.Views.kit.desmontagem
             try
             {
                 ViewDetalhesKitDesmontagemViewModel vm = (ViewDetalhesKitDesmontagemViewModel)DataContext;
+
+                if (!PrepararComplementoParaEdicao(vm))
+                    return;
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 //vm.ComplementoCheckList.class_solucao = cmbClassificacoes!.SelectedItem!.ToString();
                 //vm.ComplementoCheckList.motivos = cmbMotivos!.SelectedItem!.ToString();
@@ -188,6 +190,22 @@ namespace Producao.Views.kit.desmontagem
                 Producao.ErrorDialog.Show(ex, "Erro ao inserir");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+        }
+
+        private bool PrepararComplementoParaEdicao(ViewDetalhesKitDesmontagemViewModel vm)
+        {
+            if (vm.ComplementoCheckList?.codcompl is > 0)
+                return true;
+
+            if (vm.CheckListGeral?.codcompl is > 0)
+            {
+                vm.ComplementoCheckList ??= new ComplementoCheckListModel();
+                vm.ComplementoCheckList.codcompl = vm.CheckListGeral.codcompl;
+                return true;
+            }
+
+            MessageBox.Show("Selecione uma linha do checklist antes de editar.", "Editar kit desmontagem", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
         }
 
         private async void OnPrintClick(object sender, RoutedEventArgs e)

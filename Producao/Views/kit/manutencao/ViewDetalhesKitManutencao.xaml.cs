@@ -82,7 +82,6 @@ namespace Producao.Views.kit.solucao
                 cbDescricaoAdicional.SelectedItem = null;
                 cbDescricaoAdicional.Text = string.Empty;
 
-                vm.ComplementoCheckList.codcompl = null;
                 vm.Compledicional = null;
                 vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
 
@@ -111,7 +110,6 @@ namespace Producao.Views.kit.solucao
                 cbDescricaoAdicional.SelectedItem = null;
                 cbDescricaoAdicional.Text = string.Empty;
 
-                vm.ComplementoCheckList.codcompl = null;
                 vm.Compledicional = null;
                 vm.CompleAdicionais = new ObservableCollection<TblComplementoAdicionalModel>();
 
@@ -167,6 +165,10 @@ namespace Producao.Views.kit.solucao
             try
             {
                 DetalhesKitManutencaoViewModel vm = (DetalhesKitManutencaoViewModel)DataContext;
+
+                if (!PrepararComplementoParaEdicao(vm))
+                    return;
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.ComplementoCheckList.class_solucao = cmbClassificacoes.SelectedItem.ToString();
                 vm.ComplementoCheckList.motivos = cmbMotivos.SelectedItem.ToString();
@@ -186,6 +188,22 @@ namespace Producao.Views.kit.solucao
                 Producao.ErrorDialog.Show(ex, "Erro ao inserir");
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+        }
+
+        private bool PrepararComplementoParaEdicao(DetalhesKitManutencaoViewModel vm)
+        {
+            if (vm.ComplementoCheckList?.codcompl is > 0)
+                return true;
+
+            if (vm.CheckListGeral?.codcompl is > 0)
+            {
+                vm.ComplementoCheckList ??= new ComplementoCheckListModel();
+                vm.ComplementoCheckList.codcompl = vm.CheckListGeral.codcompl;
+                return true;
+            }
+
+            MessageBox.Show("Selecione uma linha do checklist antes de editar.", "Editar kit manutenção", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
         }
 
         private async void OnPrintClick(object sender, RoutedEventArgs e)
