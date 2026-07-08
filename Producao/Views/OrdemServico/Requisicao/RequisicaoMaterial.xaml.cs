@@ -23,6 +23,7 @@ namespace Producao.Views.OrdemServico.Requisicao
         List<string> lVoltagem = ["", "220V", "110V"];
         List<string> lLocalShopping = ["", "INTERNO", "EXTERNO"];
         bool dbClick;
+        private bool carregandoProdutoPorCodigo;
         static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
         public RequisicaoMaterial(object obj)
@@ -411,20 +412,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                     string text = ((TextBox)sender).Text;
-                    vm.Descricao = await vm.GetDescricaoAsync(long.Parse(text));
-                    if (vm.Descricao == null)
-                    {
-                        MessageBox.Show("Produto não encontrado", "Busca de produto");
-                        Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                        return;
-                    }
-                    tbCodproduto.Text = vm.Descricao.codcompladicional.ToString();
-                    txtPlanilha.Text = vm.Descricao.planilha;
-                    txtDescricao.Text = vm.Descricao.descricao;
-                    txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
-                    txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
-                    txtUnidade.Text = vm.Descricao.unidade;
-                    txtQuantidade.Focus();
+                    await PreencherProdutoPorCodigoAsync(long.Parse(text));
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
@@ -441,26 +429,33 @@ namespace Producao.Views.OrdemServico.Requisicao
             }
         }
 
-        private void OnOpenDescricoes(object sender, RoutedEventArgs e)
+        private async void OnOpenDescricoes(object sender, RoutedEventArgs e)
         {
             RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
             var window = new BuscaProduto();
             window.Owner = App.Current.MainWindow;
             if (window.ShowDialog() == true)
             {
-                vm.Descricao = window.descricao;
-                tbCodproduto.Text = vm.Descricao.codcompladicional.ToString();
-                txtPlanilha.Text = vm.Descricao.planilha;
-                txtDescricao.Text = vm.Descricao.descricao;
-                txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
-                txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
-                txtUnidade.Text = vm.Descricao.unidade;
-                txtQuantidade.Focus();
+                try
+                {
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                    if (window.descricao?.codcompladicional is long codigo)
+                        await PreencherProdutoPorCodigoAsync(codigo);
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                }
+                catch (Exception ex)
+                {
+                    Producao.ErrorDialog.Show(ex, "Erro");
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                }
             }
         }
 
         private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
         {
+            if (carregandoProdutoPorCodigo)
+                return;
+
             try
             {
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
@@ -499,6 +494,9 @@ namespace Producao.Views.OrdemServico.Requisicao
 
         private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
         {
+            if (carregandoProdutoPorCodigo)
+                return;
+
             try
             {
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
@@ -533,6 +531,9 @@ namespace Producao.Views.OrdemServico.Requisicao
 
         private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
         {
+            if (carregandoProdutoPorCodigo)
+                return;
+
             try
             {
                 RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
@@ -563,11 +564,57 @@ namespace Producao.Views.OrdemServico.Requisicao
 
         private void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
         {
+            if (carregandoProdutoPorCodigo)
+                return;
+
             RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
             TblComplementoAdicionalModel? complemento = e.AddedItems.Count > 0 ? e.AddedItems[0] as TblComplementoAdicionalModel : null;
             vm.Compledicional = complemento;
             tbCodproduto.Text = complemento?.codcompladicional.ToString();
             txtUnidade.Text = complemento?.unidade;
+            txtQuantidade.Focus();
+        }
+
+        private async Task PreencherProdutoPorCodigoAsync(long codcompladicional)
+        {
+            RequisicaoViewModel vm = (RequisicaoViewModel)DataContext;
+            vm.Descricao = await vm.GetDescricaoAsync(codcompladicional);
+            if (vm.Descricao == null)
+            {
+                MessageBox.Show("Produto não encontrado", "Busca de produto");
+                return;
+            }
+
+            carregandoProdutoPorCodigo = true;
+            try
+            {
+                tbCodproduto.Text = vm.Descricao.codcompladicional.ToString();
+
+                vm.Planilha = vm.Planilhas?.FirstOrDefault(p => p.planilha == vm.Descricao.planilha);
+                txtPlanilha.SelectedItem = vm.Planilha;
+                txtPlanilha.Text = vm.Descricao.planilha;
+
+                vm.Produtos = await vm.GetProdutosAsync(vm.Descricao.planilha);
+                vm.Produto = vm.Produtos.FirstOrDefault(p => p.codigo == vm.Descricao.codigo);
+                txtDescricao.SelectedItem = vm.Produto;
+                txtDescricao.Text = vm.Descricao.descricao;
+
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Descricao.codigo);
+                vm.DescAdicional = vm.DescAdicionais.FirstOrDefault(d => d.coduniadicional == vm.Descricao.coduniadicional);
+                txtDescricaoAdicional.SelectedItem = vm.DescAdicional;
+                txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
+
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional);
+                vm.Compledicional = vm.CompleAdicionais.FirstOrDefault(c => c.codcompladicional == vm.Descricao.codcompladicional);
+                txtComplementoAdicional.SelectedItem = vm.Compledicional;
+                txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
+                txtUnidade.Text = vm.Descricao.unidade;
+            }
+            finally
+            {
+                carregandoProdutoPorCodigo = false;
+            }
+
             txtQuantidade.Focus();
         }
 

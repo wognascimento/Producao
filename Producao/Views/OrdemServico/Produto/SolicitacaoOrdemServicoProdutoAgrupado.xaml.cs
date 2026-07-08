@@ -391,12 +391,12 @@ namespace Producao.Views.OrdemServico.Produto
                 e.IsValid = false;
                 e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Seleciona o Setor da O.S.", PropertyName = "codigo_setor" });
             }
-            else if (rowData.orientacao_caminho == "")
+            else if (string.IsNullOrWhiteSpace(rowData.orientacao_caminho))
             {
                 e.IsValid = false;
                 e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informe uma orientação para o Setor.", PropertyName = "orientacao_caminho" });
             }
-            else if (rowData.cliente == "")
+            else if (string.IsNullOrWhiteSpace(rowData.cliente))
             {
                 e.IsValid = false;
                 e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Informe o cliente da O.S.", PropertyName = "cliente" });
