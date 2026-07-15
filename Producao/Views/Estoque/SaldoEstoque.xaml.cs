@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Telerik.Windows.Controls;
 
 namespace Producao.Views.Estoque
 {
@@ -47,6 +48,9 @@ namespace Producao.Views.Estoque
         {
             try
             {
+                if (sender is RadButton button)
+                    button.IsEnabled = false;
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 SaldoEstoqueViewModel vm = (SaldoEstoqueViewModel)DataContext;
@@ -69,10 +73,23 @@ namespace Producao.Views.Estoque
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+            catch (TimeoutException ex)
+            {
+                Producao.ErrorDialog.Show(new TimeoutException("A consulta do saldo de estoque demorou mais que o limite configurado. Tente novamente ou solicite a otimizacao da view producao.qry_saldo_detalhado_c para esta planilha.", ex), "Tempo esgotado");
+            }
+            catch (NpgsqlException ex) when (ex.InnerException is TimeoutException timeout)
+            {
+                Producao.ErrorDialog.Show(new TimeoutException("A consulta do saldo de estoque demorou mais que o limite configurado. Tente novamente ou solicite a otimizacao da view producao.qry_saldo_detalhado_c para esta planilha.", timeout), "Tempo esgotado");
+            }
             catch (Exception ex)
             {
                 Producao.ErrorDialog.Show(ex, "Erro");
+            }
+            finally
+            {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                if (sender is RadButton button)
+                    button.IsEnabled = true;
             }
         }
 
@@ -120,10 +137,47 @@ namespace Producao.Views.Estoque
         
         public async Task<ObservableCollection<SaldoDetalhadoModel>> GetSaldoDetalhadosAsync(string? planilha)
         {
-            const string sql = "SELECT * FROM producao.qry_saldo_detalhado_c WHERE planilha = @planilha;";
+            const int commandTimeoutSeconds = 300;
+            const string sql = """
+                SELECT
+                    planilha,
+                    descricao,
+                    descricao_adicional,
+                    complementoadicional,
+                    codcompladicional,
+                    vida_util,
+                    custo,
+                    chks,
+                    saldo_patrimonial,
+                    unidade,
+                    saldo_patrimonial_ano_anterior,
+                    saldo_disponivel_ano_anterior,
+                    estoque_inicial_nao_processado,
+                    estoque_inicial_processado,
+                    cce,
+                    oss_peca_nova,
+                    oss_recuperacao,
+                    movimentacao_entrada_processada,
+                    movimentacao_de_entrada_nao_processada,
+                    total_entradas,
+                    requisicao_geral,
+                    movimentacao_saída,
+                    requisicoes_internas,
+                    movimentacao_de_saidas_gerais,
+                    movimentacao_de_saidas_processadas,
+                    descartes_gerais,
+                    total_de_saidas,
+                    total_produzido,
+                    saldo_de_estoque_produzido,
+                    saldo_disponível,
+                    inventariado,
+                    inativo
+                FROM producao.qry_saldo_detalhado_c
+                WHERE planilha = @planilha;
+                """;
             await using var connection = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
             return new ObservableCollection<SaldoDetalhadoModel>(
-                await connection.QueryAsync<SaldoDetalhadoModel>(sql, new { planilha }));
+                await connection.QueryAsync<SaldoDetalhadoModel>(sql, new { planilha }, commandTimeout: commandTimeoutSeconds));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

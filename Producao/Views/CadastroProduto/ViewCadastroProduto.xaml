@@ -80,10 +80,19 @@
                         Header="DESCRIÇÃO"
                         UniqueName="descricao"
                         DataMemberBinding="{Binding descricao}"/>
-                <telerik:GridViewCheckBoxColumn
+                <telerik:GridViewDataColumn
                         Header="INATIVO"
-                        UniqueName="inativo"
-                        DataMemberBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}}"/>
+                        UniqueName="inativo">
+                    <telerik:GridViewDataColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding inativo, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Checked="OnInativoClick"
+                                Unchecked="OnInativoClick"/>
+                        </DataTemplate>
+                    </telerik:GridViewDataColumn.CellTemplate>
+                </telerik:GridViewDataColumn>
                 <telerik:GridViewDataColumn
                         Header=""
                         UniqueName="adicional">

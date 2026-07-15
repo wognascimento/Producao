@@ -1313,20 +1313,17 @@ namespace Producao
         {
             try
             {
-                if (compChkList != null)
-                {
-                    if (compChkList.carga != "")
-                    {
-                        await using var conn = CreateConnection();
-                        await conn.ExecuteAsync(
-                            """
-                            UPDATE producao.t_complemento_chk
-                            SET carga = @carga
-                            WHERE codcompl = @codcompl;
-                            """,
-                            compChkList);
-                    }
-                }
+                if (compChkList?.codcompl is null)
+                    return;
+
+                await using var conn = CreateConnection();
+                await conn.ExecuteAsync(
+                    """
+                    UPDATE producao.t_complemento_chk
+                    SET carga = @carga
+                    WHERE codcompl = @codcompl;
+                    """,
+                    compChkList);
             }
             catch (NpgsqlException)
             {

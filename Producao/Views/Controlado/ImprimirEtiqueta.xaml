@@ -26,7 +26,7 @@
             IsFilteringAllowed="True"
             ShowGroupPanel="False"
             ItemsSource="{Binding Produtos}"
-            SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True">
 
             <telerik:RadGridView.ContextMenu>
                 <ContextMenu Style="{x:Null}">

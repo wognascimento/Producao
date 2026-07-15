@@ -352,9 +352,12 @@ namespace Producao.Views.OrdemServico.Produto
             SolicitacaoOrdemServicoProdutoAgrupadoViewModel vm = (SolicitacaoOrdemServicoProdutoAgrupadoViewModel)DataContext;
             try
             {
-                
+                if (e.Row.Item is not ObsOsModel data || !data.num_os_produto.HasValue)
+                {
+                    return;
+                }
+
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                ObsOsModel data = (ObsOsModel)e.Row.Item;
                 data.setor_caminho = vm.Setores.Where(x => x.codigo_setor == data.codigo_setor).Select(setor => setor.setor).FirstOrDefault();
                 vm.ObsOs = await vm.SaveObsOsAsync(data);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -379,7 +382,7 @@ namespace Producao.Views.OrdemServico.Produto
             if (!rowData.num_os_produto.HasValue)
             {
                 e.IsValid = false;
-                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Não foi criado O.S para incluir o(s) caminho(s).", PropertyName = string.Empty });
+                e.ValidationResults.Add(new GridViewCellValidationResult { ErrorMessage = "Não foi criado O.S para incluir o(s) caminho(s).", PropertyName = "num_caminho" });
             }
             else if (!rowData.num_caminho.HasValue)
             {

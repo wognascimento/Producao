@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+        xmlns:vewModel="clr-namespace:Producao"
         mc:Ignorable="d"
         d:DesignHeight="450"
         d:DesignWidth="600"
@@ -11,6 +12,10 @@
         WindowStyle="ToolWindow"
         Loaded="OnLoaded"
         Title="Descrição Adicional">
+
+    <Window.Resources>
+        <vewModel:ConverterBoolen x:Key="ConverterBoolen"/>
+    </Window.Resources>
 
     <Grid>
         <telerik:RadGridView
@@ -38,9 +43,19 @@
                 <telerik:GridViewDataColumn
                     Header="REVISÃO"
                     DataMemberBinding="{Binding revisao}" />
-                <telerik:GridViewCheckBoxColumn
+                <telerik:GridViewDataColumn
                     Header="INATIVO"
-                    DataMemberBinding="{Binding inativo}" />
+                    UniqueName="inativo">
+                    <telerik:GridViewDataColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding inativo, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Checked="OnInativoClick"
+                                Unchecked="OnInativoClick"/>
+                        </DataTemplate>
+                    </telerik:GridViewDataColumn.CellTemplate>
+                </telerik:GridViewDataColumn>
                 <telerik:GridViewColumn Header="">
                     <telerik:GridViewColumn.CellTemplate>
                         <DataTemplate>

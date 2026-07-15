@@ -55,9 +55,19 @@
                 <telerik:GridViewDataColumn
                     Header="VIDA ÚTIL"
                     DataMemberBinding="{Binding vida_util}" />
-                <telerik:GridViewCheckBoxColumn
+                <telerik:GridViewDataColumn
                     Header="INATIVO"
-                    DataMemberBinding="{Binding inativo, Converter={StaticResource ConverterBoolen}, Mode=TwoWay}" />
+                    UniqueName="inativo">
+                    <telerik:GridViewDataColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding inativo, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Checked="OnInativoClick"
+                                Unchecked="OnInativoClick"/>
+                        </DataTemplate>
+                    </telerik:GridViewDataColumn.CellTemplate>
+                </telerik:GridViewDataColumn>
                 <telerik:GridViewCheckBoxColumn
                     Header="CONTROLADO"
                     DataMemberBinding="{Binding prodcontrolado, Converter={StaticResource ConverterBoolen}, Mode=TwoWay}" />

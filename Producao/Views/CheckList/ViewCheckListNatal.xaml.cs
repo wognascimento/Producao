@@ -3,6 +3,7 @@ using Producao.Utils;
 using Producao.Views.CentralModelos.Compat;
 using Producao.Views.popup;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Threading;
 using System.Windows.Input;
 using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.GridView;
@@ -23,6 +25,11 @@ namespace Producao.Views.CheckList
     {
         private bool suppressComboCascade;
         private bool _dadosCarregados;
+        private bool _restaurandoCelulaComErro;
+        private readonly Dictionary<string, object?> _dgCheckListGeralValoresOriginais = new();
+        private readonly HashSet<string> _dgCheckListGeralSalvamentosPendentes = new();
+        private QryCheckListGeralModel? _dgCheckListGeralItemComErro;
+        private Telerik.Windows.Controls.GridViewColumn? _dgCheckListGeralColunaComErro;
 
         DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
@@ -71,6 +78,12 @@ namespace Producao.Views.CheckList
 
         private async void OnSelectionChanged(object sender, SelectionChangeEventArgs e)
         {
+            if (sender is RadGridView grid && DeveRestaurarCelulaComErro(grid))
+            {
+                RestaurarEdicaoNaCelula(grid, _dgCheckListGeralItemComErro, _dgCheckListGeralColunaComErro);
+                return;
+            }
+
             //CheckListViewModel vm = (CheckListViewModel)DataContext;
             //vm.CheckListGeralComplemento = new QryCheckListGeralComplementoModel();
             //vm.CheckListGeralComplementos = new ObservableCollection<QryCheckListGeralComplementoModel>();
@@ -952,22 +965,58 @@ namespace Producao.Views.CheckList
 
         private void dgCheckListGeral_RowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
+            // Nao bloqueia a navegacao do usuario; erros de banco sao tratados no salvamento.
+        }
+
+        private void dgCheckListGeral_BeginningEdit(object sender, GridViewBeginningEditRoutedEventArgs e)
+        {
+            if (e.Cell?.DataContext is not QryCheckListGeralModel dado)
+                return;
+
+            var columnName = e.Cell?.Column?.UniqueName;
+            if (string.IsNullOrWhiteSpace(columnName))
+                return;
+
+            _dgCheckListGeralValoresOriginais[GridValueKey(dado, columnName)] = GetCheckListGeralValue(dado, columnName);
+        }
+
+        private void dgCheckListGeral_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Escape || sender is not RadGridView grid)
+                return;
+
+            LiberarCelulaPendenteAtual(grid);
         }
 
         private async void dgCheckListGeral_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
+            var grid = sender as RadGridView;
+            QryCheckListGeralModel? dado = null;
+            Telerik.Windows.Controls.GridViewColumn? colunaErro = null;
+            string? chaveCelula = null;
+
             try
             {
                 CheckListViewModel vm = (CheckListViewModel)DataContext;
-                if (e.Cell?.DataContext is not QryCheckListGeralModel dado)
+                if (e.Cell?.DataContext is not QryCheckListGeralModel rowData)
                 {
                     return;
                 }
 
-                var grid = sender as RadGridView;
+                dado = rowData;
+                colunaErro = e.Cell?.Column;
+                _dgCheckListGeralItemComErro = null;
+                _dgCheckListGeralColunaComErro = null;
                 var columnName = e.Cell?.Column?.UniqueName;
 
                 if (string.IsNullOrWhiteSpace(columnName))
+                {
+                    return;
+                }
+
+                chaveCelula = GridValueKey(dado, columnName);
+
+                if (!CheckListGeralValueChanged(dado, columnName))
                 {
                     return;
                 }
@@ -1001,6 +1050,7 @@ namespace Producao.Views.CheckList
                         };
                         await vm.CargaCaminhaoListAsync(Comple);
                     }
+                    MarcarCheckListGeralSalvo(chaveCelula);
                     return;
                 }
 
@@ -1019,13 +1069,201 @@ namespace Producao.Views.CheckList
                     alterado_em = DateTime.Now
                 };
                 await vm.EditComplementoCheckListAsync(CompleChkList);
+                MarcarCheckListGeralSalvo(chaveCelula);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex?.InnerException?.Message, "Erro ao inserir", MessageBoxButton.OK, MessageBoxImage.Error);
+                MarcarCheckListGeralPendente(chaveCelula);
+                _dgCheckListGeralItemComErro = dado;
+                _dgCheckListGeralColunaComErro = colunaErro;
+                Producao.ErrorDialog.Show(ex, "Erro ao alterar checklist");
+                ManterEdicaoNaCelula(grid, dado, colunaErro);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+        }
+
+        private bool DeveRestaurarCelulaComErro(RadGridView grid)
+        {
+            return !_restaurandoCelulaComErro &&
+                   _dgCheckListGeralSalvamentosPendentes.Count > 0 &&
+                   _dgCheckListGeralItemComErro is not null &&
+                   _dgCheckListGeralColunaComErro is not null &&
+                   !ReferenceEquals(grid.SelectedItem, _dgCheckListGeralItemComErro);
+        }
+
+        private void ManterEdicaoNaCelula(RadGridView? grid, object? item, Telerik.Windows.Controls.GridViewColumn? coluna)
+        {
+            if (grid is null || item is null || coluna is null)
+                return;
+
+            grid.Dispatcher.BeginInvoke(() =>
+            {
+                RestaurarEdicaoNaCelula(grid, item, coluna);
+            }, DispatcherPriority.ContextIdle);
+        }
+
+        private void RestaurarEdicaoNaCelula(RadGridView? grid, object? item, Telerik.Windows.Controls.GridViewColumn? coluna)
+        {
+            if (grid is null || item is null || coluna is null)
+                return;
+
+            _restaurandoCelulaComErro = true;
+            try
+            {
+                grid.CancelEdit();
+                grid.SelectedItems.Clear();
+                grid.SelectedItems.Add(item);
+                grid.SelectedItem = item;
+                grid.CurrentItem = item;
+                grid.CurrentColumn = coluna;
+                grid.CurrentCellInfo = new GridViewCellInfo(item, coluna, grid);
+                grid.ScrollIntoViewAsync(item, coluna, _ =>
+                {
+                    grid.Focus();
+                    grid.BeginEdit();
+                });
+                grid.Focus();
+                grid.BeginEdit();
+            }
+            finally
+            {
+                grid.Dispatcher.BeginInvoke(() =>
+                {
+                    _restaurandoCelulaComErro = false;
+                }, DispatcherPriority.ContextIdle);
+            }
+        }
+
+        private bool CheckListGeralValueChanged(QryCheckListGeralModel dado, string columnName)
+        {
+            var key = GridValueKey(dado, columnName);
+            if (!_dgCheckListGeralValoresOriginais.TryGetValue(key, out var original))
+                return true;
+
+            var atual = GetCheckListGeralValue(dado, columnName);
+            if (_dgCheckListGeralSalvamentosPendentes.Contains(key))
+            {
+                if (ValoresIguais(original, atual))
+                {
+                    MarcarCheckListGeralSalvo(key);
+                    _dgCheckListGeralValoresOriginais.Remove(key);
+                    return false;
+                }
+
+                return true;
+            }
+
+            _dgCheckListGeralValoresOriginais.Remove(key);
+            return !ValoresIguais(original, atual);
+        }
+
+        private void LiberarCelulaPendenteAtual(RadGridView grid)
+        {
+            if (grid.CurrentItem is not QryCheckListGeralModel dado)
+                return;
+
+            var columnName = grid.CurrentColumn?.UniqueName;
+            if (string.IsNullOrWhiteSpace(columnName))
+                return;
+
+            var key = GridValueKey(dado, columnName);
+            if (!_dgCheckListGeralSalvamentosPendentes.Contains(key))
+                return;
+
+            RestaurarValorOriginal(dado, columnName);
+            MarcarCheckListGeralSalvo(key);
+            _dgCheckListGeralValoresOriginais.Remove(key);
+        }
+
+        private void RestaurarValorOriginal(QryCheckListGeralModel dado, string columnName)
+        {
+            var key = GridValueKey(dado, columnName);
+            if (!_dgCheckListGeralValoresOriginais.TryGetValue(key, out var original))
+                return;
+
+            switch (columnName)
+            {
+                case "id":
+                    dado.id = original as string;
+                    break;
+                case "item_memorial":
+                    dado.item_memorial = original as string;
+                    break;
+                case "local_shoppings":
+                    dado.local_shoppings = original as string;
+                    break;
+                case "qtd":
+                    dado.qtd = original as double?;
+                    break;
+                case "obs":
+                    dado.obs = original as string;
+                    break;
+                case "orient_montagem":
+                    dado.orient_montagem = original as string;
+                    break;
+                case "orient_desmont":
+                    dado.orient_desmont = original as string;
+                    break;
+                case "carga":
+                    dado.carga = original as string;
+                    break;
+            }
+        }
+
+        private void MarcarCheckListGeralPendente(string? chaveCelula)
+        {
+            if (!string.IsNullOrWhiteSpace(chaveCelula))
+                _dgCheckListGeralSalvamentosPendentes.Add(chaveCelula);
+        }
+
+        private void MarcarCheckListGeralSalvo(string? chaveCelula)
+        {
+            if (!string.IsNullOrWhiteSpace(chaveCelula))
+                _dgCheckListGeralSalvamentosPendentes.Remove(chaveCelula);
+
+            if (_dgCheckListGeralSalvamentosPendentes.Count == 0)
+            {
+                _dgCheckListGeralItemComErro = null;
+                _dgCheckListGeralColunaComErro = null;
+            }
+        }
+
+        private static string GridValueKey(QryCheckListGeralModel dado, string columnName)
+        {
+            return $"{dado.codcompl?.ToString(CultureInfo.InvariantCulture) ?? "novo"}:{columnName}";
+        }
+
+        private static object? GetCheckListGeralValue(QryCheckListGeralModel dado, string columnName)
+        {
+            return columnName switch
+            {
+                "id" => dado.id,
+                "item_memorial" => dado.item_memorial,
+                "local_shoppings" => dado.local_shoppings,
+                "qtd" => dado.qtd,
+                "obs" => dado.obs,
+                "orient_montagem" => dado.orient_montagem,
+                "orient_desmont" => dado.orient_desmont,
+                "carga" => dado.carga,
+                _ => null
+            };
+        }
+
+        private static bool ValoresIguais(object? original, object? atual)
+        {
+            if (original is null && atual is null)
+                return true;
+
+            if (original is null || atual is null)
+                return false;
+
+            if (original is double originalDouble && atual is double atualDouble)
+                return Math.Abs(originalDouble - atualDouble) < 0.000001;
+
+            return string.Equals(Convert.ToString(original, CultureInfo.InvariantCulture)?.Trim(),
+                                 Convert.ToString(atual, CultureInfo.InvariantCulture)?.Trim(),
+                                 StringComparison.Ordinal);
         }
 
         private async void dgCheckListGeral_Deleting(object sender, GridViewDeletingEventArgs e)
@@ -1044,7 +1282,7 @@ namespace Producao.Views.CheckList
                 }
                 catch(Exception ex)
                 {
-                    MessageBox.Show(ex?.InnerException?.Message, "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Producao.ErrorDialog.Show(ex, "Erro ao deletar checklist");
                     e.Cancel = true;
                 }
             }
@@ -1053,7 +1291,6 @@ namespace Producao.Views.CheckList
                 e.Cancel = true;
             }
         }
-
 
     }
 

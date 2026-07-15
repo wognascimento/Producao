@@ -58,6 +58,28 @@ namespace Producao.Views.CadastroProduto
             };
         }
 
+        private async void OnInativoClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.CheckBox { DataContext: TblComplementoAdicionalModel complemento } ||
+                complemento.codcompladicional is null or 0)
+            {
+                return;
+            }
+
+            var vm = (CadastroCompmentoViewModel)DataContext;
+            try
+            {
+                complemento.inativo = NormalizarInativo(complemento.inativo);
+                complemento.alterado_por = Environment.UserName;
+                complemento.alterado_em = DateTime.Now;
+                await vm.UpdateInativoAsync(complemento);
+            }
+            catch (Exception ex)
+            {
+                Producao.ErrorDialog.Show(ex, "Erro ao alterar INATIVO");
+            }
+        }
+
         private async void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
             if (e.Row is GridViewNewRow || e.Row?.Item is not TblComplementoAdicionalModel data)
@@ -134,6 +156,11 @@ namespace Producao.Views.CadastroProduto
                 PropertyName = propertyName,
                 ErrorMessage = message
             });
+        }
+
+        private static string NormalizarInativo(string? valor)
+        {
+            return string.Equals(valor?.Trim(), "-1", StringComparison.OrdinalIgnoreCase) ? "-1" : "0";
         }
     }
 
@@ -331,6 +358,20 @@ namespace Producao.Views.CadastroProduto
             }
 
             return complemento;
+        }
+
+        public async Task UpdateInativoAsync(TblComplementoAdicionalModel complemento)
+        {
+            using var conn = CreateConnection();
+            await conn.ExecuteAsync(
+                """
+                UPDATE producao.tblcomplementoadicional
+                SET inativo = @inativo,
+                    alterado_por = @alterado_por,
+                    alterado_em = @alterado_em
+                WHERE codcompladicional = @codcompladicional;
+                """,
+                complemento);
         }
     }
 }

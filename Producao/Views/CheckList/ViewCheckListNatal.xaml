@@ -222,37 +222,39 @@
                              CanUserDeleteRows="True"
                              ShowGroupPanel="False"
                              IsFilteringAllowed="True"
-                             IsReadOnly="True"
+                             
                              RowIndicatorVisibility="Visible"
                              SelectionMode="Single"
                              ItemsSource="{Binding CheckListGerais}"
                              SelectedItem="{Binding CheckListGeral, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              SelectionChanged="OnSelectionChanged"
                              RowValidating="dgCheckListGeral_RowValidating"
+                             BeginningEdit="dgCheckListGeral_BeginningEdit"
+                             PreviewKeyDown="dgCheckListGeral_PreviewKeyDown"
                              CellEditEnded="dgCheckListGeral_CellEditEnded"
                              Deleting="dgCheckListGeral_Deleting">
             <telerik:RadGridView.Columns>
-                <telerik:GridViewDataColumn Header="bloco_revisao" DataMemberBinding="{Binding bloco_revisao, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="resp_revisao" DataMemberBinding="{Binding resp_revisao}"/>
-                <telerik:GridViewCheckBoxColumn Header="OK REV." DataMemberBinding="{Binding ok_revisao_alterada, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <telerik:GridViewDataColumn Header="ID" DataMemberBinding="{Binding id, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <telerik:GridViewDataColumn Header="ITEM" DataMemberBinding="{Binding item_memorial, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <telerik:GridViewDataColumn Header="LOCAL DO SHOPPING" DataMemberBinding="{Binding local_shoppings, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <telerik:GridViewDataColumn Header="PLANILHA" DataMemberBinding="{Binding planilha}" CellStyle="{StaticResource PlanilhaCellStyle}"/>
-                <telerik:GridViewDataColumn Header="DESCRIÇÃO" DataMemberBinding="{Binding descricao}"/>
-                <telerik:GridViewDataColumn Header="DESCRIÇÃO ADICIONAL" DataMemberBinding="{Binding descricao_adicional}"/>
-                <telerik:GridViewDataColumn Header="QTDE" DataMemberBinding="{Binding qtd, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="CODCOMPL" DataMemberBinding="{Binding codcompl, Converter={StaticResource ConverterNumber}}" DataFormatString="{}{0:F0}"/>
-                <telerik:GridViewDataColumn Header="ORIENTAÇÃO DE PRODUÇÃO" DataMemberBinding="{Binding obs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <telerik:GridViewDataColumn Header="ORIENTAÇÃO DE MONTAGEM" DataMemberBinding="{Binding orient_montagem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <telerik:GridViewDataColumn Header="ORIENTAÇÃO DE DESMONTAGEM" DataMemberBinding="{Binding orient_desmont, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <telerik:GridViewDataColumn UniqueName="carga" Header="CAMINÃO" DataMemberBinding="{Binding carga, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <telerik:GridViewDataColumn Header="alteradopordescadic" DataMemberBinding="{Binding alteradopordescadic}"/>
-                <telerik:GridViewDataColumn Header="dataalteradescadic" DataMemberBinding="{Binding dataalteradescadic}" DataFormatString="{}{0:dd/MM/yyyy HH:mm}"/>
-                <telerik:GridViewDataColumn Header="inserido_por" DataMemberBinding="{Binding inserido_por}"/>
-                <telerik:GridViewDataColumn Header="inserido_em" DataMemberBinding="{Binding inserido_em}" DataFormatString="{}{0:dd/MM/yyyy HH:mm}"/>
-                <telerik:GridViewDataColumn Header="alterado_por" DataMemberBinding="{Binding alterado_por}"/>
-                <telerik:GridViewDataColumn Header="alterado_em" DataMemberBinding="{Binding alterado_em}" DataFormatString="{}{0:dd/MM/yyyy HH:mm}"/>
+                <telerik:GridViewDataColumn Header="bloco_revisao" IsReadOnly="True" DataMemberBinding="{Binding bloco_revisao, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="resp_revisao"  IsReadOnly="True" DataMemberBinding="{Binding resp_revisao}"/>
+                <telerik:GridViewCheckBoxColumn Header="OK REV."  IsReadOnly="True" DataMemberBinding="{Binding ok_revisao_alterada, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <telerik:GridViewDataColumn UniqueName="id" Header="ID" IsReadOnly="False" DataMemberBinding="{Binding id, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <telerik:GridViewDataColumn UniqueName="item_memorial" Header="ITEM"  IsReadOnly="False" DataMemberBinding="{Binding item_memorial, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <telerik:GridViewDataColumn UniqueName="local_shoppings" Header="LOCAL DO SHOPPING" IsReadOnly="False" DataMemberBinding="{Binding local_shoppings, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <telerik:GridViewDataColumn Header="PLANILHA"  IsReadOnly="True" DataMemberBinding="{Binding planilha}" CellStyle="{StaticResource PlanilhaCellStyle}"/>
+                <telerik:GridViewDataColumn Header="DESCRIÇÃO"  IsReadOnly="True" DataMemberBinding="{Binding descricao}"/>
+                <telerik:GridViewDataColumn Header="DESCRIÇÃO ADICIONAL"  IsReadOnly="True" DataMemberBinding="{Binding descricao_adicional}"/>
+                <telerik:GridViewDataColumn UniqueName="qtd" Header="QTDE" IsReadOnly="False" DataMemberBinding="{Binding qtd, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn Header="CODCOMPL"  IsReadOnly="True" DataMemberBinding="{Binding codcompl, Converter={StaticResource ConverterNumber}}" DataFormatString="{}{0:F0}"/>
+                <telerik:GridViewDataColumn UniqueName="obs" Header="ORIENTAÇÃO DE PRODUÇÃO" IsReadOnly="False" DataMemberBinding="{Binding obs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <telerik:GridViewDataColumn UniqueName="orient_montagem" Header="ORIENTAÇÃO DE MONTAGEM" IsReadOnly="False" DataMemberBinding="{Binding orient_montagem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <telerik:GridViewDataColumn UniqueName="orient_desmont" Header="ORIENTAÇÃO DE DESMONTAGEM" IsReadOnly="False" DataMemberBinding="{Binding orient_desmont, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <telerik:GridViewDataColumn UniqueName="carga" Header="CAMINÃO" IsReadOnly="False" DataMemberBinding="{Binding carga, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <telerik:GridViewDataColumn Header="alteradopordescadic"  IsReadOnly="True" DataMemberBinding="{Binding alteradopordescadic}"/>
+                <telerik:GridViewDataColumn Header="dataalteradescadic"  IsReadOnly="True" DataMemberBinding="{Binding dataalteradescadic}" DataFormatString="{}{0:dd/MM/yyyy HH:mm}"/>
+                <telerik:GridViewDataColumn Header="inserido_por"  IsReadOnly="True" DataMemberBinding="{Binding inserido_por}"/>
+                <telerik:GridViewDataColumn Header="inserido_em"  IsReadOnly="True" DataMemberBinding="{Binding inserido_em}" DataFormatString="{}{0:dd/MM/yyyy HH:mm}"/>
+                <telerik:GridViewDataColumn Header="alterado_por"  IsReadOnly="True" DataMemberBinding="{Binding alterado_por}"/>
+                <telerik:GridViewDataColumn Header="alterado_em"  IsReadOnly="True" DataMemberBinding="{Binding alterado_em}" DataFormatString="{}{0:dd/MM/yyyy HH:mm}"/>
             </telerik:RadGridView.Columns>
         </telerik:RadGridView>
 

@@ -56,6 +56,28 @@ namespace Producao.Views.CadastroProduto
             };
         }
 
+        private async void OnInativoClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.CheckBox { DataContext: TabelaDescAdicionalModel adicional } ||
+                adicional.coduniadicional is null or 0)
+            {
+                return;
+            }
+
+            var vm = (CadastroAdicionalViewModel)DataContext;
+            try
+            {
+                adicional.inativo = NormalizarInativo(adicional.inativo);
+                adicional.alteradopor = Environment.UserName;
+                adicional.alteradoem = DateTime.Now;
+                await vm.UpdateInativoAsync(adicional);
+            }
+            catch (Exception ex)
+            {
+                Producao.ErrorDialog.Show(ex, "Erro ao alterar INATIVO");
+            }
+        }
+
         private async void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
             if (e.Row is GridViewNewRow || e.Row?.Item is not TabelaDescAdicionalModel data)
@@ -126,6 +148,11 @@ namespace Producao.Views.CadastroProduto
                 ErrorMessage = message
             });
         }
+
+        private static string NormalizarInativo(string? valor)
+        {
+            return string.Equals(valor?.Trim(), "-1", StringComparison.OrdinalIgnoreCase) ? "-1" : "0";
+        }
     }
 
     public class CadastroAdicionalViewModel : INotifyPropertyChanged
@@ -178,11 +205,13 @@ namespace Producao.Views.CadastroProduto
                 if (adicional == null)
                     return;
 
-                var window = new CadastroCompmento(adicional);
-                window.Title = $"Complemento Adicional da Descrição Adicional -> {adicional.descricao_adicional}";
-                window.Owner = App.Current.MainWindow;
-                window.Height = 450;
-                window.Width = 900;
+                var window = new CadastroCompmento(adicional)
+                {
+                    Title = $"Complemento Adicional da Descrição Adicional -> {adicional.descricao_adicional}",
+                    Owner = App.Current.MainWindow,
+                    Height = 450,
+                    Width = 900
+                };
                 if (window.ShowDialog() == true) { }
             }
             catch (Exception ex)
@@ -244,6 +273,20 @@ namespace Producao.Views.CadastroProduto
             }
 
             return adicional;
+        }
+
+        public async Task UpdateInativoAsync(TabelaDescAdicionalModel adicional)
+        {
+            using var conn = CreateConnection();
+            await conn.ExecuteAsync(
+                """
+                UPDATE producao.tabela_desc_adicional
+                SET inativo = @inativo,
+                    alteradopor = @alteradopor,
+                    alteradoem = @alteradoem
+                WHERE coduniadicional = @coduniadicional;
+                """,
+                adicional);
         }
     }
 }

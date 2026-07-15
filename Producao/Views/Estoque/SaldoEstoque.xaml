@@ -43,7 +43,7 @@
 
         <telerik:RadButton
             Grid.Column="2" 
-            Grid.ColumnSpan="2"
+            Grid.ColumnSpan="3"
             Grid.Row="2"
             Content="SALDO ESTOQUE DETALHADO" Click="OnSaldoDetalhado"  Margin="0,0,2,2"/>
 

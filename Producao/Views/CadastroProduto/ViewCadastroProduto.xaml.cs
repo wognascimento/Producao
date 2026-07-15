@@ -73,6 +73,29 @@ namespace Producao.Views.CadastroProduto
             if (e.NewObject is ProdutoModel produto)
             {
                 produto.planilha = vm.Planilha?.planilha;
+                produto.inativo = "0";
+            }
+        }
+
+        private async void OnInativoClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is not CheckBox { DataContext: ProdutoModel produto } ||
+                produto.codigo is null or 0)
+            {
+                return;
+            }
+
+            var vm = (CadastroProdutoViewModel)DataContext;
+            try
+            {
+                produto.inativo = NormalizarInativo(produto.inativo);
+                produto.alterado_por = Environment.UserName;
+                produto.data_altera = DateTime.Now;
+                await vm.UpdateInativoAsync(produto);
+            }
+            catch (Exception ex)
+            {
+                Producao.ErrorDialog.Show(ex, "Erro ao alterar INATIVO");
             }
         }
 
@@ -89,7 +112,7 @@ namespace Producao.Views.CadastroProduto
                     return;
                 }
 
-                data.inativo = data.inativo == null ? "0" : "-1";
+                data.inativo = NormalizarInativo(data.inativo);
                 data.cadastrado_por = data.codigo == null ? Environment.UserName : data.cadastrado_por;
                 data.datacadastro = data.codigo == null ? DateTime.Now : data.datacadastro;
                 data.alterado_por = data.codigo == null ? null : Environment.UserName;
@@ -163,6 +186,11 @@ namespace Producao.Views.CadastroProduto
                 ErrorMessage = message,
                 PropertyName = propertyName
             });
+        }
+
+        private static string NormalizarInativo(string? valor)
+        {
+            return string.Equals(valor?.Trim(), "-1", StringComparison.OrdinalIgnoreCase) ? "-1" : "0";
         }
     }
 
@@ -254,11 +282,13 @@ namespace Producao.Views.CadastroProduto
                 if (produtoSelecionado == null)
                     return;
 
-                var window = new CadastroAdicional(produtoSelecionado);
-                window.Title = $"Descrição Adicional do produto -> {produtoSelecionado.descricao}";
-                window.Owner = App.Current.MainWindow;
-                window.Height = 450;
-                window.Width = 700;
+                var window = new CadastroAdicional(produtoSelecionado)
+                {
+                    Title = $"Descrição Adicional do produto -> {produtoSelecionado.descricao}",
+                    Owner = App.Current.MainWindow,
+                    Height = 450,
+                    Width = 700
+                };
                 if (window.ShowDialog() == true) { }
             }
             catch (Exception ex)
@@ -380,6 +410,20 @@ namespace Producao.Views.CadastroProduto
             {
                 throw;
             }
+        }
+
+        public async Task UpdateInativoAsync(ProdutoModel produto)
+        {
+            using var conn = CreateConnection();
+            await conn.ExecuteAsync(
+                """
+                UPDATE producao.produtos
+                SET inativo = @inativo,
+                    alterado_por = @alterado_por,
+                    data_altera = @data_altera
+                WHERE codigo = @codigo;
+                """,
+                produto);
         }
 
     }
