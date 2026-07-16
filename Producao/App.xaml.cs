@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Threading;
 using System.Windows;
 using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
+using Telerik.Windows.Data;
 
 namespace Producao
 {
@@ -18,6 +20,7 @@ namespace Producao
         {
             BaseSettings.LoadFromConfiguration();
             RegistrarHandlersDapper();
+            RegistrarPadraoFiltroRadGridView();
             StyleManager.ApplicationTheme = new Office2016Theme();
             AplicarCulturaPadrao();
 
@@ -34,6 +37,32 @@ namespace Producao
         {
             SqlMapper.AddTypeHandler(new Utils.DateOnlyToDateTimeHandler());
             SqlMapper.AddTypeHandler(new Utils.DateOnlyToNullableDateTimeHandler());
+        }
+
+        private static void RegistrarPadraoFiltroRadGridView()
+        {
+            EventManager.RegisterClassHandler(
+                typeof(RadGridView),
+                FrameworkElement.LoadedEvent,
+                new RoutedEventHandler(OnRadGridViewLoaded));
+        }
+
+        private static void OnRadGridViewLoaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not RadGridView grid)
+                return;
+
+            grid.FilterOperatorsLoading -= OnRadGridViewFilterOperatorsLoading;
+            grid.FilterOperatorsLoading += OnRadGridViewFilterOperatorsLoading;
+        }
+
+        private static void OnRadGridViewFilterOperatorsLoading(object sender, FilterOperatorsLoadingEventArgs e)
+        {
+            if (!e.AvailableOperators.Contains(FilterOperator.Contains))
+                return;
+
+            e.DefaultOperator1 = FilterOperator.Contains;
+            e.DefaultOperator2 = FilterOperator.Contains;
         }
 
         private static void AplicarCulturaPadrao()

@@ -80,7 +80,7 @@ namespace Producao.Views.CadastroProduto
 
         private async void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-            if (e.Row is GridViewNewRow || e.Row?.Item is not TabelaDescAdicionalModel data)
+            if (e.Row?.Item is not TabelaDescAdicionalModel data)
                 return;
 
             var vm = (CadastroAdicionalViewModel)DataContext;
@@ -116,10 +116,10 @@ namespace Producao.Views.CadastroProduto
 
         private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-            if (e.Row is GridViewNewRow || e.Row?.Item is not TabelaDescAdicionalModel rowData)
+            if (e.Row?.Item is not TabelaDescAdicionalModel rowData)
                 return;
 
-            if (rowData.codigoproduto == null)
+            if (produto.codigo is null or 0)
                 AddValidation(e, nameof(TabelaDescAdicionalModel.coduniadicional), "Produto não selecionado");
 
             if (string.IsNullOrWhiteSpace(rowData.descricao_adicional))
@@ -136,12 +136,19 @@ namespace Producao.Views.CadastroProduto
 
             vm.ProdutoAdicional = adicional;
 
+            if (adicional.coduniadicional is null or 0)
+            {
+                RadWindow.Alert("Grave a descrição adicional antes de abrir os complementos.");
+                return;
+            }
+
             if (vm.RowDataCommand?.CanExecute(adicional) == true)
                 vm.RowDataCommand.Execute(adicional);
         }
 
         private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
         {
+            e.IsValid = false;
             e.ValidationResults.Add(new GridViewCellValidationResult
             {
                 PropertyName = propertyName,
@@ -204,6 +211,12 @@ namespace Producao.Views.CadastroProduto
                 var adicional = obj as TabelaDescAdicionalModel ?? ProdutoAdicional;
                 if (adicional == null)
                     return;
+
+                if (adicional.coduniadicional is null or 0)
+                {
+                    RadWindow.Alert("Grave a descrição adicional antes de abrir os complementos.");
+                    return;
+                }
 
                 var window = new CadastroCompmento(adicional)
                 {

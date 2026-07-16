@@ -358,13 +358,25 @@ namespace Producao.Views.CentralModelos
 
         private async void OnExcluirClick(object sender, RoutedEventArgs e)
         {
-            if (Receita == null)
+            var selecionados = dgModelos.SelectedItems
+                .OfType<QryReceitaDetalheCriadoModel>()
+                .Where(item => item.id_linha.HasValue && item.id_linha.Value > 0)
+                .ToList();
+
+            if (selecionados.Count == 0 && Receita?.id_linha is > 0)
+                selecionados.Add(Receita);
+
+            if (selecionados.Count == 0)
             {
-                MessageBox.Show("Precisa selecionar uma linha para excluir", "Deletar item", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Precisa selecionar ao menos uma linha para excluir", "Deletar item", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var confirm = MessageBox.Show("Deseja deletar o item selecionado?", "Deletar item", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var mensagem = selecionados.Count == 1
+                ? "Deseja deletar o item selecionado?"
+                : $"Deseja deletar os {selecionados.Count} itens selecionados?";
+
+            var confirm = MessageBox.Show(mensagem, "Deletar item", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (confirm == MessageBoxResult.No)
             { return; }
 
@@ -374,18 +386,7 @@ namespace Producao.Views.CentralModelos
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
 
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
-                var dados = new ModeloReceitaModel
-                {
-                    id_linha = Receita?.id_linha,
-                    id_modelo = Modelo.id_modelo,
-                    codcompladicional = long.Parse(txtCodigoProduto.Text),
-                    qtd_modelo = txtQtdModelo.Value,
-                    qtd_producao = txtQtdProducao.Value,
-                    observacao = txtObservacao.Text,
-                    cadastrado_por = Environment.UserName,
-                    data_cadastro = DateTime.Now,
-                };
-                await vm.ExcluirAsync(dados);
+                await vm.ExcluirAsync(selecionados.Select(item => item.id_linha!.Value));
                 vm.ItensReceita = await vm.GetReceitaDetalhes(Modelo.id_modelo);
                 Limpar();
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
@@ -1177,14 +1178,22 @@ namespace Producao.Views.CentralModelos
             }
         }
 
-        public async Task ExcluirAsync(ModeloReceitaModel receita)
+        public async Task ExcluirAsync(IEnumerable<long> idsLinha)
         {
             try
             {
+                var ids = idsLinha
+                    .Where(id => id > 0)
+                    .Distinct()
+                    .ToArray();
+
+                if (ids.Length == 0)
+                    return;
+
                 await using var conn = CreateConnection();
                 await conn.ExecuteAsync(
-                    "DELETE FROM modelos.tbl_receita_detalhe WHERE id_linha = @id_linha;",
-                    new { receita.id_linha });
+                    "DELETE FROM modelos.tbl_receita_detalhe WHERE id_linha = ANY(@ids);",
+                    new { ids });
             }
             catch (Exception)
             {

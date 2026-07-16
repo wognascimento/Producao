@@ -175,12 +175,19 @@ namespace Producao.Views.CadastroProduto
 
             vm.Produto = produto;
 
+            if (produto.codigo is null or 0)
+            {
+                RadWindow.Alert("Grave o produto antes de abrir as descrições adicionais.");
+                return;
+            }
+
             if (vm.RowDataCommand?.CanExecute(produto) == true)
                 vm.RowDataCommand.Execute(produto);
         }
 
         private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
         {
+            e.IsValid = false;
             e.ValidationResults.Add(new GridViewCellValidationResult
             {
                 ErrorMessage = message,
@@ -281,6 +288,12 @@ namespace Producao.Views.CadastroProduto
                 var produtoSelecionado = obj as ProdutoModel ?? this.Produto;
                 if (produtoSelecionado == null)
                     return;
+
+                if (produtoSelecionado.codigo is null or 0)
+                {
+                    RadWindow.Alert("Grave o produto antes de abrir as descrições adicionais.");
+                    return;
+                }
 
                 var window = new CadastroAdicional(produtoSelecionado)
                 {

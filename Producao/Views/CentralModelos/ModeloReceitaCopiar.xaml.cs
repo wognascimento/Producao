@@ -48,7 +48,7 @@ namespace Producao.Views.CentralModelos
             ModeloReceitaCopiarViewModel vm = (ModeloReceitaCopiarViewModel)DataContext;
             itens = new ObservableCollection<ModeloReceitaModel>(
                 vm.ItensReceita
-                    .Where(item => item.id_modelo == modeloSelecionado.id_modelo)
+                    .Where(item => item.id_modelo == modeloSelecionado.id_modelo && item.ano == modeloSelecionado.ano)
                     .Select(item => new ModeloReceitaModel
                     {
                         id_modelo = Modelo.id_modelo,

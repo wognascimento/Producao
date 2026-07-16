@@ -95,7 +95,7 @@
             <telerik:RadButton Grid.Column="0" Content="LIMPAR" Click="OnLimparClick" Margin="0,0,2,2"/>
             <telerik:RadButton Grid.Column="2" Content="INSERIR" Click="OnAdicionarClick" Margin="0,0,2,2"/>
             <telerik:RadButton Grid.Column="4" Content="ALTERAR" Click="OnAlterarClick" Margin="0,0,2,2"/>
-            <telerik:RadButton x:Name="btnExcluir" Grid.Column="6" Content="EXCLUIR" Click="OnExcluirClick" Margin="0,0,2,2"/>
+            <telerik:RadButton x:Name="btnExcluir" Grid.Column="6" Content="EXCLUIR SELECIONADOS" Click="OnExcluirClick" Margin="0,0,2,2"/>
             <telerik:RadButton Grid.Column="8" Content="IMPRIMIR" Click="OnPrintClick" Margin="0,0,2,2"/>
             <telerik:RadButton x:Name="btnCopiarModelo" Grid.Column="10" Content="COPIAR RECEITA" Click="OnCopyClick" Margin="0,0,2,2"/>
             <telerik:RadButton x:Name="btnModeloFiada" Grid.Column="12" Content="MODELOS FIADA" Visibility="Collapsed" Click="OnModelosFiadaClick" Margin="0,0,2,2"/>

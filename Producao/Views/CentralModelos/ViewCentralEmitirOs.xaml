@@ -24,8 +24,10 @@
             CanUserResizeColumns="True"
             ShowGroupPanel="False"
             IsFilteringAllowed="True"
+            IsReadOnly="True"
             ItemsSource="{Binding Itens}"
             SelectedItem="{Binding Item, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            PreviewMouseRightButtonDown="dgTabela_PreviewMouseRightButtonDown"
             PreviewKeyDown="dgTabela_PreviewKeyDown">
 
             <telerik:RadGridView.ContextMenu>

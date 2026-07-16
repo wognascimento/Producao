@@ -82,7 +82,7 @@ namespace Producao.Views.CadastroProduto
 
         private async void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-            if (e.Row is GridViewNewRow || e.Row?.Item is not TblComplementoAdicionalModel data)
+            if (e.Row?.Item is not TblComplementoAdicionalModel data)
                 return;
 
             var vm = (CadastroCompmentoViewModel)DataContext;
@@ -133,10 +133,10 @@ namespace Producao.Views.CadastroProduto
 
         private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
-            if (e.Row is GridViewNewRow || e.Row?.Item is not TblComplementoAdicionalModel rowData)
+            if (e.Row?.Item is not TblComplementoAdicionalModel rowData)
                 return;
 
-            if (rowData.coduniadicional == null)
+            if (produtoAdicional.coduniadicional is null or 0)
                 AddValidation(e, nameof(TblComplementoAdicionalModel.codcompladicional), "Descrição adicional não selecionada");
 
             if (string.IsNullOrWhiteSpace(rowData.complementoadicional))
@@ -151,6 +151,7 @@ namespace Producao.Views.CadastroProduto
 
         private static void AddValidation(GridViewRowValidatingEventArgs e, string propertyName, string message)
         {
+            e.IsValid = false;
             e.ValidationResults.Add(new GridViewCellValidationResult
             {
                 PropertyName = propertyName,

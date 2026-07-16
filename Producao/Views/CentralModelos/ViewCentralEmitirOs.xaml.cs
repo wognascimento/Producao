@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.GridView;
 
@@ -65,6 +66,19 @@ namespace Producao.Views.CentralModelos
             }
         }
 
+        private void dgTabela_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var row = FindVisualParent<GridViewRow>(e.OriginalSource as DependencyObject);
+            if (row?.Item is not ModeloGerarOsModel item)
+                return;
+
+            dgTabela.SelectedItem = item;
+            dgTabela.CurrentItem = item;
+
+            if (DataContext is ViewCentralEmitirOsViewModel vm)
+                vm.Item = item;
+        }
+
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
@@ -73,6 +87,20 @@ namespace Producao.Views.CentralModelos
         private void UserControl_ContextMenuClosing(object sender, ContextMenuEventArgs e)
         {
 
+        }
+
+        private static T? FindVisualParent<T>(DependencyObject? element)
+            where T : DependencyObject
+        {
+            while (element is not null)
+            {
+                if (element is T typed)
+                    return typed;
+
+                element = VisualTreeHelper.GetParent(element);
+            }
+
+            return null;
         }
     }
 
@@ -173,17 +201,17 @@ namespace Producao.Views.CentralModelos
             }
         }
 
-        public async Task<ModeloTabelaConversaoModel> GetConversaoAsync(long? codcompleadicional)
+        public async Task<ModeloTabelaConversaoModel> GetConversaoAsync(long? codcompladicional)
         {
             try
             {
                 const string sql = """
                     SELECT *
                     FROM modelos.tbl_conversao
-                    WHERE codcompleadicional = @codcompleadicional
+                    WHERE codcompladicional = @codcompladicional
                     LIMIT 1;
                     """;
-                var data = await QueryFirstOrDefaultAsync<ModeloTabelaConversaoModel>(sql, new { codcompleadicional });
+                var data = await QueryFirstOrDefaultAsync<ModeloTabelaConversaoModel>(sql, new { codcompladicional });
                 return data;
             }
             catch (Exception)
