@@ -48,21 +48,27 @@ namespace Producao.Views.Planilha
 
         private async void OnCellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
-            if (e.Cell?.Column?.UniqueName == "os" &&
-                e.Cell.DataContext is ControlePlanilhaGrupoModel record)
+            if (e.Cell?.Column?.UniqueName == "os")
+                return;
+        }
+
+        private async void OnOsCheckBoxClick(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is not ControlePlanilhaGrupoModel record)
+                return;
+
+            try
             {
-                try
-                {
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                    ControleGrupoViewModel vm = (ControleGrupoViewModel)DataContext;
-                    await vm.SaveAsync(record);
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
-                catch (Exception ex)
-                {
-                    Producao.ErrorDialog.Show(ex, "Erro");
-                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
-                }
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
+                adicionais.SelectedItem = record;
+                ControleGrupoViewModel vm = (ControleGrupoViewModel)DataContext;
+                await vm.SaveOsAsync(record);
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (Exception ex)
+            {
+                Producao.ErrorDialog.Show(ex, "Erro");
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
 
@@ -212,6 +218,23 @@ namespace Producao.Views.Planilha
                       WHERE coddetalhescompl = @coddetalhescompl;",
                     controle);
                 return controle;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task SaveOsAsync(ControlePlanilhaGrupoModel controle)
+        {
+            try
+            {
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                await conn.ExecuteAsync(
+                    @"UPDATE producao.tbldetalhescomplemento
+                      SET os = @os
+                      WHERE coddetalhescompl = @coddetalhescompl;",
+                    controle);
             }
             catch (Exception)
             {

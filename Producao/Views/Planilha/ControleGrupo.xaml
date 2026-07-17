@@ -62,17 +62,11 @@
                 <telerik:GridViewDataColumn Header="os" UniqueName="os">
                     <telerik:GridViewDataColumn.CellTemplate>
                         <DataTemplate>
-                            <CheckBox IsHitTestVisible="False"
-                                      HorizontalAlignment="Center"
-                                      IsChecked="{Binding os, Converter={StaticResource ConverterBoolen}}" Margin="0,0,2,2"/>
-                        </DataTemplate>
-                    </telerik:GridViewDataColumn.CellTemplate>
-                    <telerik:GridViewDataColumn.CellEditTemplate>
-                        <DataTemplate>
                             <CheckBox HorizontalAlignment="Center"
+                                      Click="OnOsCheckBoxClick"
                                       IsChecked="{Binding os, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,2,2"/>
                         </DataTemplate>
-                    </telerik:GridViewDataColumn.CellEditTemplate>
+                    </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding enviado_baia, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Header="enviado_baia"/>
             </telerik:RadGridView.Columns>
