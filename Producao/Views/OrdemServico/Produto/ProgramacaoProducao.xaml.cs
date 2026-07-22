@@ -191,6 +191,9 @@ namespace Producao.Views.OrdemServico.Produto
                     
                     ApplyHeaderStyle(worksheet.Cell(_l, 20));
                     worksheet.Cell(_l, 20).Value = item.ht.GetValueOrDefault();
+                    
+                    ApplyHeaderStyle(worksheet.Cell(_l, 21));
+                    worksheet.Cell(_l, 21).Value = item.tipo_os ?? string.Empty;
 
                     _l++;
                 }
