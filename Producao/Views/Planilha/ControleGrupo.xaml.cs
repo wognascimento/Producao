@@ -34,6 +34,7 @@ namespace Producao.Views.Planilha
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ControleGrupoViewModel vm = (ControleGrupoViewModel)DataContext;
+                vm.StatusProducao = await vm.GetStatusProducaoAsync();
                 vm.ControlePlanilhaGrupos = await vm.GetItensAsync();
                 VincularAtualizacaoSequencia();
                 AtualizarSequencia();
@@ -180,11 +181,28 @@ namespace Producao.Views.Planilha
             set { _controlePlanilhaGrupo = value; RaisePropertyChanged("ControlePlanilhaGrupo"); }
         }
 
-        private ObservableCollection<string>? _statusProducao = ["ACABAMENTO", "ARAMADO", "COMPRAS", "ELÉTRICA", "EMBALAGEM", "ETIQUETAGEM/EXPEDIÇÃO", "FIBRA", "FILA", "MARCENARIA", "PINTURA", "PROJETOS", "REVESTIMENTO", "SEPARAÇÃO", "SERRALHERIA", "TERCEIRIZADO MARCENARIA", "TERCEIRIZADO SERRALHERIA"];
+        private ObservableCollection<string>? _statusProducao = [];
         public ObservableCollection<string> StatusProducao
         {
             get { return _statusProducao; }
             set { _statusProducao = value; RaisePropertyChanged("StatusProducao"); }
+        }
+
+        public async Task<ObservableCollection<string>> GetStatusProducaoAsync()
+        {
+            try
+            {
+                using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                var data = await conn.QueryAsync<string>(
+                    @"SELECT status_producao
+                      FROM producao.tbl_status_producao
+                      ORDER BY status_producao;");
+                return new ObservableCollection<string>(data);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<ObservableCollection<ControlePlanilhaGrupoModel>> GetItensAsync()
