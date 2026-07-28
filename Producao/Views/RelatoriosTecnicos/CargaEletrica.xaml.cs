@@ -302,7 +302,7 @@ namespace Producao.Views.RelatoriosTecnicos
                 //var comple = await db.ComplementoCheckLists.FirstOrDefaultAsync(p => p.codcompl == compChkList.codcompl);
                 if (data != null)
                 {
-                    if (data.cargaeletrica_led.HasValue)
+                    if (propostaDimensao.cargaeletrica_led.HasValue)
                     {
                         data.cargaeletrica_led = propostaDimensao.cargaeletrica_led;
                         db.Entry(data).Property(p => p.cargaeletrica_led).IsModified = true;
