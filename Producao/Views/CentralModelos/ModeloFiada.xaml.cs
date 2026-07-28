@@ -3,7 +3,6 @@ using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -27,7 +26,7 @@ namespace Producao.Views.CentralModelos
         {
             ModeloFiadaViewModel vm = (ModeloFiadaViewModel)DataContext;
             vm.Modelo = modelo;
-            vm.Modelos = new ObservableCollection<string> { "MOD. 01", "MOD. 02", "MOD. 03", "MOD. 04", "MOD. 05", "MOD. 06", "MOD. 07", "MOD. 08", "MOD. 09", "MOD. 10" };
+            vm.Modelos = ["MOD. 01", "MOD. 02", "MOD. 03", "MOD. 04", "MOD. 05", "MOD. 06", "MOD. 07", "MOD. 08", "MOD. 09", "MOD. 10"];
 
             try
             {
@@ -49,7 +48,11 @@ namespace Producao.Views.CentralModelos
                 return;
             }
 
-            ((ModeloFiadaModel)e.NewObject).id_modelo = modelo.id_modelo;
+            e.NewObject = new ModeloFiadaModel
+            {
+                id_modelo = modelo.id_modelo,
+                qtdmodelofiada = modelo.qtd_fiada_cascata
+            };
         }
 
         private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
@@ -74,11 +77,16 @@ namespace Producao.Views.CentralModelos
                 e.IsValid = false;
                 AddValidation(e, nameof(ModeloFiadaModel.qtdmodelofiada), "Informe a quantidade de enfeites do modelo.");
             }
+            else if (rowData.qtdmodelofiada <= 0)
+            {
+                e.IsValid = false;
+                AddValidation(e, nameof(ModeloFiadaModel.qtdmodelofiada), "A quantidade de enfeites do modelo precisa ser maior que zero.");
+            }
         }
 
-        private async void OnRowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
+        private async void OnRowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
-            if (e.EditedItem is not ModeloFiadaModel data)
+            if (e.Row?.Item is not ModeloFiadaModel data)
             {
                 return;
             }
@@ -127,6 +135,7 @@ namespace Producao.Views.CentralModelos
                 Producao.ErrorDialog.Show(ex, "Erro");
             }
         }
+
     }
 
     public class ModeloFiadaViewModel : INotifyPropertyChanged
@@ -165,6 +174,11 @@ namespace Producao.Views.CentralModelos
 
         public async Task<ObservableCollection<ModeloFiadaModel>> GetModelosFiadaAsync(QryModeloModel? modelo)
         {
+            if (modelo?.id_modelo == null)
+            {
+                return new ObservableCollection<ModeloFiadaModel>();
+            }
+
             const string sql = """
                 SELECT *
                 FROM modelos.tbl_modelo_fiada

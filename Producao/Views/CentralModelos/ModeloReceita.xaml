@@ -36,15 +36,15 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <telerik:RadWatermarkTextBox x:Name="txtCodigoProduto" Grid.Row="0" Grid.Column="0" WatermarkContent="BUSCAR PRODUTO POR CÓDIGO" PreviewKeyDown="OnBuscaProduto" Margin="0,0,2,2"/>
-        <telerik:RadButton x:Name="btnBuscar" Grid.Row="0" Grid.Column="2" Width="50" HorizontalAlignment="Left" Content="..." Click="OnOpenDescricoes" Margin="0,0,2,2"/>
+        <telerik:RadWatermarkTextBox x:Name="txtCodigoProduto" Grid.Row="0" Grid.Column="0" WatermarkContent="BUSCAR PRODUTO POR CÓDIGO" PreviewKeyDown="OnBuscaProduto" Margin="0,0,1,1"/>
+        <telerik:RadButton x:Name="btnBuscar" Grid.Row="0" Grid.Column="2" Width="50" HorizontalAlignment="Left" Content="..." Click="OnOpenDescricoes" Margin="0,0,1,1"/>
 
-        <telerik:RadComboBox x:Name="txtPlanilha" Grid.Row="1" Grid.Column="0" IsEditable="True" IsFilteringEnabled="True" OpenDropDownOnFocus="True" EmptyText="PLANILHA" ItemsSource="{Binding Planilhas}" DisplayMemberPath="planilha" SelectionChanged="OnSelectedPlanilha" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
-        <telerik:RadComboBox x:Name="txtDescricao" Grid.Row="1" Grid.Column="2" IsEditable="True" IsFilteringEnabled="True" OpenDropDownOnFocus="True" EmptyText="DESCRIÇÃO" ItemsSource="{Binding Produtos}" DisplayMemberPath="descricao" SelectionChanged="OnSelectedDescricao" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
-        <telerik:RadComboBox x:Name="txtDescricaoAdicional" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" IsEditable="True" IsFilteringEnabled="True" OpenDropDownOnFocus="True" EmptyText="DESCRIÇÃO ADICIONAL" ItemsSource="{Binding DescAdicionais}" DisplayMemberPath="descricao_adicional" SelectionChanged="OnSelectedDescricaoAdicional" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
-        <telerik:RadComboBox x:Name="txtComplementoAdicional" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" IsEditable="True" IsFilteringEnabled="True" OpenDropDownOnFocus="True" EmptyText="COMPLEMENTO ADICIONAL" ItemsSource="{Binding CompleAdicionais}" DisplayMemberPath="complementoadicional" SelectionChanged="OnSelectedComplementoAdicional" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
+        <telerik:RadComboBox x:Name="txtPlanilha" Grid.Row="1" Grid.Column="0" IsEditable="True" IsFilteringEnabled="True" OpenDropDownOnFocus="True" EmptyText="PLANILHA" ItemsSource="{Binding Planilhas}" DisplayMemberPath="planilha" SelectionChanged="OnSelectedPlanilha" Margin="0,0,1,1" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
+        <telerik:RadComboBox x:Name="txtDescricao" Grid.Row="1" Grid.Column="2" IsEditable="True" IsFilteringEnabled="True" OpenDropDownOnFocus="True" EmptyText="DESCRIÇÃO" ItemsSource="{Binding Produtos}" DisplayMemberPath="descricao" SelectionChanged="OnSelectedDescricao" Margin="0,0,1,1" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
+        <telerik:RadComboBox x:Name="txtDescricaoAdicional" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" IsEditable="True" IsFilteringEnabled="True" OpenDropDownOnFocus="True" EmptyText="DESCRIÇÃO ADICIONAL" ItemsSource="{Binding DescAdicionais}" DisplayMemberPath="descricao_adicional" SelectionChanged="OnSelectedDescricaoAdicional" Margin="0,0,2,1" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
+        <telerik:RadComboBox x:Name="txtComplementoAdicional" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" IsEditable="True" IsFilteringEnabled="True" OpenDropDownOnFocus="True" EmptyText="COMPLEMENTO ADICIONAL" ItemsSource="{Binding CompleAdicionais}" DisplayMemberPath="complementoadicional" SelectionChanged="OnSelectedComplementoAdicional" Margin="0,0,2,1" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
 
-        <telerik:RadWatermarkTextBox x:Name="txtObservacao" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" WatermarkContent="OBSERVAÇÃO" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" Margin="0,0,2,2"/>
+        <telerik:RadWatermarkTextBox x:Name="txtObservacao" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" WatermarkContent="OBSERVAÇÃO" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" Margin="0,0,2,1"/>
 
         <Grid Grid.Row="5" Grid.Column="0">
             <Grid.ColumnDefinitions>
@@ -54,22 +54,22 @@
                 <ColumnDefinition Width="5"/>
             </Grid.ColumnDefinitions>
 
-            <telerik:RadNumericUpDown x:Name="txtQtdModelo" Grid.Column="0" Minimum="0" NullValue="QTD. MODELO" Margin="0,0,2,2"/>
-            <telerik:RadNumericUpDown x:Name="txtQtdProducao" Grid.Column="2" Minimum="0" NullValue="QTD. PRODUÇÃO" Margin="0,0,2,2"/>
+            <telerik:RadNumericUpDown x:Name="txtQtdModelo" Grid.Column="0" Minimum="0" NullValue="QTD. MODELO" Margin="0,0,1,1"/>
+            <telerik:RadNumericUpDown x:Name="txtQtdProducao" Grid.Column="2" Minimum="0" NullValue="QTD. PRODUÇÃO" Margin="0,0,1,1"/>
         </Grid>
 
         <GroupBox x:Name="GBQtdFiadas" Grid.Row="7" Grid.ColumnSpan="3" Visibility="Collapsed" Header="Quantidade Modelo Fiada">
             <UniformGrid Columns="10">
-                <telerik:RadNumericUpDown x:Name="mod01" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
-                <telerik:RadNumericUpDown x:Name="mod02" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
-                <telerik:RadNumericUpDown x:Name="mod03" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
-                <telerik:RadNumericUpDown x:Name="mod04" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
-                <telerik:RadNumericUpDown x:Name="mod05" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
-                <telerik:RadNumericUpDown x:Name="mod06" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
-                <telerik:RadNumericUpDown x:Name="mod07" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
-                <telerik:RadNumericUpDown x:Name="mod08" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
-                <telerik:RadNumericUpDown x:Name="mod09" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
-                <telerik:RadNumericUpDown x:Name="mod10" Minimum="0" NumberDecimalDigits="0" Margin="0,0,2,2"/>
+                <telerik:RadNumericUpDown x:Name="mod01" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
+                <telerik:RadNumericUpDown x:Name="mod02" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
+                <telerik:RadNumericUpDown x:Name="mod03" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
+                <telerik:RadNumericUpDown x:Name="mod04" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
+                <telerik:RadNumericUpDown x:Name="mod05" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
+                <telerik:RadNumericUpDown x:Name="mod06" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
+                <telerik:RadNumericUpDown x:Name="mod07" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
+                <telerik:RadNumericUpDown x:Name="mod08" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
+                <telerik:RadNumericUpDown x:Name="mod09" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
+                <telerik:RadNumericUpDown x:Name="mod10" Minimum="0" NumberDecimalDigits="0" Margin="1,0,1,0" />
             </UniformGrid>
         </GroupBox>
 
@@ -92,14 +92,14 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
 
-            <telerik:RadButton Grid.Column="0" Content="LIMPAR" Click="OnLimparClick" Margin="0,0,2,2"/>
-            <telerik:RadButton Grid.Column="2" Content="INSERIR" Click="OnAdicionarClick" Margin="0,0,2,2"/>
-            <telerik:RadButton Grid.Column="4" Content="ALTERAR" Click="OnAlterarClick" Margin="0,0,2,2"/>
-            <telerik:RadButton x:Name="btnExcluir" Grid.Column="6" Content="EXCLUIR SELECIONADOS" Click="OnExcluirClick" Margin="0,0,2,2"/>
-            <telerik:RadButton Grid.Column="8" Content="IMPRIMIR" Click="OnPrintClick" Margin="0,0,2,2"/>
-            <telerik:RadButton x:Name="btnCopiarModelo" Grid.Column="10" Content="COPIAR RECEITA" Click="OnCopyClick" Margin="0,0,2,2"/>
-            <telerik:RadButton x:Name="btnModeloFiada" Grid.Column="12" Content="MODELOS FIADA" Visibility="Collapsed" Click="OnModelosFiadaClick" Margin="0,0,2,2"/>
-            <telerik:RadButton x:Name="btnDistribuicaoFiada" Grid.Column="14" Content="DISTRIBUIÇÃO FIADA" Visibility="Collapsed" Click="OnDistribuicaoFiadaClick" Margin="0,0,2,2"/>
+            <telerik:RadButton Grid.Column="0" Content="LIMPAR" Click="OnLimparClick" Margin="0,0,2,1"/>
+            <telerik:RadButton Grid.Column="2" Content="INSERIR" Click="OnAdicionarClick" Margin="0,0,2,1"/>
+            <telerik:RadButton Grid.Column="4" Content="ALTERAR" Click="OnAlterarClick" Margin="0,0,2,1"/>
+            <telerik:RadButton x:Name="btnExcluir" Grid.Column="6" Content="EXCLUIR SELECIONADOS" Click="OnExcluirClick" Margin="0,0,2,1"/>
+            <telerik:RadButton Grid.Column="8" Content="IMPRIMIR" Click="OnPrintClick" Margin="0,0,2,1"/>
+            <telerik:RadButton x:Name="btnCopiarModelo" Grid.Column="10" Content="COPIAR RECEITA" Click="OnCopyClick" Margin="0,0,2,1"/>
+            <telerik:RadButton x:Name="btnModeloFiada" Grid.Column="12" Content="MODELOS FIADA" Visibility="Collapsed" Click="OnModelosFiadaClick" Margin="0,0,2,1"/>
+            <telerik:RadButton x:Name="btnDistribuicaoFiada" Grid.Column="14" Content="DISTRIBUIÇÃO FIADA" Visibility="Collapsed" Click="OnDistribuicaoFiadaClick" Margin="0,0,2,1"/>
         </Grid>
 
         <telerik:RadGridView

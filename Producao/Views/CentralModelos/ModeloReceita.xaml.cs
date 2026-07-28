@@ -526,7 +526,8 @@ namespace Producao.Views.CentralModelos
             {
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
                 var window = new ModeloReceitaCopiar(Modelo);
-                window.Owner = App.Current.MainWindow;
+                window.Owner = this;
+                PosicionarJanelaSobreTelaAtual(window);
                 if (window.ShowDialog() == true)
                 {
 
@@ -562,6 +563,16 @@ namespace Producao.Views.CentralModelos
                 //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
+        }
+
+        private void PosicionarJanelaSobreTelaAtual(Window window)
+        {
+            window.WindowStartupLocation = WindowStartupLocation.Manual;
+            window.WindowState = WindowState.Normal;
+            window.Left = Left;
+            window.Top = Top;
+            window.Width = ActualWidth > 0 ? ActualWidth : Width;
+            window.Height = ActualHeight > 0 ? ActualHeight : Height;
         }
 
         private async void dgModelos_MouseDoubleClick(object sender, MouseButtonEventArgs e)

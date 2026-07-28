@@ -268,7 +268,7 @@ namespace Producao.Views.CentralModelos
 
         private void OnReceitaClick(object sender, RoutedEventArgs e)
         {
-            var modelo = (QryModeloModel)dgModelos.SelectedItem;
+            var modelo = dgModelos.SelectedItem as QryModeloModel;
 
             if(modelo == null)
             {
@@ -276,19 +276,34 @@ namespace Producao.Views.CentralModelos
                 return;
             }
 
-            //var width = Application.Current.MainWindow.Width;
-            //var height = Application.Current.MainWindow.Height;
-
-            int width = (int)this.ActualWidth;
-            int height = (int)this.ActualHeight;
-
-            //this.LayoutTransform = new ScaleTransform(nWidth / 1920, nHieght / 1080);
-
             var window = new ModeloReceita(modelo);
             window.Owner = Application.Current.MainWindow;
-            window.Width = width;
-            window.Height = height;
+            PosicionarJanelaSobreGrid(window, dgModelos);
             window.ShowDialog();
+        }
+
+        private static void PosicionarJanelaSobreGrid(Window window, FrameworkElement grid)
+        {
+            if (grid.ActualWidth <= 0 || grid.ActualHeight <= 0)
+            {
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                return;
+            }
+
+            var origem = grid.PointToScreen(new Point(0, 0));
+            var source = PresentationSource.FromVisual(grid);
+
+            if (source?.CompositionTarget != null)
+            {
+                origem = source.CompositionTarget.TransformFromDevice.Transform(origem);
+            }
+
+            window.WindowStartupLocation = WindowStartupLocation.Manual;
+            window.WindowState = WindowState.Normal;
+            window.Left = origem.X;
+            window.Top = origem.Y;
+            window.Width = grid.ActualWidth;
+            window.Height = grid.ActualHeight;
         }
 
         private void OnControleClick(object sender, RoutedEventArgs e)
