@@ -230,6 +230,9 @@ namespace Producao.Views.OrdemServico.Produto
                     
                     worksheet.Range[$"T{_l}"].CellStyle = headerStyle;
                     worksheet.Range[$"T{_l}"].Number = item.ht.GetValueOrDefault();
+                    
+                    worksheet.Range[$"U{_l}"].CellStyle = headerStyle;
+                    worksheet.Range[$"U{_l}"].Text = item.tipo_os;
 
                     _l++;
                 }
