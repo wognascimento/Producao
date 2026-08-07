@@ -104,14 +104,39 @@ namespace Producao.Views.Controlado
             try
             {
                 using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
+                const int commandTimeoutSeconds = 300;
                 var data = await conn.QueryAsync<ControladoRetornoGeralModel>(
-                    @"SELECT *
-                      FROM expedicao.qry_controlados_retorno_geral;");
+                    @"SELECT
+                        sigla,
+                        id_aprovado,
+                        codcompladicional,
+                        planilha,
+                        descricao,
+                        unidade,
+                        expedido,
+                        solucao_manutencao,
+                        qrcode,
+                        recebida,
+                        devolvida,
+                        retorno,
+                        cobranca,
+                        custo,
+                        custo_total,
+                        cancelar_cobraca,
+                        justificativa,
+                        atualizado_por,
+                        atualizado_em
+                      FROM expedicao.qry_controlados_retorno_geral;",
+                    commandTimeout: commandTimeoutSeconds);
                 return new ObservableCollection<ControladoRetornoGeralModel>(data);
             }
-            catch (Exception)
+            catch (NpgsqlException ex) when (ex.InnerException is TimeoutException timeout)
             {
-                throw;
+                throw new TimeoutException("A consulta de retorno dos controlados demorou mais que o limite configurado. Tente novamente ou solicite a otimizacao da view expedicao.qry_controlados_retorno_geral.", timeout);
+            }
+            catch (TimeoutException ex)
+            {
+                throw new TimeoutException("A consulta de retorno dos controlados demorou mais que o limite configurado. Tente novamente ou solicite a otimizacao da view expedicao.qry_controlados_retorno_geral.", ex);
             }
         }
 
