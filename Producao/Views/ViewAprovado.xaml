@@ -33,7 +33,7 @@
                 <telerik:GridViewDataColumn Header="Nivel" DataMemberBinding="{Binding nivel}"/>
                 <telerik:GridViewDataColumn Header="Data Aprovado" DataMemberBinding="{Binding data_aprovado}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn Header="Data Expedição" DataMemberBinding="{Binding data_de_expedicao}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
-                <telerik:GridViewDataColumn Header="Meta Produção" DataMemberBinding="{Binding meta_producao}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
+                <!--<telerik:GridViewDataColumn Header="Meta Produção" DataMemberBinding="{Binding meta_producao}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>-->
                 <telerik:GridViewDataColumn Header="Sigla" DataMemberBinding="{Binding sigla}" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn Header="Sigla Serviço" DataMemberBinding="{Binding sigla_serv}" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn Header="Rede" DataMemberBinding="{Binding rede}" IsReadOnly="True"/>

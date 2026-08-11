@@ -195,7 +195,6 @@ namespace Producao.Views.CheckList
 
             record.unidade = complemento.unidade;
             record.saldoestoque = complemento.saldo_estoque;
-            dgComplemento.Rebind();
         }
 
         private async void dgComplemento_RowValidated(object sender, GridViewRowValidatedEventArgs e)

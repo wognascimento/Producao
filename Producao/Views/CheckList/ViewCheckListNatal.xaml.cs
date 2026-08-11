@@ -787,7 +787,6 @@ namespace Producao.Views.CheckList
                     {
                         dado.unidade = complemento.unidade;
                         dado.saldoestoque = complemento.saldo_estoque;
-                        dgComplemento.Rebind();
                     }
                 }
 
