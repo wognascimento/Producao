@@ -61,8 +61,8 @@ namespace Producao.Views.Estoque
                 var filePath = BaseSettings.ResolveImpressosPath("SALDO_ESTOQUE_DETALHADO.xlsx");
                 using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("Saldo");
-            Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
-                worksheet.Cell(1, 1).InsertTable(vm.SaldoDetalhados, "SaldoEstoqueDetalhado", true);
+                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
+                Producao.Utils.ExcelExportHelper.InsertTypedTable(worksheet, vm.SaldoDetalhados, "SaldoEstoqueDetalhado");
                 worksheet.Columns().AdjustToContents();
                 workbook.SaveAs(filePath);
 

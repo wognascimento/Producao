@@ -60,7 +60,7 @@ namespace Producao
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Dados");
             Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
-            worksheet.Cell(1, 1).InsertTable(data, "Dados", true);
+            Producao.Utils.ExcelExportHelper.InsertTypedTable(worksheet, data, "Dados");
             worksheet.Columns().AdjustToContents();
             workbook.SaveAs(filePath);
 
@@ -75,7 +75,7 @@ namespace Producao
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Dados");
             Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
-            worksheet.Cell(1, 1).InsertTable(dataTable, "Dados", true);
+            Producao.Utils.ExcelExportHelper.InsertTypedTable(worksheet, dataTable, "Dados");
             worksheet.Columns().AdjustToContents();
             workbook.SaveAs(filePath);
 
@@ -1374,10 +1374,21 @@ namespace Producao
                             cell.SetValueAsText(string.Empty);
                             break;
                         case DateTime dateTime:
-                            cell.SetValueAsText(dateTime.ToString("dd/MM/yyyy HH:mm:ss"));
+                            cell.SetValue(dateTime);
+                            cell.SetFormat(new Telerik.Windows.Documents.Spreadsheet.Model.CellValueFormat(
+                                dateTime.TimeOfDay == TimeSpan.Zero ? "dd/mm/yyyy" : "dd/mm/yyyy hh:mm:ss"));
                             break;
                         case DateOnly dateOnly:
-                            cell.SetValueAsText(dateOnly.ToString("dd/MM/yyyy"));
+                            cell.SetValue(dateOnly.ToDateTime(TimeOnly.MinValue));
+                            cell.SetFormat(new Telerik.Windows.Documents.Spreadsheet.Model.CellValueFormat("dd/mm/yyyy"));
+                            break;
+                        case TimeOnly timeOnly:
+                            cell.SetValue(DateTime.Today.Add(timeOnly.ToTimeSpan()));
+                            cell.SetFormat(new Telerik.Windows.Documents.Spreadsheet.Model.CellValueFormat("hh:mm"));
+                            break;
+                        case TimeSpan timeSpan:
+                            cell.SetValue(DateTime.Today.Add(timeSpan));
+                            cell.SetFormat(new Telerik.Windows.Documents.Spreadsheet.Model.CellValueFormat("hh:mm"));
                             break;
                         case byte byteValue:
                             cell.SetValue(byteValue);
