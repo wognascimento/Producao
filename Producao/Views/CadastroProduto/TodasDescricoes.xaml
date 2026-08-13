@@ -35,6 +35,8 @@
             Name="itens"
             ItemsSource="{Binding Descricoes}"
             IsFilteringAllowed="True"
+            IsReadOnly="True"
+            ClipboardCopyMode="Cells,Header"
             AutoGenerateColumns="False"
             ShowGroupPanel="False"
             GroupRenderMode="Flat"
