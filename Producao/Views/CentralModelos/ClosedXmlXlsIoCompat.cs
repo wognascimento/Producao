@@ -249,6 +249,35 @@ namespace Producao.Views.CentralModelos.Compat
             }
         }
 
+        public void AdjustRowHeightToText(double minHeight = 15, double lineHeight = 9.75)
+        {
+            var text = range.FirstCell().GetString();
+            range.Style.Alignment.WrapText = true;
+            range.Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+            var desiredHeight = minHeight;
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                var width = range.Columns().Sum(column => column.WorksheetColumn().Width);
+                var charsPerLine = Math.Max(1, (int)Math.Floor(width * 1.05));
+                var effectiveLineHeight = Math.Max(lineHeight, range.Style.Font.FontSize * 1.15);
+                var lines = text
+                    .Replace("\r\n", "\n")
+                    .Replace('\r', '\n')
+                    .Split('\n')
+                    .Sum(line => Math.Max(1, (int)Math.Ceiling((double)line.Length / charsPerLine)));
+
+                var extraPadding = lines > 3 ? (lines - 3) * 3 : 0;
+                desiredHeight = Math.Min(409, Math.Max(minHeight, (lines * effectiveLineHeight) + 4 + extraPadding));
+            }
+
+            foreach (var row in range.Rows())
+            {
+                var worksheetRow = row.Worksheet.Row(row.RowNumber());
+                worksheetRow.Height = desiredHeight;
+            }
+        }
+
         public double ColumnWidth
         {
             set

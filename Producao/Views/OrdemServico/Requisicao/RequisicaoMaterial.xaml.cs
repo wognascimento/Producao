@@ -225,6 +225,8 @@ namespace Producao.Views.OrdemServico.Requisicao
                     worksheet.Range[$"M{index}:N{index}"].CellStyle.Font.Size = 7;
                     worksheet.Range[$"M{index}:N{index}"].Merge();
                     worksheet.Range[$"M{index}:N{index}"].WrapText = true;
+                    worksheet.Range[$"M{index}:N{index}"].AdjustRowHeightToText(15, 9.75);
+                    worksheet.Range[$"A{index}:N{index}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
                     index++;
                     //worksheet.Range["D1:E1"].Merge();
                 }

@@ -265,12 +265,14 @@ namespace Producao.Views.OrdemServico.Requisicao
                     //worksheet.Range[$"M{index}:N{index}"].CellStyle.Font.Size = 7;
                     worksheet.Range[$"M{index}:N{index}"].Merge();
                     worksheet.Range[$"M{index}:N{index}"].WrapText = true;
+                    worksheet.Range[$"M{index}:N{index}"].AdjustRowHeightToText(26, 9.75);
 
                     worksheet.Range[$"O{index}"].Text = item.volume.ToString();
                     worksheet.Range[$"O{index}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                     //worksheet.Range[$"O{index}"].CellStyle.Font.Size = 7;
                     worksheet.Range[$"O{index}"].WrapText = true;
 
+                    worksheet.Range[$"A{index}:O{index}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
 
                     index++;
                 }

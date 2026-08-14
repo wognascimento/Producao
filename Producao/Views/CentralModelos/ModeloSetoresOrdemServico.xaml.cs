@@ -213,7 +213,7 @@ namespace Producao.Views.CentralModelos
                     application.DefaultVersion = ExcelVersion.Xlsx;
                     IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("REQUISICAO_MODELO.xlsx"));
                     IWorksheet worksheet = workbook.Worksheets[0];
-                Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
+                    Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                     worksheet.Range["C2"].Number = Convert.ToDouble(requi?.num_requisicao);
                     worksheet.Range["E2"].DateTime = Convert.ToDateTime(requi?.data);
                     worksheet.Range["C3"].Text = requi?.alterado_por;
@@ -259,6 +259,8 @@ namespace Producao.Views.CentralModelos
                         worksheet.Range[$"M{index}:N{index}"].CellStyle.Font.Size = 7;
                         worksheet.Range[$"M{index}:N{index}"].Merge();
                         worksheet.Range[$"M{index}:N{index}"].WrapText = true;
+                        worksheet.Range[$"M{index}:N{index}"].AdjustRowHeightToText(15, 9.75);
+                        worksheet.Range[$"A{index}:N{index}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
                         index++;
                     }
                     //workbook.SaveAs($"Impressos/REQUISICAO_{requi.num_requisicao}.xlsx");
