@@ -65,7 +65,10 @@
                         <telerik:RadMenuItem Header="Programação de produção" Click="OnProgramacaoProducaoClick"/>
                     </telerik:RadMenuItem>
                 </telerik:RadMenuItem>
-                <telerik:RadMenuItem Header="Desbaiamento" Click="OnEmitirOsDesbaiamento"/>
+                <telerik:RadMenuItem Header="Desbaiamento">
+                    <telerik:RadMenuItem Header="Emitir" Click="OnEmitirOsDesbaiamento"/>
+                    <telerik:RadMenuItem Header="Consulta" Click="OnConsultaOsDesbaiamento"/>
+                </telerik:RadMenuItem>
                 <telerik:RadMenuItem Header="Transformação"/>
                 <telerik:RadMenuItem Header="Requisição">
                     <telerik:RadMenuItem Header="Receita">

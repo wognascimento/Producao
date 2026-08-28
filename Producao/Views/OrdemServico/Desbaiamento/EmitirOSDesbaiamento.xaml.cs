@@ -1,23 +1,14 @@
 using Dapper;
 using Npgsql;
 using Producao.DataBase.Model;
-using Producao.Views.OrdemServico.Produto;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.GridView;
 
@@ -41,6 +32,7 @@ namespace Producao.Views.OrdemServico.Desbaiamento
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 EmitirOSDesbaiamentoViewModel vm = (EmitirOSDesbaiamentoViewModel)DataContext;
+                vm.DetalhesComplemento = await vm.GetDetalhesComplementoAsync();
                 vm.Itens = await vm.GetItensAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -58,31 +50,61 @@ namespace Producao.Views.OrdemServico.Desbaiamento
                 return;
             }
 
-            var grid = sender as RadGridView;
-            EmitirOSDesbaiamentoViewModel vm = (EmitirOSDesbaiamentoViewModel)DataContext;
+            if (sender is not RadGridView grid ||
+                DataContext is not EmitirOSDesbaiamentoViewModel vm ||
+                e.Row?.Item is not OsExpModel data)
+            {
+                return;
+            }
+
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                OsExpModel data = (OsExpModel)e.Row.Item;
                 data.inserido_por = Environment.UserName;
                 data.inserido_em = DateTime.Now;
-                vm.Item = await vm.AddOsAsync(data);
+                var itemSalvo = await vm.AddOsAsync(data);
 
-                ((OsExpModel)e.Row.Item).n_os_desbaiamento = vm.Item.n_os_desbaiamento;
-                grid?.Items.Refresh();
+                data.n_os_desbaiamento = itemSalvo.n_os_desbaiamento;
+                vm.Item = data;
+                grid.Rebind();
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (Exception ex)
             {
                 Producao.ErrorDialog.Show(ex, "Erro");
-                var toRemove = vm.Itens.Where(x => x.n_os_desbaiamento == null).ToList();
-                foreach (var item in toRemove)
-                    vm.Itens.Remove(item);
+                if (vm.Itens is not null)
+                {
+                    var toRemove = vm.Itens.Where(x => x.n_os_desbaiamento == null).ToList();
+                    foreach (var item in toRemove)
+                        vm.Itens.Remove(item);
+                }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
 
+        private void RadGridView_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
+        {
+            if (e.Cell?.Column?.UniqueName != "coddetalhescompl" ||
+                e.Cell.DataContext is not OsExpModel item ||
+                DataContext is not EmitirOSDesbaiamentoViewModel vm)
+            {
+                return;
+            }
+
+            var detalhe = vm.DetalhesComplemento.FirstOrDefault(x => x.coddetalhescompl == item.coddetalhescompl);
+            item.sigla = detalhe?.sigla;
+
+            if (sender is RadGridView grid)
+                grid.Rebind();
+        }
+
+    }
+
+    public class DetalheComplementoDesbaiamentoModel
+    {
+        public long? coddetalhescompl { get; set; }
+        public string? sigla { get; set; }
     }
 
     public class EmitirOSDesbaiamentoViewModel : INotifyPropertyChanged
@@ -91,24 +113,61 @@ namespace Producao.Views.OrdemServico.Desbaiamento
 
         private static NpgsqlConnection CreateConnection() => new(DataBaseSettings.Instance.ConnectionString);
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
         public void RaisePropertyChanged(string propName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
         private ObservableCollection<OsExpModel>? _itens;
-        public ObservableCollection<OsExpModel> Itens
+        public ObservableCollection<OsExpModel>? Itens
         {
             get { return _itens; }
             set { _itens = value; RaisePropertyChanged("Itens"); }
         }
 
         private OsExpModel? _item;
-        public OsExpModel Item
+        public OsExpModel? Item
         {
             get { return _item; }
             set { _item = value; RaisePropertyChanged("Item"); }
+        }
+
+        private ObservableCollection<string> _motivos = ["COMERCIAL", "VT", "PROJETOS", "ESTOQUE", "CENTRAL DE MODELOS", "PRODUÇÃO", "EXPEDIÇÃO"];
+        public ObservableCollection<string> Motivos
+        {
+            get { return _motivos; }
+            set { _motivos = value; RaisePropertyChanged("Motivos"); }
+        }
+
+        private ObservableCollection<DetalheComplementoDesbaiamentoModel> _detalhesComplemento = [];
+        public ObservableCollection<DetalheComplementoDesbaiamentoModel> DetalhesComplemento
+        {
+            get { return _detalhesComplemento; }
+            set { _detalhesComplemento = value; RaisePropertyChanged("DetalhesComplemento"); }
+        }
+
+        public async Task<ObservableCollection<DetalheComplementoDesbaiamentoModel>> GetDetalhesComplementoAsync()
+        {
+            await using var conn = CreateConnection();
+            const string sql = """
+                SELECT
+                    producao.tblDetalhesComplemento.coddetalhescompl,
+                    producao.t_complemento_chk.sigla
+                FROM
+                    producao.tblDetalhesComplemento
+                    INNER JOIN producao.t_complemento_chk ON producao.tblDetalhesComplemento.codcompl = producao.t_complemento_chk.codcompl
+                GROUP BY
+                    producao.tblDetalhesComplemento.coddetalhescompl,
+                    producao.t_complemento_chk.sigla
+                HAVING
+                    producao.t_complemento_chk.sigla NOT LIKE 'SROOM%'
+                ORDER BY
+                    producao.tblDetalhesComplemento.coddetalhescompl;
+                """;
+
+            var data = await conn.QueryAsync<DetalheComplementoDesbaiamentoModel>(sql);
+            return new ObservableCollection<DetalheComplementoDesbaiamentoModel>(data);
         }
 
         public async Task<ObservableCollection<OsExpModel>> GetItensAsync()
@@ -118,7 +177,7 @@ namespace Producao.Views.OrdemServico.Desbaiamento
                 await using var conn = CreateConnection();
                 const string sql = """
                     SELECT *
-                    FROM expedicao.tbl_os_exp;
+                    FROM expedicao.view_os_exp;
                     """;
 
                 var data = await conn.QueryAsync<OsExpModel>(sql);
@@ -141,10 +200,10 @@ namespace Producao.Views.OrdemServico.Desbaiamento
                     const string insertSql = """
                         INSERT INTO expedicao.tbl_os_exp
                             (antigo, codvol, data, resp, setor, quantidade, obs, coddetalhescompl,
-                             solicitante, local_shopp, inserido_por, inserido_em)
+                             solicitante, motivo, local_shopp, inserido_por, inserido_em)
                         VALUES
                             (@antigo, @codvol, @data, @resp, @setor, @quantidade, @obs, @coddetalhescompl,
-                             @solicitante, @local_shopp, @inserido_por, @inserido_em)
+                             @solicitante, @motivo, @local_shopp, @inserido_por, @inserido_em)
                         RETURNING n_os_desbaiamento;
                         """;
 
@@ -163,6 +222,7 @@ namespace Producao.Views.OrdemServico.Desbaiamento
                             obs = @obs,
                             coddetalhescompl = @coddetalhescompl,
                             solicitante = @solicitante,
+                            motivo = @motivo,
                             local_shopp = @local_shopp,
                             inserido_por = @inserido_por,
                             inserido_em = @inserido_em

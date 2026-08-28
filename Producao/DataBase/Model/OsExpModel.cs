@@ -14,9 +14,11 @@ namespace Producao.DataBase.Model
         public DateTime? data { get; set; }
         public string? resp { get; set; }
         public string? setor { get; set; }
+        public string? motivo { get; set; }
         public long? quantidade { get; set; }
         public string? obs { get; set; }
         public long? coddetalhescompl { get; set; }
+        public string? sigla { get; set; }
         public string? solicitante { get; set; }
         public string? local_shopp { get; set; }
         public string? inserido_por { get; set; }

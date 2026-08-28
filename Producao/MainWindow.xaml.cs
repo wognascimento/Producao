@@ -1708,6 +1708,10 @@ namespace Producao
                 MessageBoxImage.Information);
         }
 
+        private void OnConsultaOsDesbaiamento(object sender, Telerik.Windows.RadRoutedEventArgs e)
+        {
+
+        }
     }
 }
 

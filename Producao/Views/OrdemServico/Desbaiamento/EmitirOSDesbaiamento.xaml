@@ -27,15 +27,30 @@
             SelectionMode="Extended"
             CanUserInsertRows="True"
             NewRowPosition="Bottom"
+            CellEditEnded="RadGridView_CellEditEnded"
             RowEditEnded="RadGridView_RowEditEnded" >
 
             <telerik:RadGridView.Columns>
-                <telerik:GridViewDataColumn Header="COD.DET" DataMemberBinding="{Binding coddetalhescompl, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewComboBoxColumn
+                    Header="COD.DET"
+                    UniqueName="coddetalhescompl"
+                    DataMemberBinding="{Binding coddetalhescompl}"
+                    ItemsSource="{Binding DataContext.DetalhesComplemento, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"
+                    SelectedValueMemberPath="coddetalhescompl"
+                    DisplayMemberPath="coddetalhescompl"
+                    Width="100"/>
+                <telerik:GridViewDataColumn Header="SIGLA" DataMemberBinding="{Binding sigla}" IsReadOnly="True" Width="120"/>
                 <telerik:GridViewDataColumn Header="QTDE" DataMemberBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"/>
                 <telerik:GridViewDataColumn Header="VOL(s)" DataMemberBinding="{Binding codvol}"/>
                 <telerik:GridViewDataColumn Header="DATA" DataMemberBinding="{Binding data, StringFormat={}{0:dd/MM/yyyy}}"/>
                 <telerik:GridViewDataColumn Header="RESP" DataMemberBinding="{Binding resp}"/>
                 <telerik:GridViewDataColumn Header="SOLICITANTE" DataMemberBinding="{Binding solicitante}"/>
+                <telerik:GridViewComboBoxColumn
+                    Header="MOTIVO"
+                    UniqueName="motivo"
+                    DataMemberBinding="{Binding motivo}"
+                    ItemsSource="{Binding DataContext.Motivos, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"
+                    Width="120"/>
                 <telerik:GridViewDataColumn Header="SETOR" DataMemberBinding="{Binding setor}"/>
                 <telerik:GridViewDataColumn Header="OBS" DataMemberBinding="{Binding obs}"/>
                 <telerik:GridViewDataColumn Header="Nº O.S" DataMemberBinding="{Binding n_os_desbaiamento, Converter={StaticResource ConverterNumber}}" IsReadOnly="True"/>
