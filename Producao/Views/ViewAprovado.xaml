@@ -30,7 +30,7 @@
                 <Syncfusion:GridTextColumn MappingName="nivel" AllowEditing="True"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Data Aprovado" MappingName="data_aprovado"/>
                 <Syncfusion:GridDateTimeColumn HeaderText="Data Expedição" MappingName="data_de_expedicao"/>
-                <Syncfusion:GridDateTimeColumn HeaderText="Meta Producao" MappingName="meta_producao"/>
+                <!--<Syncfusion:GridDateTimeColumn HeaderText="Meta Producao" MappingName="meta_producao"/>-->
                 <Syncfusion:GridTextColumn MappingName="sigla"/>
                 <Syncfusion:GridTextColumn HeaderText="Sigla Serviço" MappingName="sigla_serv"/>
                 <Syncfusion:GridTextColumn MappingName="rede"/>
