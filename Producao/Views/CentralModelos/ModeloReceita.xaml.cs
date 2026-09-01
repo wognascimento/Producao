@@ -1,15 +1,14 @@
 using Dapper;
 using Npgsql;
 using Producao.DataBase.Model;
-using Producao.Views.PopUp;
 using Producao.Views.CentralModelos.Compat;
+using Producao.Views.PopUp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -26,6 +25,7 @@ namespace Producao.Views.CentralModelos
         private QryModeloModel Modelo { get; set; }
         private QryReceitaDetalheCriadoModel Receita { get; set; }
         DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+        private bool _preenchendoProduto;
 
 
         public ModeloReceita(QryModeloModel Modelo)
@@ -77,22 +77,15 @@ namespace Producao.Views.CentralModelos
                 {
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                     string text = txtCodigoProduto.Text;
-                    vm.Descricao = await vm.GetDescricaoAsync(long.Parse(text));
-                    if (vm.Descricao == null)
+                    var descricao = await vm.GetDescricaoAsync(long.Parse(text));
+                    if (descricao == null)
                     {
                         MessageBox.Show("Produto não encontrado", "Busca de produto");
                         Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                         return;
                     }
-                    txtCodigoProduto.Text = vm.Descricao.codcompladicional.ToString();
-                    txtPlanilha.Text = vm.Descricao.planilha;
-                    txtDescricao.Text = vm.Descricao.descricao;
-                    txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
-                    txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
 
-                    vm.Produtos = await vm.GetProdutosAsync(vm.Descricao.planilha);
-                    vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Descricao.codigo);
-                    vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional);
+                    await PreencherProdutoAsync(descricao);
 
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                     txtObservacao.Focus();
@@ -121,18 +114,8 @@ namespace Producao.Views.CentralModelos
                 window.Owner = App.Current.MainWindow;
                 if (window.ShowDialog() == true)
                 {
-                    vm.Descricao = window.descricao;
-
-                    txtCodigoProduto.Text = vm.Descricao.codcompladicional.ToString();
-                    txtPlanilha.Text = vm.Descricao.planilha;
-                    txtDescricao.Text = vm.Descricao.descricao;
-                    txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
-                    txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
+                    await PreencherProdutoAsync(window.descricao);
                     txtObservacao.Focus();
-
-                    vm.Produtos = await vm.GetProdutosAsync(vm.Descricao.planilha);
-                    vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Descricao.codigo);
-                    vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional);
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
             }
@@ -146,6 +129,9 @@ namespace Producao.Views.CentralModelos
 
         private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
         {
+            if (_preenchendoProduto)
+                return;
+
             try
             {
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
@@ -175,6 +161,9 @@ namespace Producao.Views.CentralModelos
 
         private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
         {
+            if (_preenchendoProduto)
+                return;
+
             try
             {
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
@@ -200,6 +189,9 @@ namespace Producao.Views.CentralModelos
 
         private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
         {
+            if (_preenchendoProduto)
+                return;
+
             try
             {
                 ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
@@ -221,11 +213,53 @@ namespace Producao.Views.CentralModelos
 
         private void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
         {
+            if (_preenchendoProduto)
+                return;
+
             ModeloReceitaViewModel? vm = (ModeloReceitaViewModel)DataContext;
             TblComplementoAdicionalModel? complemento = txtComplementoAdicional.SelectedItem as TblComplementoAdicionalModel;
             vm.Compledicional = complemento;
             txtCodigoProduto.Text = complemento?.codcompladicional.ToString();
             txtObservacao.Focus();
+        }
+
+        private async Task PreencherProdutoAsync(QryDescricao? descricao)
+        {
+            if (descricao is null || DataContext is not ModeloReceitaViewModel vm)
+                return;
+
+            _preenchendoProduto = true;
+            try
+            {
+                vm.Descricao = descricao;
+
+                vm.Produtos = await vm.GetProdutosAsync(descricao.planilha);
+                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(descricao.codigo);
+                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(descricao.coduniadicional);
+
+                vm.Planilha = vm.Planilhas?.FirstOrDefault(p => string.Equals(p.planilha, descricao.planilha, StringComparison.OrdinalIgnoreCase));
+                vm.Produto = vm.Produtos?.FirstOrDefault(p => p.codigo == descricao.codigo);
+                vm.DescAdicional = vm.DescAdicionais?.FirstOrDefault(d => d.coduniadicional == descricao.coduniadicional);
+                vm.Compledicional = vm.CompleAdicionais?.FirstOrDefault(c => c.codcompladicional == descricao.codcompladicional);
+
+                txtCodigoProduto.Text = descricao.codcompladicional?.ToString() ?? string.Empty;
+
+                txtPlanilha.SelectedItem = vm.Planilha;
+                txtPlanilha.Text = descricao.planilha ?? string.Empty;
+
+                txtDescricao.SelectedItem = vm.Produto;
+                txtDescricao.Text = descricao.descricao ?? string.Empty;
+
+                txtDescricaoAdicional.SelectedItem = vm.DescAdicional;
+                txtDescricaoAdicional.Text = descricao.descricao_adicional ?? string.Empty;
+
+                txtComplementoAdicional.SelectedItem = vm.Compledicional;
+                txtComplementoAdicional.Text = descricao.complementoadicional ?? string.Empty;
+            }
+            finally
+            {
+                _preenchendoProduto = false;
+            }
         }
 
         private void OnLimparClick(object sender, RoutedEventArgs e)
@@ -582,19 +616,11 @@ namespace Producao.Views.CentralModelos
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Descricao = await vm.GetDescricaoAsync((long)Receita?.codcompladicional);
-                txtCodigoProduto.Text = vm.Descricao.codcompladicional.ToString();
-                txtPlanilha.Text = vm.Descricao.planilha;
-                txtDescricao.Text = vm.Descricao.descricao;
-                txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
-                txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
+                var descricao = await vm.GetDescricaoAsync((long)Receita?.codcompladicional);
+                await PreencherProdutoAsync(descricao);
                 txtObservacao.Text = Receita?.observacao;
                 txtQtdModelo.Value = Receita?.qtd_modelo;
                 txtQtdProducao.Value = Receita?.qtd_producao;
-
-                vm.Produtos = await vm.GetProdutosAsync(vm.Descricao.planilha);
-                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Descricao.codigo);
-                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional);
 
                 mod01.Value = Receita?.mod1;
                 mod02.Value = Receita?.mod2;

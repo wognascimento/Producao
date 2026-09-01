@@ -251,9 +251,16 @@ namespace Producao.Views.CentralModelos
 
                     //dgModelos.SelectedItem = modelo;
                 }
-
+                /*
                 var window = new ModeloReceita(modelo);
                 window.Owner = App.Current.MainWindow;
+                window.ShowDialog();
+                */
+                var window = new ModeloReceita(modelo)
+                {
+                    Owner = Application.Current.MainWindow
+                };
+                PosicionarJanelaSobreGrid(window, dgModelos);
                 window.ShowDialog();
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
@@ -276,8 +283,10 @@ namespace Producao.Views.CentralModelos
                 return;
             }
 
-            var window = new ModeloReceita(modelo);
-            window.Owner = Application.Current.MainWindow;
+            var window = new ModeloReceita(modelo)
+            {
+                Owner = Application.Current.MainWindow
+            };
             PosicionarJanelaSobreGrid(window, dgModelos);
             window.ShowDialog();
         }
