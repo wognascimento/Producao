@@ -188,7 +188,7 @@
             HasDocumentHost="True">
             <telerik:RadDocking.DocumentHost>
                 <telerik:RadSplitContainer>
-                    <telerik:RadPaneGroup x:Name="documentGroup"/>
+                    <telerik:RadPaneGroup x:Name="documentGroup" IsContentPreserved="True"/>
                 </telerik:RadSplitContainer>
             </telerik:RadDocking.DocumentHost>
         </telerik:RadDocking>
