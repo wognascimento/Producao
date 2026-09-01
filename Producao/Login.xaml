@@ -10,20 +10,70 @@
     d:DesignHeight="368" d:DesignWidth="475"
     HideMaximizeButton="True"  HideMinimizeButton="True" 
     ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+    Width="420"
+    Height="230"
     Header="Alterar Usuário">
 
 
-    <Grid  Height="259" Width="475">
-        <Label Content="Nome do Usuário " Height="28" HorizontalAlignment="Left" Margin="69,58,0,0" Name="Label1" VerticalAlignment="Top" Width="123"  />
-        <TextBox Height="23" HorizontalAlignment="Left" Margin="0,0,2,2" Name="txtLogin" VerticalAlignment="Top" Width="137" Background="#9C9BE9EB" />
-        <Label Content="Senha" Height="28" HorizontalAlignment="Left" Margin="69,95,0,0" Name="Label2" VerticalAlignment="Top" Width="123"  />
-        <PasswordBox Height="23" Margin="0,0,2,2" Name="txtSenha" VerticalAlignment="Top" Password="" Background="#9C9BE9EB" HorizontalAlignment="Left" Width="137" />
-        <telerik:RadButton Content="Login"  HorizontalAlignment="Left" Margin="0,0,2,2" Name="btnLogin" VerticalAlignment="Top" Width="75" Click="OnLogar" telerik:RadWindow.ResponseButton="Accept"/>
-        <telerik:RadButton Content="Sair"  HorizontalAlignment="Left" Margin="0,0,2,2" Name="btnSair" VerticalAlignment="Top" Width="75" Click="OnSair" telerik:RadWindow.ResponseButton="Cancel"/>
-        <!--<Image Height="66" HorizontalAlignment="Left" Margin="79,129,0,0" Name="Image1" Stretch="Fill" VerticalAlignment="Top" Width="69" Source="/WPF_Login_Linq;component/Images/login.jpg" />-->
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="18"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="130"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            Margin="0,4,12,0"
+            Text="Nome do Usuário"
+            VerticalAlignment="Center" />
+        <TextBox
+            x:Name="txtLogin"
+            Grid.Row="0"
+            Grid.Column="1"
+            MinWidth="210"
+            Height="28"
+            VerticalContentAlignment="Center" />
+
+        <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            Margin="0,4,12,0"
+            Text="Senha"
+            VerticalAlignment="Center" />
+        <PasswordBox
+            x:Name="txtSenha"
+            Grid.Row="2"
+            Grid.Column="1"
+            MinWidth="210"
+            Height="28"
+            VerticalContentAlignment="Center" />
+
+        <StackPanel
+            Grid.Row="4"
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <telerik:RadButton
+                x:Name="btnLogin"
+                Width="82"
+                Margin="0,0,8,0"
+                Click="OnLogar"
+                Content="Login"
+                telerik:RadWindow.ResponseButton="Accept" />
+            <telerik:RadButton
+                x:Name="btnSair"
+                Width="82"
+                Click="OnSair"
+                Content="Sair"
+                telerik:RadWindow.ResponseButton="Cancel" />
+        </StackPanel>
     </Grid>
-    
-
-
-
 </telerik:RadWindow>

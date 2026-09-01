@@ -28,38 +28,49 @@ namespace Producao
         private void OnLogar(object sender, RoutedEventArgs e)
         {
 
-            if (!string.IsNullOrWhiteSpace(txtLogin.Text) && !string.IsNullOrWhiteSpace(txtSenha.Password))
+            if (string.IsNullOrWhiteSpace(txtLogin.Text))
             {
-                try
-                {
-                    // ContextType.Domain já usa seu domínio padrão ou especifique "cipodominio.com.br"
-                    using var ctx = new PrincipalContext(
-                           ContextType.Domain,
-                           "192.168.0.254", // Controlador de domínio
-                           "cipodominio.com.br"); // Domínio
-                    if (!ctx.ValidateCredentials(txtLogin.Text, txtSenha.Password))
-                        throw new Exception("Credenciais inválidas.");
+                MessageBox.Show("Informe o nome do usuário.", "Login", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtLogin.Focus();
+                return;
+            }
 
-                    // Atualiza config e fecha
-                    var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    if (config.AppSettings.Settings["Username"] == null)
-                        config.AppSettings.Settings.Add("Username", txtLogin.Text);
-                    else
-                        config.AppSettings.Settings["Username"].Value = txtLogin.Text;
+            if (string.IsNullOrWhiteSpace(txtSenha.Password))
+            {
+                MessageBox.Show("Informe a senha.", "Login", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtSenha.Focus();
+                return;
+            }
 
-                    config.Save(ConfigurationSaveMode.Modified);
-                    ConfigurationManager.RefreshSection("appSettings");
+            try
+            {
+                // ContextType.Domain já usa seu domínio padrão ou especifique "cipodominio.com.br"
+                using var ctx = new PrincipalContext(
+                       ContextType.Domain,
+                       "192.168.0.254", // Controlador de domínio
+                       "cipodominio.com.br"); // Domínio
+                if (!ctx.ValidateCredentials(txtLogin.Text, txtSenha.Password))
+                    throw new Exception("Credenciais inválidas.");
 
-                    BaseSettings.Username = txtLogin.Text;
-                    BaseSettings.RefreshConnectionString();
+                // Atualiza config e fecha
+                var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                if (config.AppSettings.Settings["Username"] == null)
+                    config.AppSettings.Settings.Add("Username", txtLogin.Text);
+                else
+                    config.AppSettings.Settings["Username"].Value = txtLogin.Text;
 
-                    this.DialogResult = true;
-                    this.Close();
-                }
-                catch (Exception ex)
-                {
-                    Producao.ErrorDialog.Show(ex, "Falha na autenticação");
-                }
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");
+
+                BaseSettings.Username = txtLogin.Text;
+                BaseSettings.RefreshConnectionString();
+
+                this.DialogResult = true;
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                Producao.ErrorDialog.Show(ex, "Falha na autenticação");
             }
         }
     }
