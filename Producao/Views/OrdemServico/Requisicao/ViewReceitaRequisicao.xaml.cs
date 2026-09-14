@@ -275,9 +275,9 @@ namespace Producao.Views.OrdemServico.Requisicao
                     codcompladicional_produto = vm.DescricaoProduto.codcompladicional,
                     codcompladicional_receita = long.Parse(txtCodigoProdutoReceita.Text),
                     quantidade = Convert.ToDouble(txtQuantidade.Text),
-                    inserido_por = vm.Item == null ? Environment.UserName : vm.Item.inserido_por,
+                    inserido_por = vm.Item == null ? global::Producao.DataBaseSettings.Instance.Username : vm.Item.inserido_por,
                     inserido_em = vm.Item == null ? DateTime.Now : vm.Item.inserido_em,
-                    alterado_por = vm.Item == null ? null : Environment.UserName,
+                    alterado_por = vm.Item == null ? null : global::Producao.DataBaseSettings.Instance.Username,
                     alterado_em = vm.Item == null ? null : DateTime.Now,
                 };
                 vm.RequiReceita = await vm.AddReceita(dados);

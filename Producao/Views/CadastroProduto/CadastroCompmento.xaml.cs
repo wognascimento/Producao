@@ -70,7 +70,7 @@ namespace Producao.Views.CadastroProduto
             try
             {
                 complemento.inativo = NormalizarInativo(complemento.inativo);
-                complemento.alterado_por = Environment.UserName;
+                complemento.alterado_por = global::Producao.DataBaseSettings.Instance.Username;
                 complemento.alterado_em = DateTime.Now;
                 await vm.UpdateInativoAsync(complemento);
             }
@@ -100,9 +100,9 @@ namespace Producao.Views.CadastroProduto
                 data.estoque_inicial ??= 0;
                 data.estoque_inicial_processado ??= 0;
                 data.peso ??= last?.peso ?? 0;
-                data.cadastradopor = isInsert ? Environment.UserName : data.cadastradopor;
+                data.cadastradopor = isInsert ? global::Producao.DataBaseSettings.Instance.Username : data.cadastradopor;
                 data.cadastradoem = isInsert ? DateTime.Now : data.cadastradoem;
-                data.alterado_por = isInsert ? null : Environment.UserName;
+                data.alterado_por = isInsert ? null : global::Producao.DataBaseSettings.Instance.Username;
                 data.alterado_em = isInsert ? null : DateTime.Now;
                 data.pesobruto ??= last?.pesobruto ?? 0;
                 data.origemcusto ??= last?.origemcusto;

@@ -21,7 +21,7 @@ namespace Producao.Views.popup
             {
                 vm.DetCompl.codcompl = vm.ComplementoCheckList.codcompl;
                 vm.DetCompl.confirmado_data = vm.DetCompl.confirmado == "-1" ? DateTime.Now : null;
-                vm.DetCompl.confirmado_por = vm.DetCompl.confirmado == "-1" ? Environment.UserName : null;
+                vm.DetCompl.confirmado_por = vm.DetCompl.confirmado == "-1" ? global::Producao.DataBaseSettings.Instance.Username : null;
                 vm.DetCompl = await vm.AddDetalhesComplementoCheckListAsync(vm.DetCompl);
                 vm.CheckListGeralComplementos = await vm.GetCheckListGeralComplementoAsync(vm.DetCompl.codcompl);
 

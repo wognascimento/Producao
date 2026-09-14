@@ -56,7 +56,7 @@ namespace Producao.Views.CentralModelos
                         qtd_modelo = item.qtd_modelo_receita,
                         qtd_producao = item.qtd_producao_receita,
                         observacao = item.observacao,
-                        cadastrado_por = Environment.UserName,
+                        cadastrado_por = global::Producao.DataBaseSettings.Instance.Username,
                         data_cadastro = DateTime.Now,
                     }));
 

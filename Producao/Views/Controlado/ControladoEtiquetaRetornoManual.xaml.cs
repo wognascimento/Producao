@@ -68,7 +68,7 @@ namespace Producao.Views.Controlado
                     vm.RetornoBaixa = new()
                     {
                         barcode = saida.barcode,
-                        inserido_por = Environment.UserName,
+                        inserido_por = global::Producao.DataBaseSettings.Instance.Username,
                         inserido_em = DateTime.Now
                     };
 

@@ -58,7 +58,7 @@ namespace Producao.Views.Estoque
 
                 data.barcode = barcode.barcode;
                 data.galpao = "JAC";
-                data.digitado_por ??= Environment.UserName;
+                data.digitado_por ??= global::Producao.DataBaseSettings.Instance.Username;
                 data.digitado_data ??= DateTime.Now;
                 await vm.SaveCCEAsync(data);
                 itens.Rebind();
@@ -81,7 +81,7 @@ namespace Producao.Views.Estoque
             e.NewObject = new ContaProcessSemanaModel
             {
                 semana = semana,
-                digitado_por = Environment.UserName,
+                digitado_por = global::Producao.DataBaseSettings.Instance.Username,
                 digitado_data = DateTime.Now,
                 galpao = "JAC"
             };

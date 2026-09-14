@@ -86,7 +86,7 @@ namespace Producao.Views.Controlado
                             new ControladoShoppingModel 
                             { 
                                 barcode = vm.Barcode.barcode, 
-                                inserido_por = Environment.UserName, 
+                                inserido_por = global::Producao.DataBaseSettings.Instance.Username, 
                                 inserido_em = DateTime.Now, 
                                 num_requisicao = vm.Requisicao.num_requisicao
                             });
@@ -312,7 +312,7 @@ namespace Producao.Views.Controlado
                     model.codcompladicional,
                     model.quantidade,
                     data = DateTime.Now,
-                    alterado_por = Environment.UserName
+                    alterado_por = global::Producao.DataBaseSettings.Instance.Username
                 };
 
                 var rows = await conn.ExecuteAsync(

@@ -456,7 +456,7 @@ namespace Producao
                             codcompladicional = item.codcompladicional_receita,
                             quantidade = item.quantidade * quantidade,
                             data = DateTime.Now,
-                            alterado_por = Environment.UserName
+                            alterado_por = global::Producao.DataBaseSettings.Instance.Username
                         };
 
                         var encontrado = await conn.QueryFirstOrDefaultAsync<DetalheRequisicaoModel>(

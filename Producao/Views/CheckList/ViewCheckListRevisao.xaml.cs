@@ -79,7 +79,7 @@ public partial class ViewCheckListRevisao : UserControl
 
         if (columnName == "altera_ok")
         {
-            record.confirma_alteracao_por = Environment.UserName;
+            record.confirma_alteracao_por = global::Producao.DataBaseSettings.Instance.Username;
             record.confirma_alteracao_data = DateTime.Now.Date;
         }
         
@@ -87,12 +87,12 @@ public partial class ViewCheckListRevisao : UserControl
         {
             record.ok_revisao_alterada = "-1";
             record.data_alt_revisao = DateTime.Now.Date;
-            record.revisao_alt_por = Environment.UserName;
+            record.revisao_alt_por = global::Producao.DataBaseSettings.Instance.Username;
         }
         
         if (columnName == "ok")
         {
-            record.revisado_por = Environment.UserName;
+            record.revisado_por = global::Producao.DataBaseSettings.Instance.Username;
             record.data_revisado_por = DateTime.Now.Date;
             record.ok_revisao_alterada = "-1";
         }

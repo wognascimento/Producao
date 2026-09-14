@@ -459,7 +459,7 @@ namespace Producao.Views.CheckList
                 vm.ComplementoCheckList.codcompl = null;
                 vm.ComplementoCheckList.sigla = vm.Sigla.sigla_serv;
                 vm.ComplementoCheckList.id_aprovado = vm.Sigla.id_aprovado;
-                vm.ComplementoCheckList.inserido_por = Environment.UserName;
+                vm.ComplementoCheckList.inserido_por = global::Producao.DataBaseSettings.Instance.Username;
                 vm.ComplementoCheckList.inserido_em = DateTime.Now;
 
                 ComplementoCheckListModel compl = await vm.AddComplementoCheckListAsync(vm.ComplementoCheckList);
@@ -490,7 +490,7 @@ namespace Producao.Views.CheckList
                     return;
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.ComplementoCheckList.alterado_por = Environment.UserName;
+                vm.ComplementoCheckList.alterado_por = global::Producao.DataBaseSettings.Instance.Username;
                 vm.ComplementoCheckList.alterado_em = DateTime.Now;
                 ComplementoCheckListModel compl = await vm.AddComplementoCheckListAsync(vm.ComplementoCheckList);
 
@@ -795,9 +795,9 @@ namespace Producao.Views.CheckList
                     vm.DetCompl.coddetalhescompl = dado.coddetalhescompl;
                     vm.DetCompl.confirmado = dado.confirmado;
                     vm.DetCompl.confirmado_data = dado.confirmado == "-1" ? DateTime.Now : dado.confirmado_data;
-                    vm.DetCompl.confirmado_por = dado.confirmado == "-1" ? Environment.UserName : dado.confirmado_por;
+                    vm.DetCompl.confirmado_por = dado.confirmado == "-1" ? global::Producao.DataBaseSettings.Instance.Username : dado.confirmado_por;
                     vm.DetCompl.desabilitado_confirmado_data = dado.confirmado == "0" ? DateTime.Now : dado.desabilitado_confirmado_data;
-                    vm.DetCompl.desabilitado_confirmado_por = dado.confirmado == "0" ? Environment.UserName : dado.desabilitado_confirmado_por;
+                    vm.DetCompl.desabilitado_confirmado_por = dado.confirmado == "0" ? global::Producao.DataBaseSettings.Instance.Username : dado.desabilitado_confirmado_por;
                     vm.DetCompl = await vm.ConfirmarComplementoCheckListAsync(vm.DetCompl);
                 }
 
@@ -856,9 +856,9 @@ namespace Producao.Views.CheckList
                     qtd = data.qtd.GetValueOrDefault(),
                     confirmado = data.confirmado,
                     confirmado_data = data.confirmado == "-1" ? DateTime.Now : null,
-                    confirmado_por = data.confirmado == "-1" ? Environment.UserName : null,
+                    confirmado_por = data.confirmado == "-1" ? global::Producao.DataBaseSettings.Instance.Username : null,
                     desabilitado_confirmado_data = data.confirmado == "0" ? DateTime.Now : null,
-                    desabilitado_confirmado_por = data.confirmado == "0" ? Environment.UserName : null,
+                    desabilitado_confirmado_por = data.confirmado == "0" ? global::Producao.DataBaseSettings.Instance.Username : null,
                     local_producao = "JACAREÍ",
                     os = data.os
                 };
@@ -1026,6 +1026,9 @@ namespace Producao.Views.CheckList
                     if (confirm == MessageBoxResult.Yes)
                     {
                         var filteredResult = vm.CheckListGerais.Where(x => x.item_memorial == dado.item_memorial).ToList();
+                        var codigos = filteredResult.Select(x => x.codcompl
+                            ?? throw new InvalidOperationException("Existe item sem codigo no grupo.")).Distinct().ToArray();
+                        await vm.CargaCaminhaoGrupoAsync(codigos, dado.carga);
                         foreach (var item in filteredResult)
                         {
                             ComplementoCheckListModel Comple = new()
@@ -1036,9 +1039,8 @@ namespace Producao.Views.CheckList
                             item.carga = Comple.carga;
                             int i = vm.CheckListGerais.IndexOf(item);
                             vm.CheckListGerais[i] = item;
-                            await vm.CargaCaminhaoListAsync(Comple);
-                            grid.Rebind();
                         }
+                        grid.Rebind();
                     }
                     else
                     {
@@ -1064,7 +1066,7 @@ namespace Producao.Views.CheckList
                     //carga = dado?.carga,
                     local_shoppings = dado?.local_shoppings,
                     item_memorial = dado?.item_memorial,
-                    alterado_por = Environment.UserName,
+                    alterado_por = global::Producao.DataBaseSettings.Instance.Username,
                     alterado_em = DateTime.Now
                 };
                 await vm.EditComplementoCheckListAsync(CompleChkList);

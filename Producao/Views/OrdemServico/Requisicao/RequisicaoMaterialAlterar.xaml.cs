@@ -132,7 +132,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                     quantidade = Convert.ToDouble(txtQuantidade.Text),
                     observacao = txtObservacao.Text,
                     data = DateTime.Now,
-                    alterado_por = Environment.UserName
+                    alterado_por = global::Producao.DataBaseSettings.Instance.Username
                 };
 
                 var requi = await vm.AddProdutoRequisicaoAsync(vm.RequisicaoDetalhe);
@@ -166,14 +166,14 @@ namespace Producao.Views.OrdemServico.Requisicao
                     codcompladicional = long.Parse(tbCodproduto.Text),
                     quantidade = Convert.ToDouble(txtQuantidade.Text),
                     data = DateTime.Now,
-                    alterado_por = Environment.UserName
+                    alterado_por = global::Producao.DataBaseSettings.Instance.Username
                 };
                 */
                 vm.RequisicaoDetalhe.codcompladicional = long.Parse(tbCodproduto.Text);
                 vm.RequisicaoDetalhe.quantidade = Convert.ToDouble(txtQuantidade.Text);
                 vm.RequisicaoDetalhe.observacao = txtObservacao.Text;
                 vm.RequisicaoDetalhe.data = DateTime.Now;
-                vm.RequisicaoDetalhe.alterado_por = Environment.UserName;
+                vm.RequisicaoDetalhe.alterado_por = global::Producao.DataBaseSettings.Instance.Username;
 
                 var requi = await vm.AddProdutoRequisicaoAsync(vm.RequisicaoDetalhe);
                 //await vm.GetRequisicaoDetalhesAsync();

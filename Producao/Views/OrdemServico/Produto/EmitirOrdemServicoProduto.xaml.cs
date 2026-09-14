@@ -153,8 +153,8 @@ namespace Producao.Views.OrdemServico.Produto
                                                         codigo_setor_proximo = 39,
                                                         setor_caminho_proximo = "FINAL - TODOS",
                                                         fase = "PRODUÇÃO",
-                                                        responsavel_emissao_os = Environment.UserName,
-                                                        emitida_por = Environment.UserName,
+                                                        responsavel_emissao_os = global::Producao.DataBaseSettings.Instance.Username,
+                                                        emitida_por = global::Producao.DataBaseSettings.Instance.Username,
                                                         emitida_data = DateTime.Now,
                                                         turno = "DIURNO",
                                                         id_modelo = item.id_modelo,
@@ -227,7 +227,7 @@ namespace Producao.Views.OrdemServico.Produto
                     return;
 
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                await ProdutoOrdemRepository.CancelarObsAsync(item.cod_obs, Environment.UserName, DateTime.Now);
+                await ProdutoOrdemRepository.CancelarObsAsync(item.cod_obs, global::Producao.DataBaseSettings.Instance.Username, DateTime.Now);
 
                 vm.OSsAberta = await vm.GetOSsEmAbertasAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });

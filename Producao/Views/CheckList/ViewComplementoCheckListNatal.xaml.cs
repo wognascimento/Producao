@@ -227,9 +227,9 @@ namespace Producao.Views.CheckList
                     qtd = data.qtd.GetValueOrDefault(),
                     confirmado = data.confirmado,
                     confirmado_data = data.confirmado == "-1" ? DateTime.Now : null,
-                    confirmado_por = data.confirmado == "-1" ? Environment.UserName : null,
+                    confirmado_por = data.confirmado == "-1" ? global::Producao.DataBaseSettings.Instance.Username : null,
                     desabilitado_confirmado_data = data.confirmado == "-1" ? DateTime.Now : null,
-                    desabilitado_confirmado_por = data.confirmado == "-1" ? Environment.UserName : null
+                    desabilitado_confirmado_por = data.confirmado == "-1" ? global::Producao.DataBaseSettings.Instance.Username : null
                 };
 
                 vm.DetCompl = await vm.AddDetalhesComplementoCheckListAsync(vm.DetCompl);
@@ -813,14 +813,14 @@ namespace Producao.Views.CheckList
             {
                 try
                 {
-                    detCompl.alterado_por = Environment.UserName;
+                    detCompl.alterado_por = global::Producao.DataBaseSettings.Instance.Username;
                     detCompl.data_alteracao = DateTime.Now;
 
                     await using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
 
                     if (!detCompl.coddetalhescompl.HasValue || detCompl.coddetalhescompl.Value == 0)
                     {
-                        detCompl.inserido_por ??= Environment.UserName;
+                        detCompl.inserido_por ??= global::Producao.DataBaseSettings.Instance.Username;
                         detCompl.data_inserido ??= DateTime.Now;
 
                         const string insertSql = """

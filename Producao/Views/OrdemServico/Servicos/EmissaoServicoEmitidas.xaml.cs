@@ -58,7 +58,7 @@ namespace Producao.Views.OrdemServico.Servicos
                     return;
                 }
 
-                record.cancelado_por = Environment.UserName;
+                record.cancelado_por = global::Producao.DataBaseSettings.Instance.Username;
                 record.data_cancelamento = DateTime.Now;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EmissaoServicoEmitidasViewModel vm = (EmissaoServicoEmitidasViewModel)DataContext;

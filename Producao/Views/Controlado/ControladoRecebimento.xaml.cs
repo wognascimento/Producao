@@ -55,7 +55,8 @@ namespace Producao.Views.Controlado
                     id_aprovado = data.id_aprovado,
                     codcompladicional = data.codcompladicional,
                     qtd = data.retorno,
-                    atualizado_por = Environment.UserName,
+                    justificativa = data.justificativa,
+                    atualizado_por = global::Producao.DataBaseSettings.Instance.Username,
                     atualizado_em = DateTime.Now,
                 };
 
@@ -147,20 +148,14 @@ namespace Producao.Views.Controlado
                 using var conn = new NpgsqlConnection(DataBaseSettings.Instance.ConnectionString);
                 await conn.ExecuteAsync(
                     @"INSERT INTO expedicao.t_controlados_recebidos
-                        (id_aprovado, codcompladicional, qtd, atualizado_por, atualizado_em,
-                         cancelar_cobraca, justificativa, entrada_estoque, entrada_estoque_por, entrada_estoque_em)
+                        (id_aprovado, codcompladicional, qtd, atualizado_por, atualizado_em, justificativa)
                       VALUES
-                        (@id_aprovado, @codcompladicional, @qtd, @atualizado_por, @atualizado_em,
-                         @cancelar_cobraca, @justificativa, @entrada_estoque, @entrada_estoque_por, @entrada_estoque_em)
+                        (@id_aprovado, @codcompladicional, @qtd, @atualizado_por, @atualizado_em, @justificativa)
                       ON CONFLICT (id_aprovado, codcompladicional) DO UPDATE SET
                         qtd = EXCLUDED.qtd,
                         atualizado_por = EXCLUDED.atualizado_por,
                         atualizado_em = EXCLUDED.atualizado_em,
-                        cancelar_cobraca = EXCLUDED.cancelar_cobraca,
-                        justificativa = EXCLUDED.justificativa,
-                        entrada_estoque = EXCLUDED.entrada_estoque,
-                        entrada_estoque_por = EXCLUDED.entrada_estoque_por,
-                        entrada_estoque_em = EXCLUDED.entrada_estoque_em;",
+                        justificativa = EXCLUDED.justificativa;",
                     m);
             }
             catch (Exception)

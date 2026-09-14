@@ -31,22 +31,22 @@
 
             <telerik:RadGridView.Columns>
 
-                <telerik:GridViewDataColumn Header="sigla" DataMemberBinding="{Binding sigla}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="sigla" DataMemberBinding="{Binding sigla}"/>
 
-                <telerik:GridViewDataColumn Header="codcompladicional" DataMemberBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="codcompladicional" DataMemberBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}"/>
 
-                <telerik:GridViewDataColumn Header="planilha" DataMemberBinding="{Binding planilha}"/>
-                <telerik:GridViewDataColumn Header="descricao" DataMemberBinding="{Binding descricao}"/>
-                <telerik:GridViewDataColumn Header="unidade" DataMemberBinding="{Binding unidade}"/>
-                <telerik:GridViewDataColumn Header="expedido" DataMemberBinding="{Binding expedido, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="solucao_manutencao" DataMemberBinding="{Binding solucao_manutencao, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="qrcode" DataMemberBinding="{Binding qrcode, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="recebida" DataMemberBinding="{Binding recebida, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="devolvida" DataMemberBinding="{Binding devolvida, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="planilha" DataMemberBinding="{Binding planilha}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="descricao" DataMemberBinding="{Binding descricao}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="unidade" DataMemberBinding="{Binding unidade}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="expedido" DataMemberBinding="{Binding expedido, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="solucao_manutencao" DataMemberBinding="{Binding solucao_manutencao, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="qrcode" DataMemberBinding="{Binding qrcode, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="recebida" DataMemberBinding="{Binding recebida, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="devolvida" DataMemberBinding="{Binding devolvida, Converter={StaticResource ConverterNumber}}"/>
                 <telerik:GridViewDataColumn Header="retorno" DataMemberBinding="{Binding retorno, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="cobranca" DataMemberBinding="{Binding cobranca, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="custo" DataMemberBinding="{Binding custo, StringFormat={}{0:C2}}"/>
-                <telerik:GridViewDataColumn Header="custo_total" DataMemberBinding="{Binding custo_total, StringFormat={}{0:C2}}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="cobranca" DataMemberBinding="{Binding cobranca, Converter={StaticResource ConverterNumber}}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="custo" DataMemberBinding="{Binding custo, StringFormat={}{0:C2}}"/>
+                <telerik:GridViewDataColumn IsReadOnly="True" Header="custo_total" DataMemberBinding="{Binding custo_total, StringFormat={}{0:C2}}"/>
                 <telerik:GridViewDataColumn Header="justificativa" DataMemberBinding="{Binding justificativa}"/>
 
             </telerik:RadGridView.Columns>

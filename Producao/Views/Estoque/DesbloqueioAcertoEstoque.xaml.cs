@@ -115,7 +115,7 @@ namespace Producao.Views.Estoque
             var linhas = await connection.ExecuteAsync(sql, new
             {
                 acerto.codigo,
-                liberadoPor = Environment.UserName,
+                liberadoPor = global::Producao.DataBaseSettings.Instance.Username,
                 liberadoEm = DateTime.Now
             });
             if (linhas != 1)

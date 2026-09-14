@@ -225,7 +225,7 @@ namespace Producao.Views.CentralModelos
                     codcompladicional = long.Parse(txtCodigoProduto.Text), 
                     tema = txtTema.Text, 
                     obs_modelo = txtObservacao.Text,
-                    cadastrado_por = Environment.UserName,
+                    cadastrado_por = global::Producao.DataBaseSettings.Instance.Username,
                     data_cadastro = DateTime.Now
                 };
 

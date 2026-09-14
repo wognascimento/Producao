@@ -167,7 +167,7 @@ public class ViewProdutoShoppingViewModel : INotifyPropertyChanged
                     produto.ncm,
                     produto.peso,
                     produto.custo,
-                    alteradopor = Environment.UserName
+                    alteradopor = global::Producao.DataBaseSettings.Instance.Username
                 });
             return produto;
         }

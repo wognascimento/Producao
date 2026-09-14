@@ -618,7 +618,7 @@ namespace Producao.Views.CentralModelos
                     tipo = "KIT",
                     planilha = produto.planilha,
                     quantidade = quantidade,
-                    responsavel_emissao = Environment.UserName,
+                    responsavel_emissao = global::Producao.DataBaseSettings.Instance.Username,
                     data_emissao = DateTime.Now,
                     cod_produto = produto.codigo,
                     cod_desc_adicional = produto.coduniadicional,
@@ -642,7 +642,7 @@ namespace Producao.Views.CentralModelos
                         orientacao_caminho = item.observacao,
                         distribuir_os = "No setor",
                         cliente = modeloControle.sigla,
-                        solicitado_por = Environment.UserName,
+                        solicitado_por = global::Producao.DataBaseSettings.Instance.Username,
                         solicitado_data = DateTime.Now
                     };
 
@@ -678,8 +678,8 @@ namespace Producao.Views.CentralModelos
                         codigo_setor_proximo = ((i + 1) < solictAberta.Count) ? solictAberta[i + 1].codigo_setor : 39,
                         setor_caminho_proximo = ((i + 1) < solictAberta.Count) ? solictAberta[i + 1].setor_caminho : "FINAL - TODOS",
                         fase = "PRODUÇÃO",
-                        responsavel_emissao_os = Environment.UserName,
-                        emitida_por = Environment.UserName,
+                        responsavel_emissao_os = global::Producao.DataBaseSettings.Instance.Username,
+                        emitida_por = global::Producao.DataBaseSettings.Instance.Username,
                         emitida_data = DateTime.Now,
                         turno = "DIURNO",
                         id_modelo = item.id_modelo,
@@ -694,7 +694,7 @@ namespace Producao.Views.CentralModelos
                         {
                             if (!planilha.Contains("FITAS"))
                             {
-                                var requisicao = new RequisicaoModel { num_os_servico = produtoServicoModel.num_os_servico, data = DateTime.Now, alterado_por = Environment.UserName };
+                                var requisicao = new RequisicaoModel { num_os_servico = produtoServicoModel.num_os_servico, data = DateTime.Now, alterado_por = global::Producao.DataBaseSettings.Instance.Username };
                                 requisicao.num_requisicao = await InsertRequisicaoAsync(conn, requisicao, transaction);
 
                                 const string detalhesSql = """
@@ -718,7 +718,7 @@ namespace Producao.Views.CentralModelos
                                         quantidade = modeloControle.planilha == "ADEREÇO" || modeloControle.planilha == "FIADA" || modeloControle.planilha == "ENF PISO" ? Math.Ceiling((double)detalhe.qtd) : Math.Ceiling((double)(detalhe.qtd * produtoServicoModel.quantidade)),
                                         observacao = detalhe.observacao,
                                         data = DateTime.Now,
-                                        alterado_por = Environment.UserName
+                                        alterado_por = global::Producao.DataBaseSettings.Instance.Username
                                     };
                                     await InsertDetalheRequisicaoAsync(conn, detReq, transaction);
                                 }

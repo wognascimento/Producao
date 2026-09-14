@@ -47,7 +47,7 @@ namespace Producao.Views.OrdemServico.Requisicao
                         return;
                     }
                     txtData.Text = DateTime.Now.ToString("MM/dd/yyyy");
-                    txtEmitente.Text = Environment.UserName;
+                    txtEmitente.Text = global::Producao.DataBaseSettings.Instance.Username;
                     Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 }
                 catch (Exception ex)
@@ -64,8 +64,8 @@ namespace Producao.Views.OrdemServico.Requisicao
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 RequisicaoMaterialEmitirViewModel vm = (RequisicaoMaterialEmitirViewModel)DataContext;
-                //var requisicao = await vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.ProdutoServico.num_os_servico, data = DateTime.Now, alterado_por = Environment.UserName});
-                var requisicao = await vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.TGlobal.num_os, data = DateTime.Now, alterado_por = Environment.UserName});
+                //var requisicao = await vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.ProdutoServico.num_os_servico, data = DateTime.Now, alterado_por = global::Producao.DataBaseSettings.Instance.Username});
+                var requisicao = await vm.SaveRequisicaoAsync(new RequisicaoModel { num_os_servico = vm.TGlobal.num_os, data = DateTime.Now, alterado_por = global::Producao.DataBaseSettings.Instance.Username});
                 //RequisicaoMaterial detailsWindow = new RequisicaoMaterial(vm.ProdutoServico); //ProdutoServico
                 RequisicaoMaterial detailsWindow = new RequisicaoMaterial(vm.TGlobal); //ProdutoServico
                 detailsWindow.Owner = Window.GetWindow((DependencyObject)sender);  //(Window)obj;

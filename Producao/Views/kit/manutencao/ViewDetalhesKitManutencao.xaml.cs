@@ -143,7 +143,7 @@ namespace Producao.Views.kit.solucao
                 vm.ComplementoCheckList.local_shoppings = tbLocalShopping.Text;
                 vm.ComplementoCheckList.class_solucao = cmbClassificacoes.SelectedItem.ToString();
                 vm.ComplementoCheckList.motivos = cmbMotivos.SelectedItem.ToString();
-                vm.ComplementoCheckList.inserido_por = Environment.UserName;
+                vm.ComplementoCheckList.inserido_por = global::Producao.DataBaseSettings.Instance.Username;
                 vm.ComplementoCheckList.inserido_em = DateTime.Now;
 
                 ComplementoCheckListModel compl = await vm.AddComplementoCheckListAsync(vm.ComplementoCheckList);
@@ -172,7 +172,7 @@ namespace Producao.Views.kit.solucao
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 vm.ComplementoCheckList.class_solucao = cmbClassificacoes.SelectedItem.ToString();
                 vm.ComplementoCheckList.motivos = cmbMotivos.SelectedItem.ToString();
-                vm.ComplementoCheckList.alterado_por = Environment.UserName;
+                vm.ComplementoCheckList.alterado_por = global::Producao.DataBaseSettings.Instance.Username;
                 vm.ComplementoCheckList.alterado_em = DateTime.Now;
                 ComplementoCheckListModel compl = await vm.AddComplementoCheckListAsync(vm.ComplementoCheckList);
 
@@ -251,7 +251,7 @@ namespace Producao.Views.kit.solucao
                     orient_montagem = dado?.orient_montagem,
                     orient_desmont = dado?.orient_desmont,
                     qtd = (double)dado.qtd,
-                    alterado_por = Environment.UserName,
+                    alterado_por = global::Producao.DataBaseSettings.Instance.Username,
                     alterado_em = DateTime.Now
                 //ordem = dado?.id
             };
@@ -384,9 +384,9 @@ namespace Producao.Views.kit.solucao
                 vm.DetCompl.qtd = data.qtd.GetValueOrDefault();
                 vm.DetCompl.confirmado = data.confirmado;
                 vm.DetCompl.confirmado_data = data.confirmado == "-1" ? DateTime.Now : null;
-                vm.DetCompl.confirmado_por = data.confirmado == "-1" ? Environment.UserName : null;
+                vm.DetCompl.confirmado_por = data.confirmado == "-1" ? global::Producao.DataBaseSettings.Instance.Username : null;
                 vm.DetCompl.desabilitado_confirmado_data = data.confirmado == "-1" ? DateTime.Now : null;
-                vm.DetCompl.desabilitado_confirmado_por = data.confirmado == "-1" ? Environment.UserName : null;
+                vm.DetCompl.desabilitado_confirmado_por = data.confirmado == "-1" ? global::Producao.DataBaseSettings.Instance.Username : null;
                 vm.DetCompl.local_producao = "JACAREÍ";
                 vm.DetCompl.os = data.os;
 

@@ -19,6 +19,8 @@ namespace Producao.Views.CadastroProduto
     /// </summary>
     public partial class ViewCadastroProduto : UserControl
     {
+        private int _consultaPlanilha;
+        private readonly System.Collections.Generic.HashSet<ProdutoModel> _inativosEmGravacao = new();
 
         public ViewCadastroProduto()
         {
@@ -49,13 +51,17 @@ namespace Producao.Views.CadastroProduto
 
         private async void OnPlanilhaSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var consulta = ++_consultaPlanilha;
             try
             {
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 CadastroProdutoViewModel vm = (CadastroProdutoViewModel)DataContext;
                 //if (!dbClick)
-                vm.Produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
+                var produtos = await vm.GetProdutosAsync(vm.Planilha?.planilha);
+                if (consulta != _consultaPlanilha)
+                    return;
+                vm.Produtos = produtos;
                 ((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -86,16 +92,32 @@ namespace Producao.Views.CadastroProduto
             }
 
             var vm = (CadastroProdutoViewModel)DataContext;
+            if (!_inativosEmGravacao.Add(produto))
+                return;
+            var checkbox = (CheckBox)sender;
+            var anterior = checkbox.IsChecked == true ? "0" : "-1";
+            var usuarioAnterior = produto.alterado_por;
+            var dataAnterior = produto.data_altera;
+            checkbox.IsEnabled = false;
             try
             {
                 produto.inativo = NormalizarInativo(produto.inativo);
-                produto.alterado_por = Environment.UserName;
+                produto.alterado_por = global::Producao.DataBaseSettings.Instance.Username;
                 produto.data_altera = DateTime.Now;
                 await vm.UpdateInativoAsync(produto);
             }
             catch (Exception ex)
             {
+                produto.inativo = anterior;
+                produto.alterado_por = usuarioAnterior;
+                produto.data_altera = dataAnterior;
+                checkbox.IsChecked = anterior == "-1";
                 Producao.ErrorDialog.Show(ex, "Erro ao alterar INATIVO");
+            }
+            finally
+            {
+                checkbox.IsEnabled = true;
+                _inativosEmGravacao.Remove(produto);
             }
         }
 
@@ -113,9 +135,9 @@ namespace Producao.Views.CadastroProduto
                 }
 
                 data.inativo = NormalizarInativo(data.inativo);
-                data.cadastrado_por = data.codigo == null ? Environment.UserName : data.cadastrado_por;
+                data.cadastrado_por = data.codigo == null ? global::Producao.DataBaseSettings.Instance.Username : data.cadastrado_por;
                 data.datacadastro = data.codigo == null ? DateTime.Now : data.datacadastro;
-                data.alterado_por = data.codigo == null ? null : Environment.UserName;
+                data.alterado_por = data.codigo == null ? null : global::Producao.DataBaseSettings.Instance.Username;
                 data.data_altera = data.codigo == null ? null : DateTime.Now;
                 data = await vm.SaveAsync(data);
                 grid?.Items.Refresh();
@@ -428,7 +450,7 @@ namespace Producao.Views.CadastroProduto
         public async Task UpdateInativoAsync(ProdutoModel produto)
         {
             using var conn = CreateConnection();
-            await conn.ExecuteAsync(
+            var alterados = await conn.ExecuteAsync(
                 """
                 UPDATE producao.produtos
                 SET inativo = @inativo,
@@ -437,6 +459,8 @@ namespace Producao.Views.CadastroProduto
                 WHERE codigo = @codigo;
                 """,
                 produto);
+            if (alterados != 1)
+                throw new InvalidOperationException("Produto nao localizado para alterar INATIVO.");
         }
 
     }

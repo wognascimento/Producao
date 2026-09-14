@@ -251,8 +251,8 @@ namespace Producao.Views.OrdemServico.Produto
                 cod_desc_adicional = vm.Descricao?.coduniadicional,
                 cod_compl_adicional = vm.Descricao?.codcompladicional,
                 data_emissao = DateTime.Now,
-                responsavel_emissao = Environment.UserName,
-                solicitado_por = Environment.UserName
+                responsavel_emissao = global::Producao.DataBaseSettings.Instance.Username,
+                solicitado_por = global::Producao.DataBaseSettings.Instance.Username
             };
         }
 
@@ -265,7 +265,7 @@ namespace Producao.Views.OrdemServico.Produto
                 cliente = parent?.cliente,
                 cod_compl_adicional = parent?.cod_compl_adicional,
                 distribuir_os = "No setor",
-                solicitado_por = Environment.UserName,
+                solicitado_por = global::Producao.DataBaseSettings.Instance.Username,
                 solicitado_data = DateTime.Now,
                 cancelar = false,
                 pt = false
@@ -292,7 +292,7 @@ namespace Producao.Views.OrdemServico.Produto
                         cliente = ProdutoOs.cliente,
                         cod_compl_adicional = ProdutoOs.cod_compl_adicional,
                         distribuir_os = "No setor",
-                        solicitado_por = Environment.UserName,
+                        solicitado_por = global::Producao.DataBaseSettings.Instance.Username,
                         solicitado_data = DateTime.Now,
                         cancelar = false,
                         codigo_setor = item.codigo_setor,

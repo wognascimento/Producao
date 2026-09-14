@@ -54,7 +54,7 @@ namespace Producao.Views.OrdemServico.Servicos
                 EmissaoServicoViewModel vm = (EmissaoServicoViewModel)DataContext;
                 vm.OrdemServico.codigo_setor = vm.Setor.codigo_setor;
                 vm.OrdemServico.data_emissao = DateTime.Now;
-                vm.OrdemServico.emitido_por = Environment.UserName;
+                vm.OrdemServico.emitido_por = global::Producao.DataBaseSettings.Instance.Username;
                 vm.OrdemServico.emitido_por_data = DateTime.Now;
                 vm.OrdemServico.quantidade = Convert.ToDouble(txtQuantidade.Text);
 

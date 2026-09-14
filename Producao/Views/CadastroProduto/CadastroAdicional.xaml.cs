@@ -68,7 +68,7 @@ namespace Producao.Views.CadastroProduto
             try
             {
                 adicional.inativo = NormalizarInativo(adicional.inativo);
-                adicional.alteradopor = Environment.UserName;
+                adicional.alteradopor = global::Producao.DataBaseSettings.Instance.Username;
                 adicional.alteradoem = DateTime.Now;
                 await vm.UpdateInativoAsync(adicional);
             }
@@ -91,9 +91,9 @@ namespace Producao.Views.CadastroProduto
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 data.codigoproduto = produto.codigo;
-                data.cadastradopor = isInsert ? Environment.UserName : data.cadastradopor;
+                data.cadastradopor = isInsert ? global::Producao.DataBaseSettings.Instance.Username : data.cadastradopor;
                 data.cadastradoem = isInsert ? DateTime.Now : data.cadastradoem;
-                data.alteradopor = isInsert ? null : Environment.UserName;
+                data.alteradopor = isInsert ? null : global::Producao.DataBaseSettings.Instance.Username;
                 data.alteradoem = isInsert ? null : DateTime.Now;
                 data.inativo = string.IsNullOrWhiteSpace(data.inativo) ? "0" : data.inativo;
 

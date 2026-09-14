@@ -363,7 +363,7 @@ namespace Producao.Views.RelatoriosTecnicos
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 InflamabilidadeViewModel vm = (InflamabilidadeViewModel)DataContext;
-                vm.Inflamabilidade.concluido_por = Environment.UserName;
+                vm.Inflamabilidade.concluido_por = global::Producao.DataBaseSettings.Instance.Username;
                 vm.Inflamabilidade.data_conclusao = DateTime.Now;
                 await vm.SaveInflamabilidadeAsync(vm.Inflamabilidade);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });

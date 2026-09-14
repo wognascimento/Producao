@@ -119,7 +119,7 @@ namespace Producao.Views.OrdemServico.Produto
                             num_os = data.num_os, 
                             programacao_ordem = data.programacao_ordem,
                             programacao_observacao = data.programacao_observacao,
-                            programacao_inserido_por = Environment.UserName, 
+                            programacao_inserido_por = global::Producao.DataBaseSettings.Instance.Username, 
                             programacao_inserido_data = DateTime.Now
                         })
                     ;

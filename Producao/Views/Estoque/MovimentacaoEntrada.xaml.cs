@@ -14,6 +14,7 @@ namespace Producao.Views.Estoque;
 
 public partial class MovimentacaoEntrada : UserControl
 {
+    private bool _preenchendoProduto;
     public MovimentacaoEntrada()
     {
         InitializeComponent();
@@ -57,16 +58,26 @@ public partial class MovimentacaoEntrada : UserControl
 
     private void PreencherProduto(QryDescricao descricao)
     {
-        tbCodproduto.Text = descricao.codcompladicional?.ToString() ?? string.Empty;
-        txtPlanilha.Text = descricao.planilha ?? string.Empty;
-        txtDescricao.Text = descricao.descricao ?? string.Empty;
-        txtDescricaoAdicional.Text = descricao.descricao_adicional ?? string.Empty;
-        txtComplementoAdicional.Text = descricao.complementoadicional ?? string.Empty;
-        txtQuantidade.Focus();
+        _preenchendoProduto = true;
+        try
+        {
+            tbCodproduto.Text = descricao.codcompladicional?.ToString() ?? string.Empty;
+            txtPlanilha.Text = descricao.planilha ?? string.Empty;
+            txtDescricao.Text = descricao.descricao ?? string.Empty;
+            txtDescricaoAdicional.Text = descricao.descricao_adicional ?? string.Empty;
+            txtComplementoAdicional.Text = descricao.complementoadicional ?? string.Empty;
+            txtQuantidade.Focus();
+        }
+        finally
+        {
+            _preenchendoProduto = false;
+        }
     }
 
     private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
     {
+        if (_preenchendoProduto) return;
+        tbCodproduto.Clear();
         if (txtPlanilha.SelectedItem is not RelplanModel planilha)
             return;
 
@@ -87,6 +98,8 @@ public partial class MovimentacaoEntrada : UserControl
 
     private async void OnSelectedDescricao(object sender, SelectionChangedEventArgs e)
     {
+        if (_preenchendoProduto) return;
+        tbCodproduto.Clear();
         if (txtDescricao.SelectedItem is not ProdutoModel produto)
             return;
 
@@ -103,6 +116,8 @@ public partial class MovimentacaoEntrada : UserControl
 
     private async void OnSelectedDescricaoAdicional(object sender, SelectionChangedEventArgs e)
     {
+        if (_preenchendoProduto) return;
+        tbCodproduto.Clear();
         if (txtDescricaoAdicional.SelectedItem is not TabelaDescAdicionalModel adicional)
             return;
 
@@ -117,6 +132,8 @@ public partial class MovimentacaoEntrada : UserControl
 
     private void OnSelectedComplementoAdicional(object sender, SelectionChangedEventArgs e)
     {
+        if (_preenchendoProduto) return;
+        tbCodproduto.Clear();
         if (txtComplementoAdicional.SelectedItem is not TblComplementoAdicionalModel complemento)
             return;
 
@@ -141,35 +158,12 @@ public partial class MovimentacaoEntrada : UserControl
                 quantidade = quantidade,
                 procedencia = operacao,
                 entrada_data = DateTime.Now,
-                entrada_por = Environment.UserName,
+                entrada_por = global::Producao.DataBaseSettings.Instance.Username,
                 codcompladicional = produto,
                 processado = processamento.IsChecked == true ? "-1" : "0"
             };
 
-            if (operacao == "ACERTO ESTOQUE" &&
-                await ViewModel.GetBloqueioAsync(produto) is not null)
-            {
-                throw new InvalidOperationException("PRODUTO BLOQUEADO PARA ACERTO DE ESTOQUE.");
-            }
-
             await ViewModel.SaveAsync(movimentacao);
-            if (operacao == "ACERTO ESTOQUE")
-            {
-                await ViewModel.SaveAcertoAsync(new ControleAcertoEstoque
-                {
-                    cod_movimentacao = movimentacao.codigo_entrada,
-                    processado = movimentacao.processado,
-                    codcompladicional = produto,
-                    quantidade = quantidade,
-                    data = DateTime.Now,
-                    hora = DateTime.Now.TimeOfDay,
-                    operacao = operacao,
-                    processo = "ENTRADA",
-                    incluido_por = Environment.UserName,
-                    incluido_data = DateTime.Now,
-                    bloqueado = "-1"
-                });
-            }
 
             var item = await ViewModel.GetItemAsync(movimentacao.codigo_entrada);
             if (item is not null)
@@ -183,9 +177,21 @@ public partial class MovimentacaoEntrada : UserControl
     private void itens_RowValidating(object sender, GridViewRowValidatingEventArgs e)
     {
         if (e.EditOperationType == GridViewEditOperationType.None ||
-            e.Row.Item is not EntradaDTO item ||
-            item.procedencia != "ACERTO ESTOQUE")
+            e.Row.Item is not EntradaDTO item)
         {
+            return;
+        }
+
+        if (item.procedencia != "ACERTO ESTOQUE")
+        {
+            if (item.quantidade.HasValue && double.IsFinite(item.quantidade.Value) && item.quantidade > 0)
+                return;
+            e.IsValid = false;
+            e.ValidationResults.Add(new GridViewCellValidationResult
+            {
+                ErrorMessage = "Informe uma quantidade maior que zero.",
+                PropertyName = nameof(item.quantidade)
+            });
             return;
         }
 
@@ -205,7 +211,7 @@ public partial class MovimentacaoEntrada : UserControl
         await ExecutarAsync(async () =>
         {
             await ViewModel.UpdateAsync(item);
-            item.entrada_por = Environment.UserName;
+            item.entrada_por = global::Producao.DataBaseSettings.Instance.Username;
             item.entrada_data = DateTime.Now;
             itens.Rebind();
         });

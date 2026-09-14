@@ -61,7 +61,7 @@ namespace Producao.Views.Estoque
                     quantidade = data.qtd_baixa,
                     destino = "PRODUCAO",
                     saida_data = DateTime.Now,
-                    saida_por = Environment.UserName,
+                    saida_por = global::Producao.DataBaseSettings.Instance.Username,
                     codcompladicional = data.codcompladicional,
                     processado = "-1",
                     num_requisicao = long.Parse(tbCodproduto.Text),

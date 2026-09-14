@@ -88,8 +88,7 @@
                             <CheckBox
                                 HorizontalAlignment="Center"
                                 IsChecked="{Binding inativo, Converter={StaticResource ConverterBoolen}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                Checked="OnInativoClick"
-                                Unchecked="OnInativoClick"/>
+                                Click="OnInativoClick"/>
                         </DataTemplate>
                     </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>

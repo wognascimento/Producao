@@ -148,9 +148,9 @@ namespace Producao
             await using var conn = CreateConnection();
             const string sql = """
                 UPDATE producao.t_complemento_chk
-                SET obs = CASE WHEN COALESCE(@obs, '') <> '' THEN @obs ELSE obs END,
-                    orient_montagem = CASE WHEN COALESCE(@orient_montagem, '') <> '' THEN @orient_montagem ELSE orient_montagem END,
-                    orient_desmont = CASE WHEN COALESCE(@orient_desmont, '') <> '' THEN @orient_desmont ELSE orient_desmont END,
+                SET obs = @obs,
+                    orient_montagem = @orient_montagem,
+                    orient_desmont = @orient_desmont,
                     ordem = CASE WHEN COALESCE(@ordem, '') <> '' THEN @ordem ELSE ordem END,
                     qtd = COALESCE(@qtd, qtd),
                     alterado_por = COALESCE(@alterado_por, alterado_por),

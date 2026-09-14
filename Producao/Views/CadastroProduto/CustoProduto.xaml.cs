@@ -162,7 +162,7 @@ public class CustoProdutoViewModel : INotifyPropertyChanged
                 custoDTO.custo_atual,
                 custoDTO.custo_rec_atual,
                 custoDTO.process_atual,
-                alteradopor = Environment.UserName
+                alteradopor = global::Producao.DataBaseSettings.Instance.Username
             });
         }
         catch (Exception ex)

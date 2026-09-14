@@ -238,8 +238,8 @@ namespace Producao.Views.OrdemServico.Produto
                     cod_compl_adicional = vm.Descricao.codcompladicional, 
                     quantidade = Convert.ToDouble(txtQuantidade.Text), 
                     data_emissao = DateTime.Now, 
-                    responsavel_emissao = Environment.UserName,
-                    solicitado_por = Environment.UserName
+                    responsavel_emissao = global::Producao.DataBaseSettings.Instance.Username,
+                    solicitado_por = global::Producao.DataBaseSettings.Instance.Username
                 };
 
                 vm.ProdutoOs = await vm.AddProdutoOsAsync(dado);
@@ -302,7 +302,7 @@ namespace Producao.Views.OrdemServico.Produto
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 ObsOsModel data = (ObsOsModel)e.Row.Item;
                 data.setor_caminho = vm.Setores.Where(x => x.codigo_setor == data.codigo_setor).Select(setor => setor.setor).FirstOrDefault();
-                data.solicitado_por = Environment.UserName;
+                data.solicitado_por = global::Producao.DataBaseSettings.Instance.Username;
                 data.solicitado_data = DateTime.Now;
                 vm.ObsOs = await vm.SaveProdutoOsAsync(data);
                 

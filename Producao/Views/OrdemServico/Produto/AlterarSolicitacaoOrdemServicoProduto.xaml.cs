@@ -113,7 +113,7 @@ namespace Producao.Views.OrdemServico.Produto
                 if (!ValidarCaminho(data))
                     return;
 
-                data.solicitado_por = Environment.UserName;
+                data.solicitado_por = global::Producao.DataBaseSettings.Instance.Username;
                 data.solicitado_data = DateTime.Now;
                 vm.ObsOs = await vm.SaveProdutoOsAsync(data);
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });

@@ -56,7 +56,7 @@ namespace Producao.Views.CentralModelos
                 {
                     codcompladicional = record.codcompladicional,
                     tema = record.tema,
-                    cadastrado_por = Environment.UserName,
+                    cadastrado_por = global::Producao.DataBaseSettings.Instance.Username,
                     data_cadastro = DateTime.Now
                 };
 

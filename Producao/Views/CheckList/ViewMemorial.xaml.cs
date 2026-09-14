@@ -329,7 +329,7 @@ namespace Producao.Views.CheckList
 
                 if (e.Cell?.Column?.UniqueName == "baia_caminhao")
                 {
-                    await vm.SaveBaiaCaminhaoAsync(new ControleBaiaEnderecamentoModel { sigla_serv = data.sigla_serv, id_aprovado = data.id_aprovado, item_memorial = data.item, baia_caminhao = data.baia_caminhao, inserido_por = Environment.UserName, inserido_em = DateTime.Now.Date });
+                    await vm.SaveBaiaCaminhaoAsync(new ControleBaiaEnderecamentoModel { sigla_serv = data.sigla_serv, id_aprovado = data.id_aprovado, item_memorial = data.item, baia_caminhao = data.baia_caminhao, inserido_por = global::Producao.DataBaseSettings.Instance.Username, inserido_em = DateTime.Now.Date });
                 }
             }
             catch (PostgresException ex)
@@ -517,7 +517,7 @@ namespace Producao.Views.CheckList
                       AND item_memorial = @item_memorial;
                     """;
 
-                controleBaia.alterado_por ??= Environment.UserName;
+                controleBaia.alterado_por ??= global::Producao.DataBaseSettings.Instance.Username;
                 controleBaia.alterado_em ??= DateTime.Now;
 
                 var affected = await conn.ExecuteAsync(updateSql, controleBaia);
@@ -533,7 +533,7 @@ namespace Producao.Views.CheckList
                         RETURNING id_controle;
                         """;
 
-                    controleBaia.inserido_por ??= Environment.UserName;
+                    controleBaia.inserido_por ??= global::Producao.DataBaseSettings.Instance.Username;
                     controleBaia.inserido_em ??= DateTime.Now;
                     controleBaia.id_controle = await conn.ExecuteScalarAsync<long>(insertSql, controleBaia);
                 }

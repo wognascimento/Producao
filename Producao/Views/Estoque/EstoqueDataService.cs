@@ -129,6 +129,7 @@ internal sealed class EstoqueDataService
 
     public async Task SaveEntradaAsync(EntradaEstoqueModel entrada)
     {
+        ValidarQuantidade(entrada.quantidade);
         const string insertSql = """
             INSERT INTO producao.t_entrada_estoque
                 (quantidade, procedencia, entrada_data, entrada_por, codcompladicional,
@@ -139,11 +140,19 @@ internal sealed class EstoqueDataService
             RETURNING codigo_entrada;
             """;
         await using var connection = CreateConnection();
-        entrada.codigo_entrada = await connection.ExecuteScalarAsync<long>(insertSql, entrada);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        var codigo = await connection.ExecuteScalarAsync<long>(insertSql, entrada, transaction);
+        if (entrada.procedencia == "ACERTO ESTOQUE")
+            await RegistrarAcertoAsync(connection, transaction, codigo, entrada.codcompladicional,
+                entrada.quantidade, entrada.processado, "ENTRADA");
+        await transaction.CommitAsync();
+        entrada.codigo_entrada = codigo;
     }
 
     public async Task SaveSaidaAsync(SaidaEstoqueModel saida)
     {
+        ValidarQuantidade(saida.quantidade);
         const string insertSql = """
             INSERT INTO producao.t_saida
                 (quantidade, destino, saida_data, saida_por, observacao, codcompladicional,
@@ -154,11 +163,45 @@ internal sealed class EstoqueDataService
             RETURNING codigo_saida;
             """;
         await using var connection = CreateConnection();
-        saida.codigo_saida = await connection.ExecuteScalarAsync<long>(insertSql, saida);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        var codigo = await connection.ExecuteScalarAsync<long>(insertSql, saida, transaction);
+        if (saida.destino == "ACERTO ESTOQUE")
+            await RegistrarAcertoAsync(connection, transaction, codigo, saida.codcompladicional,
+                saida.quantidade, saida.processado, "SAIDA");
+        await transaction.CommitAsync();
+        saida.codigo_saida = codigo;
+    }
+
+    private static void ValidarQuantidade(double? quantidade)
+    {
+        if (!quantidade.HasValue || !double.IsFinite(quantidade.Value) || quantidade <= 0)
+            throw new System.InvalidOperationException("Informe uma quantidade maior que zero.");
+    }
+
+    private static async Task RegistrarAcertoAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
+        long codigo, long? produto, double? quantidade, string? processado, string processo)
+    {
+        // Serialize adjustments for the same product, including entry versus exit.
+        await connection.ExecuteAsync("SELECT pg_advisory_xact_lock(@produto);", new { produto }, transaction);
+        var bloqueado = await connection.ExecuteScalarAsync<bool>(
+            "SELECT EXISTS (SELECT 1 FROM producao.tbl_controle_acerto_estoque WHERE codcompladicional = @produto AND bloqueado = '-1');",
+            new { produto }, transaction);
+        if (bloqueado)
+            throw new System.InvalidOperationException("PRODUTO BLOQUEADO PARA ACERTO DE ESTOQUE.");
+        await connection.ExecuteAsync("""
+            INSERT INTO producao.tbl_controle_acerto_estoque
+                (cod_movimentacao, processado, codcompladicional, quantidade, data, hora,
+                 operacao, processo, incluido_por, incluido_data, bloqueado)
+            VALUES (@codigo, @processado, @produto, @quantidade, @data, @hora,
+                    'ACERTO ESTOQUE', @processo, @usuario, @data, '-1');
+            """, new { codigo, processado, produto, quantidade, data = System.DateTime.Now,
+                hora = System.DateTime.Now.TimeOfDay, processo, usuario = DataBaseSettings.Instance.Username }, transaction);
     }
 
     public async Task UpdateEntradaAsync(EntradaDTO entrada)
     {
+        ValidarQuantidade(entrada.quantidade);
         const string sql = """
             UPDATE producao.t_entrada_estoque
             SET quantidade = @quantidade, entrada_por = @usuario, entrada_data = @data
@@ -169,13 +212,14 @@ internal sealed class EstoqueDataService
         {
             entrada.codigo_entrada,
             entrada.quantidade,
-            usuario = System.Environment.UserName,
+            usuario = global::Producao.DataBaseSettings.Instance.Username,
             data = System.DateTime.Now
         });
     }
 
     public async Task UpdateSaidaAsync(SaidaDTO saida)
     {
+        ValidarQuantidade(saida.quantidade);
         const string sql = """
             UPDATE producao.t_saida
             SET quantidade = @quantidade, saida_por = @usuario, saida_data = @data
@@ -186,7 +230,7 @@ internal sealed class EstoqueDataService
         {
             saida.codigo_saida,
             saida.quantidade,
-            usuario = System.Environment.UserName,
+            usuario = global::Producao.DataBaseSettings.Instance.Username,
             data = System.DateTime.Now
         });
     }

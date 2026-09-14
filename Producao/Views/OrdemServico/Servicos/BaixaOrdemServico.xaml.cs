@@ -119,7 +119,7 @@ namespace Producao.Views.OrdemServico.Servicos
         {
             try
             {
-                baixa.cancelado_por ??= Environment.UserName;
+                baixa.cancelado_por ??= global::Producao.DataBaseSettings.Instance.Username;
                 baixa.data_cancelamento ??= DateTime.Now;
                 await ServicoOrdemRepository.CancelarAsync(baixa);
             }

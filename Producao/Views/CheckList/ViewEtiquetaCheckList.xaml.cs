@@ -108,7 +108,7 @@ namespace Producao.Views.CheckList
                         {
                             vm.Etiqueta.codvol = null;
                             vm.Etiqueta.qtd = 0;
-                            //vm.Etiqueta.criado_por = Environment.UserName;
+                            //vm.Etiqueta.criado_por = global::Producao.DataBaseSettings.Instance.Username;
                             //vm.Etiqueta.criado_em = DateTime.Now;
                         }
                         vm.Etiqueta = await vm.AddEtiquetaAsync(vm.Etiqueta);
@@ -194,12 +194,12 @@ namespace Producao.Views.CheckList
             e.NewObject = new EtiquetaProducaoModel
             {
                 coddetalhescompl = vm.Dado.coddetalhescompl,
-                criado_por = Environment.UserName,
+                criado_por = global::Producao.DataBaseSettings.Instance.Username,
                 criado_em = DateTime.Now
             };
 
             /*
-             * vm.Etiqueta.criado_por = Environment.UserName;
+             * vm.Etiqueta.criado_por = global::Producao.DataBaseSettings.Instance.Username;
              * vm.Etiqueta.criado_em = DateTime.Now;
             */
         }

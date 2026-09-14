@@ -553,8 +553,8 @@ namespace Producao
                     cod_compl_adicional = CheckListGeralComplemento.codcompladicional,
                     quantidade = 0,
                     data_emissao = DateTime.Now,
-                    responsavel_emissao = Environment.UserName,
-                    solicitado_por = Environment.UserName
+                    responsavel_emissao = global::Producao.DataBaseSettings.Instance.Username,
+                    solicitado_por = global::Producao.DataBaseSettings.Instance.Username
                 };
 
                 produtoOs.num_os_produto = await conn.ExecuteScalarAsync<long>(
@@ -583,8 +583,8 @@ namespace Producao
                     codigo_setor_proximo = 39,
                     setor_caminho_proximo = "FINAL - TODOS",
                     fase = "PRODUÇÃO",
-                    responsavel_emissao_os = Environment.UserName,
-                    emitida_por = Environment.UserName,
+                    responsavel_emissao_os = global::Producao.DataBaseSettings.Instance.Username,
+                    emitida_por = global::Producao.DataBaseSettings.Instance.Username,
                     emitida_data = DateTime.Now,
                     retrabalho = "NÃO",
                     impresso = "-1",
@@ -608,7 +608,7 @@ namespace Producao
                 {
                     num_os_servico = produtoServico.num_os_servico,
                     data = DateTime.Now,
-                    alterado_por = Environment.UserName
+                    alterado_por = global::Producao.DataBaseSettings.Instance.Username
                 };
 
                 requisicao.num_requisicao = await conn.ExecuteScalarAsync<long>(
@@ -636,7 +636,7 @@ namespace Producao
                         codcompladicional = item.codcompladicional_receita,
                         quantidade = item.quantidade * CheckListGeralComplemento.qtd,
                         data = DateTime.Now,
-                        alterado_por = Environment.UserName
+                        alterado_por = global::Producao.DataBaseSettings.Instance.Username
                     };
 
                     await conn.ExecuteAsync(
@@ -674,7 +674,7 @@ namespace Producao
                 {
                     num_os_servico = num_os_servico,
                     data = DateTime.Now,
-                    alterado_por = Environment.UserName
+                    alterado_por = global::Producao.DataBaseSettings.Instance.Username
                 };
 
                 requisicao.num_requisicao = await conn.ExecuteScalarAsync<long>(
@@ -702,7 +702,7 @@ namespace Producao
                         codcompladicional = item.codcompladicional_receita,
                         quantidade = item.quantidade * CheckListGeralComplemento.qtd,
                         data = DateTime.Now,
-                        alterado_por = Environment.UserName
+                        alterado_por = global::Producao.DataBaseSettings.Instance.Username
                     };
 
                     await conn.ExecuteAsync(
@@ -1329,6 +1329,19 @@ namespace Producao
             {
                 throw;
             }
+        }
+
+        public async Task CargaCaminhaoGrupoAsync(long[] codigos, string? carga)
+        {
+            await using var conn = CreateConnection();
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync();
+            var alterados = await conn.ExecuteAsync(
+                "UPDATE producao.t_complemento_chk SET carga = @carga WHERE codcompl = ANY(@codigos);",
+                new { carga, codigos }, transaction);
+            if (alterados != codigos.Length)
+                throw new InvalidOperationException("Um dos itens do checklist nao foi localizado. Nenhum caminhao foi alterado.");
+            await transaction.CommitAsync();
         }
 
         public async Task<QryCheckListGeralModel> GetSelectCheckListAsync(long CodCompl)

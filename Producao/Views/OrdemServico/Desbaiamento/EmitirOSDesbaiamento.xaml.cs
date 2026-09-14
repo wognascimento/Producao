@@ -60,7 +60,7 @@ namespace Producao.Views.OrdemServico.Desbaiamento
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                data.inserido_por = Environment.UserName;
+                data.inserido_por = global::Producao.DataBaseSettings.Instance.Username;
                 data.inserido_em = DateTime.Now;
                 var itemSalvo = await vm.AddOsAsync(data);
 
