@@ -61,8 +61,7 @@ namespace Producao
             var worksheet = workbook.Worksheets.Add("Dados");
             Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
             Producao.Utils.ExcelExportHelper.InsertTypedTable(worksheet, data, "Dados");
-            worksheet.Columns().AdjustToContents();
-            workbook.SaveAs(filePath);
+            Producao.Utils.ExcelExportHelper.SaveWithoutFormatting(workbook, filePath);
 
             OpenFile(filePath);
             return filePath;
@@ -76,8 +75,7 @@ namespace Producao
             var worksheet = workbook.Worksheets.Add("Dados");
             Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
             Producao.Utils.ExcelExportHelper.InsertTypedTable(worksheet, dataTable, "Dados");
-            worksheet.Columns().AdjustToContents();
-            workbook.SaveAs(filePath);
+            Producao.Utils.ExcelExportHelper.SaveWithoutFormatting(workbook, filePath);
 
             OpenFile(filePath);
             return filePath;
@@ -186,9 +184,8 @@ namespace Producao
             worksheet.PageSetup.CenterHorizontally = true;
             worksheet.PageSetup.CenterVertically = false;
             worksheet.PageSetup.SetRowsToRepeatAtTop(1, 3);
-            worksheet.Columns().AdjustToContents();
 
-            workbook.SaveAs(filePath);
+            Producao.Utils.ExcelExportHelper.SaveWithoutFormatting(workbook, filePath);
             OpenFile(filePath);
             return filePath;
         }

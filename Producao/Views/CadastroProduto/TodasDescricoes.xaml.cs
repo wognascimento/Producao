@@ -92,10 +92,9 @@ public partial class TodasDescricoes : UserControl
             var lastColumn = Math.Max(itens.Columns.Count, 1);
             var lastRow = Math.Max(row - 1, 1);
             worksheet.Range(1, 1, lastRow, lastColumn).CreateTable("CadastroProduto");
-            worksheet.Columns().AdjustToContents();
 
             var filePath = DataBaseSettings.Instance.ResolveImpressosPath("CADASTRO_PRODUTO.xlsx");
-            workbook.SaveAs(filePath);
+            Producao.Utils.ExcelExportHelper.SaveWithoutFormatting(workbook, filePath);
             Process.Start(new ProcessStartInfo(filePath)
             {
                 UseShellExecute = true

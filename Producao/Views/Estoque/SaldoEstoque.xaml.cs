@@ -63,8 +63,7 @@ namespace Producao.Views.Estoque
                 var worksheet = workbook.Worksheets.Add("Saldo");
                 Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 Producao.Utils.ExcelExportHelper.InsertTypedTable(worksheet, vm.SaldoDetalhados, "SaldoEstoqueDetalhado");
-                worksheet.Columns().AdjustToContents();
-                workbook.SaveAs(filePath);
+                Producao.Utils.ExcelExportHelper.SaveWithoutFormatting(workbook, filePath);
 
                 Process.Start(new ProcessStartInfo(filePath)
                 {

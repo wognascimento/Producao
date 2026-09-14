@@ -182,8 +182,7 @@ public partial class ViewCheckListRevisao : UserControl
             }
         }
 
-        worksheet.Columns().AdjustToContents();
-        workbook.SaveAs(path);
+        Producao.Utils.ExcelExportHelper.SaveWithoutFormatting(workbook, path);
     }
 }
 

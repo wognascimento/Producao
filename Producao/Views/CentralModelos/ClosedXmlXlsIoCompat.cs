@@ -22,7 +22,7 @@ namespace Producao.Views.CentralModelos.Compat
 
     internal sealed class WorkbookCollection
     {
-        public IWorkbook Open(string filePath) => new(new XLWorkbook(filePath));
+        public IWorkbook Open(string filePath) => new(new XLWorkbook(filePath), preserveFormatting: true);
         public IWorkbook OpenReadOnly(string filePath) => Open(filePath);
         public IWorkbook Create(int sheetCount) => new(new XLWorkbook(), sheetCount);
     }
@@ -30,10 +30,12 @@ namespace Producao.Views.CentralModelos.Compat
     internal sealed class IWorkbook : IDisposable
     {
         private readonly XLWorkbook workbook;
+        private readonly bool preserveFormatting;
 
-        public IWorkbook(XLWorkbook workbook, int sheetCount = 0)
+        public IWorkbook(XLWorkbook workbook, int sheetCount = 0, bool preserveFormatting = false)
         {
             this.workbook = workbook;
+            this.preserveFormatting = preserveFormatting;
             if (sheetCount > 0)
             {
                 for (var i = 0; i < sheetCount; i++)
@@ -47,7 +49,13 @@ namespace Producao.Views.CentralModelos.Compat
         public WorksheetCollection Worksheets { get; }
         public StyleCollection Styles { get; }
 
-        public void SaveAs(string filePath) => workbook.SaveAs(filePath);
+        public void SaveAs(string filePath)
+        {
+            if (preserveFormatting)
+                workbook.SaveAs(filePath);
+            else
+                Producao.Utils.ExcelExportHelper.SaveWithoutFormatting(workbook, filePath);
+        }
         public void Close() => Dispose();
         public void Dispose() => workbook.Dispose();
     }

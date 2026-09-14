@@ -10,6 +10,38 @@ namespace Producao.Utils
 {
     internal static class ExcelExportHelper
     {
+        public static void SaveWithoutFormatting(XLWorkbook workbook, string path)
+        {
+            foreach (var worksheet in workbook.Worksheets)
+            {
+                worksheet.ConditionalFormats.RemoveAll();
+                foreach (var table in worksheet.Tables)
+                    table.Theme = XLTableTheme.None;
+
+                worksheet.Style = XLWorkbook.DefaultStyle;
+                foreach (var row in worksheet.RowsUsed(XLCellsUsedOptions.All))
+                    row.Style = XLWorkbook.DefaultStyle;
+                foreach (var column in worksheet.ColumnsUsed(XLCellsUsedOptions.All))
+                    column.Style = XLWorkbook.DefaultStyle;
+                foreach (var cell in worksheet.CellsUsed(XLCellsUsedOptions.All))
+                {
+                    cell.Style = XLWorkbook.DefaultStyle;
+                    if (cell.DataType == XLDataType.DateTime)
+                    {
+                        cell.Style.DateFormat.Format = cell.GetDateTime().TimeOfDay == TimeSpan.Zero
+                            ? DateFormat
+                            : DateTimeFormat;
+                    }
+                    else if (cell.DataType == XLDataType.TimeSpan)
+                    {
+                        cell.Style.DateFormat.Format = TimeFormat;
+                    }
+                }
+            }
+
+            workbook.SaveAs(path);
+        }
+
         private const string DateFormat = "dd/MM/yyyy";
         private const string DateTimeFormat = "dd/MM/yyyy HH:mm:ss";
         private const string TimeFormat = "HH:mm";
@@ -69,6 +101,12 @@ namespace Producao.Utils
                 var dateTime = (DateTime)value;
                 cell.Value = dateTime;
                 cell.Style.DateFormat.Format = dateTime.TimeOfDay == TimeSpan.Zero ? DateFormat : DateTimeFormat;
+                return;
+            }
+
+            if (type == typeof(DateTimeOffset))
+            {
+                SetTypedValue(cell, ((DateTimeOffset)value).DateTime);
                 return;
             }
 

@@ -66,5 +66,6 @@ namespace Producao
         public string? resp_prod { get; set; }
         public string? descricao_completa { get; set; }
         public string? status_producao { get; set; }
+        public bool? etiqueta { get; set; }   
     }
 }

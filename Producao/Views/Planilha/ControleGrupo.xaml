@@ -57,8 +57,8 @@
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding qtd_detalhe, StringFormat={}{0:N2}}" Header="qtd_detalhe" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding qtd_complemento, StringFormat={}{0:N2}}" Header="qtd_complemento" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding qtd_exp, StringFormat={}{0:N2}}" Header="qtd_exp" IsReadOnly="True"/>
-                <telerik:GridViewDataColumn DataMemberBinding="{Binding codcompl, StringFormat={}{0:N0}}" Header="codcompl" IsReadOnly="True"/>
-                <telerik:GridViewDataColumn DataMemberBinding="{Binding coddetalhescompl, StringFormat={}{0:N0}}" Header="coddetalhescompl" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding codcompl}" Header="codcompl" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn DataMemberBinding="{Binding coddetalhescompl}" Header="coddetalhescompl" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn Header="os" UniqueName="os">
                     <telerik:GridViewDataColumn.CellTemplate>
                         <DataTemplate>
@@ -69,6 +69,7 @@
                     </telerik:GridViewDataColumn.CellTemplate>
                 </telerik:GridViewDataColumn>
                 <telerik:GridViewDataColumn DataMemberBinding="{Binding enviado_baia, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Header="enviado_baia"/>
+                <telerik:GridViewCheckBoxColumn DataMemberBinding="{Binding etiqueta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="etiqueta"/>
             </telerik:RadGridView.Columns>
         </telerik:RadGridView>
     </Grid>

@@ -862,7 +862,6 @@ namespace Producao.Views.CentralModelos
                 worksheet.PageSetup.CenterVertically = true;
                 worksheet.PageSetup.CenterHorizontally = true;
 
-                worksheet.UsedRange.AutofitColumns();
 
 
                 workbook.SaveAs(BaseSettings.ResolveImpressosPath($"TABELA_PA.xlsx"));
