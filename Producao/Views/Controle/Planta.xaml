@@ -33,38 +33,38 @@
                 <telerik:GridViewComboBoxColumn Header="Resp Planta Chapas" UniqueName="resp_planta_base" DataMemberBinding="{Binding resp_planta_base, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespPlantaChapas, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewDataColumn Header="Prazo Planta Chapas" UniqueName="prazo_planta_base" DataMemberBinding="{Binding prazo_planta_base, Mode=TwoWay}" DataFormatString="{}{0:dd/MM/yyyy}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Planta Chapas" UniqueName="ok_planta_base" DataMemberBinding="{Binding ok_planta_base, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Planta Chapas Concluida por" UniqueName="planta_base" DataMemberBinding="{Binding planta_base}"/>
-                <telerik:GridViewDataColumn Header="Resp Planta Chapas" UniqueName="liberacao_planta_base" DataMemberBinding="{Binding liberacao_planta_base}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Planta Chapas Concluida por" UniqueName="planta_base" DataMemberBinding="{Binding planta_base}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Resp Planta Chapas" UniqueName="liberacao_planta_base" DataMemberBinding="{Binding liberacao_planta_base}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
 
                 <telerik:GridViewComboBoxColumn Header="Resp Planta Cercas" UniqueName="resp_planta_cercas" DataMemberBinding="{Binding resp_planta_cercas, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespPlantaCercas, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewDataColumn Header="Prazo Planta Cercas" UniqueName="prazo_planta_cercas" DataMemberBinding="{Binding prazo_planta_cercas, Mode=TwoWay}" DataFormatString="{}{0:dd/MM/yyyy}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Planta Cerca" UniqueName="conclusao_planta_cerca" DataMemberBinding="{Binding conclusao_planta_cerca, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Planta Cercas Concluida por" UniqueName="planta_cercas_concluida_por" DataMemberBinding="{Binding planta_cercas_concluida_por}"/>
-                <telerik:GridViewDataColumn Header="Data Conclusão Planta Cercas" UniqueName="data_conclusao_planta_cercas" DataMemberBinding="{Binding data_conclusao_planta_cercas}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Planta Cercas Concluida por" UniqueName="planta_cercas_concluida_por" DataMemberBinding="{Binding planta_cercas_concluida_por}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data Conclusão Planta Cercas" UniqueName="data_conclusao_planta_cercas" DataMemberBinding="{Binding data_conclusao_planta_cercas}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
 
                 <telerik:GridViewComboBoxColumn Header="Resp Revisão Planta Base" UniqueName="resp_revisao_planta_base" DataMemberBinding="{Binding resp_revisao_planta_base, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespPlantaBases, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Revisão Planta Base" UniqueName="conclusao_revisao_planta_base" DataMemberBinding="{Binding conclusao_revisao_planta_base, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Planta Cercas Concluida por" UniqueName="revisao_planta_base_concluida_por" DataMemberBinding="{Binding revisao_planta_base_concluida_por}"/>
-                <telerik:GridViewDataColumn Header="Data Conclusão Revisão Planta Base" UniqueName="data_revisao_planta_base" DataMemberBinding="{Binding data_revisao_planta_base}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Planta Cercas Concluida por" UniqueName="revisao_planta_base_concluida_por" DataMemberBinding="{Binding revisao_planta_base_concluida_por}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data Conclusão Revisão Planta Base" UniqueName="data_revisao_planta_base" DataMemberBinding="{Binding data_revisao_planta_base}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
 
                 <telerik:GridViewComboBoxColumn Header="Resp Planta Praça" UniqueName="resp_planta_pca" DataMemberBinding="{Binding resp_planta_pca, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespPlantaPracas, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewDataColumn Header="Prazo Planta Praça" UniqueName="prazo_planta_pca" DataMemberBinding="{Binding prazo_planta_pca, Mode=TwoWay}" DataFormatString="{}{0:dd/MM/yyyy}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Planta Praça" UniqueName="ok_planta_pca" DataMemberBinding="{Binding ok_planta_pca, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Planta Praça Concluida por" UniqueName="planta_pca" DataMemberBinding="{Binding planta_pca}"/>
-                <telerik:GridViewDataColumn Header="Data Conclusão Planta Praça" UniqueName="liberacao_planta_pca" DataMemberBinding="{Binding liberacao_planta_pca}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Planta Praça Concluida por" UniqueName="planta_pca" DataMemberBinding="{Binding planta_pca}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data Conclusão Planta Praça" UniqueName="liberacao_planta_pca" DataMemberBinding="{Binding liberacao_planta_pca}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
 
                 <telerik:GridViewComboBoxColumn Header="Resp Revisão Planta Praça" UniqueName="resp_revisao_planta_praca" DataMemberBinding="{Binding resp_revisao_planta_praca, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespRevisaoPlantaPracas, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Revisão Planta Praça" UniqueName="conclusao_revisao_planta_praca" DataMemberBinding="{Binding conclusao_revisao_planta_praca, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Revisão Planta Praça Concluida por" UniqueName="revisao_planta_praca_concluida_por" DataMemberBinding="{Binding revisao_planta_praca_concluida_por}"/>
-                <telerik:GridViewDataColumn Header="Data Conclusão Revisão Planta Praça" UniqueName="data_conclusso_revisao_planta_praca" DataMemberBinding="{Binding data_conclusso_revisao_planta_praca}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Revisão Planta Praça Concluida por" UniqueName="revisao_planta_praca_concluida_por" DataMemberBinding="{Binding revisao_planta_praca_concluida_por}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data Conclusão Revisão Planta Praça" UniqueName="data_conclusso_revisao_planta_praca" DataMemberBinding="{Binding data_conclusso_revisao_planta_praca}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
 
                 <telerik:GridViewDataColumn Header="Resp Cliente Planta" UniqueName="resp_revisao_planta" DataMemberBinding="{Binding resp_revisao_planta, Mode=TwoWay}"/>
                 <telerik:GridViewDataColumn Header="Data Liberação Resp Cliente" UniqueName="data_revisao_planta" DataMemberBinding="{Binding data_revisao_planta, Mode=TwoWay}" DataFormatString="{}{0:dd/MM/yyyy}"/>
 
                 <telerik:GridViewComboBoxColumn Header="Resp Revisão Final" UniqueName="resp_revisao_final" DataMemberBinding="{Binding resp_revisao_final, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespRevisaoPlantaPracas, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Revisão Final" UniqueName="conclusao_revisao_final" DataMemberBinding="{Binding conclusao_revisao_final, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Revisão Final Concluida por" UniqueName="revisao_final_concluida_por" DataMemberBinding="{Binding revisao_final_concluida_por}"/>
-                <telerik:GridViewDataColumn Header="Data Conclusão Revisão Final" UniqueName="data_conclusao_revisao_final" DataMemberBinding="{Binding data_conclusao_revisao_final}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Revisão Final Concluida por" UniqueName="revisao_final_concluida_por" DataMemberBinding="{Binding revisao_final_concluida_por}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data Conclusão Revisão Final" UniqueName="data_conclusao_revisao_final" DataMemberBinding="{Binding data_conclusao_revisao_final}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
 
                 <telerik:GridViewDataColumn Header="Ajuste" UniqueName="ajuste" DataMemberBinding="{Binding ajuste, Mode=TwoWay}"/>
                 <telerik:GridViewDataColumn Header="Obs ajuste" UniqueName="obs_ajuste" DataMemberBinding="{Binding obs_ajuste, Mode=TwoWay}"/>
@@ -72,40 +72,40 @@
                 <telerik:GridViewDataColumn Header="Resp VT" UniqueName="resp_vt" DataMemberBinding="{Binding resp_vt, Mode=TwoWay}"/>
                 <telerik:GridViewDataColumn Header="Data VT" UniqueName="data_vt" DataMemberBinding="{Binding data_vt, Mode=TwoWay}" DataFormatString="{}{0:dd/MM/yyyy}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Retorno VT" UniqueName="conclusao_retorno_vt" DataMemberBinding="{Binding conclusao_retorno_vt, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Resp Retorno VT" UniqueName="resp_retorno_vt" DataMemberBinding="{Binding resp_retorno_vt}"/>
-                <telerik:GridViewDataColumn Header="Data Retorno VT" UniqueName="data_retorno_vt" DataMemberBinding="{Binding data_retorno_vt}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Resp Retorno VT" UniqueName="resp_retorno_vt" DataMemberBinding="{Binding resp_retorno_vt}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data Retorno VT" UniqueName="data_retorno_vt" DataMemberBinding="{Binding data_retorno_vt}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn Header="Alteração Planta Praça VT" UniqueName="alteracao_planta_praca_vt" DataMemberBinding="{Binding alteracao_planta_praca_vt, Mode=TwoWay}"/>
                 <telerik:GridViewDataColumn Header="Obs Planta Praça VT" UniqueName="obs_planta_praca_vt" DataMemberBinding="{Binding obs_planta_praca_vt, Mode=TwoWay}"/>
 
                 <telerik:GridViewComboBoxColumn Header="Resp Planta Mall" UniqueName="resp_planta_mall" DataMemberBinding="{Binding resp_planta_mall, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespPlantaMalls, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewDataColumn Header="Prazo Planta Mall" UniqueName="prazo_planta_mall" DataMemberBinding="{Binding prazo_planta_mall, Mode=TwoWay}" DataFormatString="{}{0:dd/MM/yyyy}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Planta Mall" UniqueName="ok_planta_mall" DataMemberBinding="{Binding ok_planta_mall, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Planta Mall concluida por" UniqueName="planta_mall" DataMemberBinding="{Binding planta_mall}"/>
-                <telerik:GridViewDataColumn Header="Data conclusão Planta Mall" UniqueName="conclusao_planta_mall" DataMemberBinding="{Binding conclusao_planta_mall}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Planta Mall concluida por" UniqueName="planta_mall" DataMemberBinding="{Binding planta_mall}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data conclusão Planta Mall" UniqueName="conclusao_planta_mall" DataMemberBinding="{Binding conclusao_planta_mall}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn Header="Alteração Planta Mall VT" UniqueName="alteracao_planta_mall_vt" DataMemberBinding="{Binding alteracao_planta_mall_vt, Mode=TwoWay}"/>
                 <telerik:GridViewDataColumn Header="Obs Planta Mall VT" UniqueName="obs_planta_mall_vt" DataMemberBinding="{Binding obs_planta_mall_vt, Mode=TwoWay}"/>
 
                 <telerik:GridViewComboBoxColumn Header="Resp Planta Fachada" UniqueName="resp_planta_fachada" DataMemberBinding="{Binding resp_planta_fachada, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespPlantaFachadas, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewDataColumn Header="Prazo Planta Fachada" UniqueName="prazo_planta_fachada" DataMemberBinding="{Binding prazo_planta_fachada, Mode=TwoWay}" DataFormatString="{}{0:dd/MM/yyyy}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Planta Fachada" UniqueName="ok_planta_fachada" DataMemberBinding="{Binding ok_planta_fachada, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Planta Fachada Concluida por" UniqueName="planta_fachada" DataMemberBinding="{Binding planta_fachada}"/>
-                <telerik:GridViewDataColumn Header="Data Conclusão Planta Fachada" UniqueName="conclusao_planta_fachada" DataMemberBinding="{Binding conclusao_planta_fachada}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Planta Fachada Concluida por" UniqueName="planta_fachada" DataMemberBinding="{Binding planta_fachada}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data Conclusão Planta Fachada" UniqueName="conclusao_planta_fachada" DataMemberBinding="{Binding conclusao_planta_fachada}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn Header="Alteração Planta Fachada VT" UniqueName="alteracao_planta_fachada_vt" DataMemberBinding="{Binding alteracao_planta_fachada_vt, Mode=TwoWay}"/>
                 <telerik:GridViewDataColumn Header="Obs Planta Fachada VT" UniqueName="obs_planta_fachada_vt" DataMemberBinding="{Binding obs_planta_fachada_vt, Mode=TwoWay}"/>
 
                 <telerik:GridViewComboBoxColumn Header="Resp Planta Corte/Elevação" UniqueName="resp_planta_corte_elevacao" DataMemberBinding="{Binding resp_planta_corte_elevacao, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespPlantaCorteElevacoes, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewDataColumn Header="Prazo Planta Corte/Elevação" UniqueName="prazo_planta_corte_elevacao" DataMemberBinding="{Binding prazo_planta_corte_elevacao, Mode=TwoWay}" DataFormatString="{}{0:dd/MM/yyyy}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Planta Corte Elevação" UniqueName="conclusao_planta_corte_elevacao" DataMemberBinding="{Binding conclusao_planta_corte_elevacao, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Planta Corte/Elevação concluida por" UniqueName="planta_corte_elevacao_concluida_por" DataMemberBinding="{Binding planta_corte_elevacao_concluida_por}"/>
-                <telerik:GridViewDataColumn Header="Data conclusão Planta Corte/Elevação" UniqueName="data_conclusao_planta_corte_elevacao" DataMemberBinding="{Binding data_conclusao_planta_corte_elevacao}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Planta Corte/Elevação concluida por" UniqueName="planta_corte_elevacao_concluida_por" DataMemberBinding="{Binding planta_corte_elevacao_concluida_por}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data conclusão Planta Corte/Elevação" UniqueName="data_conclusao_planta_corte_elevacao" DataMemberBinding="{Binding data_conclusao_planta_corte_elevacao}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
 
                 <telerik:GridViewDataColumn Header="Obs Gerais" UniqueName="obs_gerais" DataMemberBinding="{Binding obs_gerais, Mode=TwoWay}"/>
 
                 <telerik:GridViewComboBoxColumn Header="Resp Planta AS BUILT" UniqueName="resp_planta_as_built" DataMemberBinding="{Binding resp_planta_as_built, Mode=TwoWay}" ItemsSource="{Binding DataContext.RespPlantaAsBuilts, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"/>
                 <telerik:GridViewDataColumn Header="Prazo Planta AS BUILT" UniqueName="prazo_planta_as_built" DataMemberBinding="{Binding prazo_planta_as_built, Mode=TwoWay}" DataFormatString="{}{0:dd/MM/yyyy}"/>
                 <telerik:GridViewCheckBoxColumn Header="Conclusão Planta AS BUILT" UniqueName="conclusao_planta_as_built" DataMemberBinding="{Binding conclusao_planta_as_built, Mode=TwoWay}"/>
-                <telerik:GridViewDataColumn Header="Planta AS BUILT Concluida por" UniqueName="as_built_plantas" DataMemberBinding="{Binding as_built_plantas}"/>
-                <telerik:GridViewDataColumn Header="Data Conclusão Planta AS BUILT" UniqueName="as_built_plantas_data" DataMemberBinding="{Binding as_built_plantas_data}" DataFormatString="{}{0:dd/MM/yyyy}"/>
+                <telerik:GridViewDataColumn Header="Planta AS BUILT Concluida por" UniqueName="as_built_plantas" DataMemberBinding="{Binding as_built_plantas}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="Data Conclusão Planta AS BUILT" UniqueName="as_built_plantas_data" DataMemberBinding="{Binding as_built_plantas_data}" DataFormatString="{}{0:dd/MM/yyyy}" IsReadOnly="True"/>
             </telerik:RadGridView.Columns>
         </telerik:RadGridView>
     </Grid>
