@@ -549,6 +549,7 @@ namespace Producao.Views.CentralModelos.Compat
             => value switch
             {
                 ExcelKnownColors.Black => XLColor.Black,
+                ExcelKnownColors.White => XLColor.White,
                 ExcelKnownColors.None => XLColor.NoColor,
                 _ => XLColor.FromArgb(191, 191, 191)
             };
@@ -557,7 +558,7 @@ namespace Producao.Views.CentralModelos.Compat
     internal enum ExcelVersion { Xlsx }
     internal enum ExcelBordersIndex { EdgeTop, EdgeBottom, EdgeLeft, EdgeRight }
     internal enum ExcelLineStyle { None, Thin, Dashed }
-    internal enum ExcelKnownColors { None, Black, Grey_25_percent }
+    internal enum ExcelKnownColors { None, Black, White, Grey_25_percent }
     internal enum ExcelHAlign { HAlignLeft, HAlignCenter, HAlignRight }
     internal enum ExcelVAlign { VAlignTop, VAlignCenter }
     internal enum ExcelPageOrientation { Portrait, Landscape }

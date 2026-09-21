@@ -28,7 +28,8 @@
             ItemsSource="{Binding OSsAberta}"
             SelectedItem="{Binding OsAberta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             FontSize="10"
-            FontFamily="Arial">
+            PreviewMouseRightButtonDown="OsEmAberta_PreviewMouseRightButtonDown"
+            IsReadOnly="True">
 
             <telerik:RadGridView.ContextMenu>
                 <ContextMenu Style="{x:Null}">

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.GridView;
 
@@ -45,6 +46,36 @@ namespace Producao.Views.OrdemServico.Produto
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
+        }
+
+        private void OsEmAberta_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var row = FindVisualParent<GridViewRow>(e.OriginalSource as DependencyObject);
+            if (row?.Item is OrdemServicoEmissaoAbertaForm item)
+            {
+                OsEmAberta.SelectedItem = item;
+                OsEmAberta.CurrentItem = item;
+                row.IsSelected = true;
+                row.Focus();
+                return;
+            }
+
+            OsEmAberta.SelectedItem = null;
+            OsEmAberta.CurrentItem = null;
+        }
+
+        private static T? FindVisualParent<T>(DependencyObject? element)
+            where T : DependencyObject
+        {
+            while (element is not null)
+            {
+                if (element is T typed)
+                    return typed;
+
+                element = VisualTreeHelper.GetParent(element);
+            }
+
+            return null;
         }
     }
 

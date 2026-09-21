@@ -348,6 +348,45 @@ namespace Producao
                     string.Equals(p.Header?.ToString(), title, StringComparison.OrdinalIgnoreCase));
         }
 
+        private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.F5)
+            {
+                return;
+            }
+
+            e.Handled = true;
+
+            var paneGroup = radDocking.FindChildByType<RadPaneGroup>();
+            var pane = paneGroup?.SelectedItem as RadPane
+                ?? paneGroup?.Items.OfType<RadPane>().FirstOrDefault(item => item.IsActive);
+            if (pane?.Content is not FrameworkElement currentContent)
+            {
+                return;
+            }
+
+            try
+            {
+                if (Activator.CreateInstance(currentContent.GetType()) is not FrameworkElement refreshedContent)
+                {
+                    return;
+                }
+
+                refreshedContent.Name = currentContent.Name;
+                pane.Content = refreshedContent;
+                paneGroup!.SelectedItem = pane;
+                pane.IsActive = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Não foi possível atualizar a tela atual.\n\n{ex.Message}",
+                    "Atualizar",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private void MenuItemAdv_Click(object sender, Telerik.Windows.RadRoutedEventArgs e)
         {
             /*

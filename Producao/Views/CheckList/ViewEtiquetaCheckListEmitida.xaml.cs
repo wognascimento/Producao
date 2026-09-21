@@ -179,13 +179,28 @@ namespace Producao.Views.CheckList
 
         private static void LimparEtiquetas(IWorksheet worksheet)
         {
+            var celulasVariaveis = new[]
+            {
+                "A1", "B2", "C2", "D2", "B5", "A8",
+                "F1", "G2", "H2", "I2", "G5", "F8",
+                "A13", "B14", "C14", "D14", "B17", "A20",
+                "F13", "G14", "H14", "I14", "G17", "F20",
+                "A25", "B26", "C26", "D26", "B29", "A32",
+                "F25", "G26", "H26", "I26", "G29", "F32"
+            };
+
+            foreach (var celula in celulasVariaveis)
+            {
+                worksheet.Range[celula].Text = string.Empty;
+            }
+
             foreach (var rangeName in new[] { "PRIMEIRA", "SEGUNDA", "TERCEIRA", "QUARTA", "QUINTA", "SEXTA" })
             {
                 worksheet.Range[rangeName].Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.None;
                 worksheet.Range[rangeName].Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.None;
                 worksheet.Range[rangeName].Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.None;
                 worksheet.Range[rangeName].Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.None;
-                worksheet.Range[rangeName].CellStyle.Font.Color = ExcelKnownColors.None;
+                worksheet.Range[rangeName].CellStyle.Font.Color = ExcelKnownColors.White;
             }
         }
     }

@@ -21,6 +21,7 @@ namespace Producao
             BaseSettings.LoadFromConfiguration();
             RegistrarHandlersDapper();
             RegistrarPadraoFiltroRadGridView();
+            ContextMenuSelectionDefaults.Register();
             StyleManager.ApplicationTheme = new Office2016Theme();
             AplicarCulturaPadrao();
 

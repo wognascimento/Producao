@@ -6,7 +6,8 @@
         Height="350" Width="1024" 
         WindowState="Maximized" 
         Language="pt-BR"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        PreviewKeyDown="MainWindow_PreviewKeyDown">
 
     <Grid x:Name="Etiqueta">
         <Grid.RowDefinitions>
