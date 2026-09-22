@@ -32,7 +32,8 @@
                              IsReadOnly="true"
                              ItemsSource="{Binding Dados}"
                              SelectedItem="{Binding Dado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             MouseDoubleClick="OnMouseDoubleClick">
+                             PreviewMouseLeftButtonDown="dgCheckList_PreviewMouseLeftButtonDown"
+                             SelectionChanged="dgCheckList_SelectionChanged">
             <telerik:RadGridView.Columns>
                 <telerik:GridViewDataColumn Header="SIGLA" DataMemberBinding="{Binding sigla}"/>
                 <telerik:GridViewDataColumn Header="ITEM" DataMemberBinding="{Binding item_memorial}"/>
@@ -56,7 +57,7 @@
         <telerik:RadGridView x:Name="dgEtiqueta"
                              Grid.Row="1"
                              NewRowPosition="Top"
-                             CanUserInsertRows="True"
+                             CanUserInsertRows="False"
                              CanUserDeleteRows="True"
                              AutoGenerateColumns="False"
                              ShowGroupPanel="False"

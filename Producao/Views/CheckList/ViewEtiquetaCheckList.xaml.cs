@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.GridView;
 
@@ -21,6 +22,7 @@ namespace Producao.Views.CheckList
     {
         private int etiqueta = 1;
         private bool _dadosCarregados;
+        private bool _trocandoItemChecklist;
 
         public ViewEtiquetaCheckList()
         {
@@ -71,35 +73,108 @@ namespace Producao.Views.CheckList
             }
         }
 
-        private async void OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void dgCheckList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            var linhaClicada = FindParent<GridViewRow>(e.OriginalSource as DependencyObject);
+            if (linhaClicada?.Item == null || ReferenceEquals(linhaClicada.Item, dgCheckList.SelectedItem))
+            {
+                return;
+            }
+
+            _trocandoItemChecklist = true;
+            LimparEstadoEdicaoEtiquetas((EtiquetaViewModel)DataContext);
+
+            Application.Current.Dispatcher.BeginInvoke(
+                new Action(() => _trocandoItemChecklist = false),
+                System.Windows.Threading.DispatcherPriority.ContextIdle);
+        }
+
+        private static T? FindParent<T>(DependencyObject? element) where T : DependencyObject
+        {
+            while (element != null)
+            {
+                if (element is T parent)
+                {
+                    return parent;
+                }
+
+                element = VisualTreeHelper.GetParent(element);
+            }
+
+            return null;
+        }
+
+        private async void dgCheckList_SelectionChanged(object sender, SelectionChangeEventArgs e)
+        {
+            EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
+            LimparEstadoEdicaoEtiquetas(vm);
+
+            if (sender is not RadGridView grid || grid.SelectedItem is not EtiquetaCheckListModel itemSelecionado)
+            {
+                vm.Dado = null;
+                return;
+            }
+
+            vm.Dado = itemSelecionado;
+
             try
             {
-                //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Visible;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
-                vm.Etiquetas = await vm.GetEtiquetasAsync(vm.Dado.coddetalhescompl);
-                //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                var etiquetas = await vm.GetEtiquetasAsync(itemSelecionado.coddetalhescompl);
+
+                if (grid.SelectedItem is not EtiquetaCheckListModel itemAtual ||
+                    itemAtual.coddetalhescompl != itemSelecionado.coddetalhescompl)
+                {
+                    return;
+                }
+
+                vm.Etiquetas.Clear();
+                foreach (var etiquetaCarregada in etiquetas)
+                {
+                    vm.Etiquetas.Add(etiquetaCarregada);
+                }
+
+                dgEtiqueta.Rebind();
+                dgEtiqueta.CanUserInsertRows = true;
             }
             catch (Exception ex)
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
                 Producao.ErrorDialog.Show(ex, "Erro");
-                //((MainWindow)Application.Current.MainWindow).PbLoading.Visibility = Visibility.Hidden;
             }
+            finally
+            {
+                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+        }
+
+        private void LimparEstadoEdicaoEtiquetas(EtiquetaViewModel vm)
+        {
+            dgEtiqueta.CanUserInsertRows = false;
+            dgEtiqueta.CancelEdit();
+            dgEtiqueta.SelectedItem = null;
+            dgEtiqueta.CurrentItem = null;
+            dgEtiqueta.CurrentCellInfo = null;
+            vm.Etiqueta = null;
+            vm.Etiquetas.Clear();
+            dgEtiqueta.Rebind();
         }
 
         private async void dgEtiqueta_RowValidated(object sender, GridViewRowValidatedEventArgs e)
         {
+            if (_trocandoItemChecklist)
+            {
+                return;
+            }
+
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
                 EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
                 vm.Etiqueta = (EtiquetaProducaoModel)e.Row.Item;
                 EtiquetaProducaoModel data = (EtiquetaProducaoModel)e.Row.Item;
+                var novaEtiqueta = data.codvol is null or 0;
 
-                if (data.codvol is null)
+                if (novaEtiqueta)
                 {
                     for (int i = 0; i < data.volumes_total; i++)
                     {
@@ -113,13 +188,30 @@ namespace Producao.Views.CheckList
                         }
                         vm.Etiqueta = await vm.AddEtiquetaAsync(vm.Etiqueta);
                     }
-                    vm.Etiquetas = await vm.GetEtiquetasAsync(data.coddetalhescompl);
+                    var etiquetasAtualizadas = await vm.GetEtiquetasAsync(data.coddetalhescompl);
+                    vm.Etiquetas.Clear();
+                    foreach (var etiquetaAtualizada in etiquetasAtualizadas)
+                    {
+                        vm.Etiquetas.Add(etiquetaAtualizada);
+                    }
                 }
                 else 
                 {
                     vm.Etiqueta = await vm.AddEtiquetaAsync(vm.Etiqueta);
                 }
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+
+                if (novaEtiqueta && dgEtiqueta.CanUserInsertRows)
+                {
+                    Application.Current.Dispatcher.BeginInvoke(
+                        new Action(() =>
+                        {
+                            dgEtiqueta.Focus();
+                            dgEtiqueta.CurrentColumn = dgEtiqueta.Columns[0];
+                            dgEtiqueta.BeginInsert();
+                        }),
+                        System.Windows.Threading.DispatcherPriority.ContextIdle);
+                }
             }
             catch (Exception ex)
             {
@@ -130,6 +222,12 @@ namespace Producao.Views.CheckList
 
         private void dgEtiqueta_RowValidating(object sender, GridViewRowValidatingEventArgs e)
         {
+            if (_trocandoItemChecklist)
+            {
+                e.IsValid = true;
+                return;
+            }
+
             EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
             EtiquetaProducaoModel rowData = (EtiquetaProducaoModel)e.Row.Item;
             if (!rowData.coddetalhescompl.HasValue)
@@ -191,9 +289,20 @@ namespace Producao.Views.CheckList
         private void dgEtiqueta_AddingNewDataItem(object sender, GridViewAddingNewEventArgs e)
         {
             EtiquetaViewModel vm = (EtiquetaViewModel)DataContext;
+            if (dgCheckList.SelectedItem is not EtiquetaCheckListModel itemSelecionado)
+            {
+                e.Cancel = true;
+                MessageBox.Show(
+                    "Selecione um item do checklist antes de emitir a etiqueta.",
+                    "Emitir etiqueta",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
             e.NewObject = new EtiquetaProducaoModel
             {
-                coddetalhescompl = vm.Dado.coddetalhescompl,
+                coddetalhescompl = itemSelecionado.coddetalhescompl,
                 criado_por = global::Producao.DataBaseSettings.Instance.Username,
                 criado_em = DateTime.Now
             };
@@ -328,7 +437,7 @@ namespace Producao.Views.CheckList
             set { _dado = value; RaisePropertyChanged("Dado"); }
         }
 
-        private ObservableCollection<EtiquetaProducaoModel> _etiquetas;
+        private ObservableCollection<EtiquetaProducaoModel> _etiquetas = [];
         public ObservableCollection<EtiquetaProducaoModel> Etiquetas
         {
             get { return _etiquetas; }

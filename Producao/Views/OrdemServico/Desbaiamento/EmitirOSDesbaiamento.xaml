@@ -18,6 +18,7 @@
     <Grid>
 
         <telerik:RadGridView
+            x:Name="itens"
             AutoGenerateColumns="False"
             IsFilteringAllowed="True"
             ShowGroupPanel="False"
@@ -31,13 +32,10 @@
             RowEditEnded="RadGridView_RowEditEnded" >
 
             <telerik:RadGridView.Columns>
-                <telerik:GridViewComboBoxColumn
+                <telerik:GridViewDataColumn
                     Header="COD.DET"
                     UniqueName="coddetalhescompl"
-                    DataMemberBinding="{Binding coddetalhescompl}"
-                    ItemsSource="{Binding DataContext.DetalhesComplemento, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"
-                    SelectedValueMemberPath="coddetalhescompl"
-                    DisplayMemberPath="coddetalhescompl"
+                    DataMemberBinding="{Binding coddetalhescompl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
                     Width="100"/>
                 <telerik:GridViewDataColumn Header="SIGLA" DataMemberBinding="{Binding sigla}" IsReadOnly="True" Width="120"/>
                 <telerik:GridViewDataColumn Header="QTDE" DataMemberBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"/>

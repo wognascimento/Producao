@@ -19,6 +19,10 @@ namespace Producao.Views.OrdemServico.Desbaiamento
     /// </summary>
     public partial class EmitirOSDesbaiamento : UserControl
     {
+        private bool _salvandoLinha;
+        private Task _validacaoCodigoTask = Task.CompletedTask;
+        private OsExpModel? _linhaComCodigoInvalido;
+
         public EmitirOSDesbaiamento()
         {
             InitializeComponent();
@@ -32,7 +36,6 @@ namespace Producao.Views.OrdemServico.Desbaiamento
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
 
                 EmitirOSDesbaiamentoViewModel vm = (EmitirOSDesbaiamentoViewModel)DataContext;
-                vm.DetalhesComplemento = await vm.GetDetalhesComplementoAsync();
                 vm.Itens = await vm.GetItensAsync();
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
@@ -45,7 +48,7 @@ namespace Producao.Views.OrdemServico.Desbaiamento
 
         private async void RadGridView_RowEditEnded(object sender, GridViewRowEditEndedEventArgs e)
         {
-            if (e.EditAction != GridViewEditAction.Commit)
+            if (e.EditAction != GridViewEditAction.Commit || _salvandoLinha)
             {
                 return;
             }
@@ -57,6 +60,19 @@ namespace Producao.Views.OrdemServico.Desbaiamento
                 return;
             }
 
+            if (LinhaNovaVazia(data))
+            {
+                vm.Itens?.Remove(data);
+                return;
+            }
+
+            await _validacaoCodigoTask;
+            if (ReferenceEquals(_linhaComCodigoInvalido, data))
+            {
+                return;
+            }
+
+            _salvandoLinha = true;
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
@@ -66,9 +82,12 @@ namespace Producao.Views.OrdemServico.Desbaiamento
 
                 data.n_os_desbaiamento = itemSalvo.n_os_desbaiamento;
                 vm.Item = data;
-                grid.Rebind();
-
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _linhaComCodigoInvalido = data;
+                MessageBox.Show(ex.Message, "Não foi possível salvar a O.S.", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ReabrirEdicaoCodigo(grid, data);
             }
             catch (Exception ex)
             {
@@ -79,32 +98,92 @@ namespace Producao.Views.OrdemServico.Desbaiamento
                     foreach (var item in toRemove)
                         vm.Itens.Remove(item);
                 }
+            }
+            finally
+            {
+                _salvandoLinha = false;
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
         }
 
-        private void RadGridView_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
+        private async void RadGridView_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
             if (e.Cell?.Column?.UniqueName != "coddetalhescompl" ||
-                e.Cell.DataContext is not OsExpModel item ||
-                DataContext is not EmitirOSDesbaiamentoViewModel vm)
+                sender is not RadGridView grid ||
+                DataContext is not EmitirOSDesbaiamentoViewModel vm ||
+                e.Cell.ParentRow?.Item is not OsExpModel data)
             {
                 return;
             }
 
-            var detalhe = vm.DetalhesComplemento.FirstOrDefault(x => x.coddetalhescompl == item.coddetalhescompl);
-            item.sigla = detalhe?.sigla;
+            _validacaoCodigoTask = ValidarCodigoDigitadoAsync(vm, data);
+            await _validacaoCodigoTask;
+        }
 
-            if (sender is RadGridView grid)
-                grid.Rebind();
+        private async Task ValidarCodigoDigitadoAsync(EmitirOSDesbaiamentoViewModel vm, OsExpModel data)
+        {
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                await vm.ValidarCodDetalheAsync(data);
+                _linhaComCodigoInvalido = null;
+            }
+            catch (InvalidOperationException ex)
+            {
+                data.sigla = null;
+                _linhaComCodigoInvalido = data;
+                MessageBox.Show(ex.Message, "COD.DET. inválido", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                if (FindName("itens") is RadGridView grid)
+                {
+                    ReabrirEdicaoCodigo(grid, data);
+                }
+            }
+            catch (Exception ex)
+            {
+                data.sigla = null;
+                _linhaComCodigoInvalido = data;
+                Producao.ErrorDialog.Show(ex, "Não foi possível validar o COD.DET.");
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        private static void ReabrirEdicaoCodigo(RadGridView grid, OsExpModel data)
+        {
+            grid.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                grid.CurrentItem = data;
+                grid.SelectedItem = data;
+                grid.CurrentColumn = grid.Columns["coddetalhescompl"];
+                grid.ScrollIntoView(data);
+                grid.Focus();
+                grid.BeginEdit();
+            }), System.Windows.Threading.DispatcherPriority.ContextIdle);
+        }
+
+        private static bool LinhaNovaVazia(OsExpModel data)
+        {
+            return data.n_os_desbaiamento is null or 0
+                && data.coddetalhescompl is null
+                && data.quantidade is null or 0
+                && string.IsNullOrWhiteSpace(data.codvol)
+                && data.data == null
+                && string.IsNullOrWhiteSpace(data.resp)
+                && string.IsNullOrWhiteSpace(data.solicitante)
+                && string.IsNullOrWhiteSpace(data.motivo)
+                && string.IsNullOrWhiteSpace(data.setor)
+                && string.IsNullOrWhiteSpace(data.obs);
         }
 
     }
 
-    public class DetalheComplementoDesbaiamentoModel
+    public class ValidacaoDetalheDesbaiamentoModel
     {
-        public long? coddetalhescompl { get; set; }
         public string? sigla { get; set; }
+        public bool ja_emitida { get; set; }
     }
 
     public class EmitirOSDesbaiamentoViewModel : INotifyPropertyChanged
@@ -140,36 +219,6 @@ namespace Producao.Views.OrdemServico.Desbaiamento
             set { _motivos = value; RaisePropertyChanged("Motivos"); }
         }
 
-        private ObservableCollection<DetalheComplementoDesbaiamentoModel> _detalhesComplemento = [];
-        public ObservableCollection<DetalheComplementoDesbaiamentoModel> DetalhesComplemento
-        {
-            get { return _detalhesComplemento; }
-            set { _detalhesComplemento = value; RaisePropertyChanged("DetalhesComplemento"); }
-        }
-
-        public async Task<ObservableCollection<DetalheComplementoDesbaiamentoModel>> GetDetalhesComplementoAsync()
-        {
-            await using var conn = CreateConnection();
-            const string sql = """
-                SELECT
-                    producao.tblDetalhesComplemento.coddetalhescompl,
-                    producao.t_complemento_chk.sigla
-                FROM
-                    producao.tblDetalhesComplemento
-                    INNER JOIN producao.t_complemento_chk ON producao.tblDetalhesComplemento.codcompl = producao.t_complemento_chk.codcompl
-                GROUP BY
-                    producao.tblDetalhesComplemento.coddetalhescompl,
-                    producao.t_complemento_chk.sigla
-                HAVING
-                    producao.t_complemento_chk.sigla NOT LIKE 'SROOM%'
-                ORDER BY
-                    producao.tblDetalhesComplemento.coddetalhescompl;
-                """;
-
-            var data = await conn.QueryAsync<DetalheComplementoDesbaiamentoModel>(sql);
-            return new ObservableCollection<DetalheComplementoDesbaiamentoModel>(data);
-        }
-
         public async Task<ObservableCollection<OsExpModel>> GetItensAsync()
         {
             try
@@ -194,6 +243,7 @@ namespace Producao.Views.OrdemServico.Desbaiamento
             try
             {
                 await using var conn = CreateConnection();
+                await ValidarCodDetalheAsync(conn, osExp);
 
                 if (osExp.n_os_desbaiamento is null or 0)
                 {
@@ -238,6 +288,50 @@ namespace Producao.Views.OrdemServico.Desbaiamento
             {
                 throw;
             }
+        }
+
+        public async Task ValidarCodDetalheAsync(OsExpModel osExp)
+        {
+            await using var conn = CreateConnection();
+            await ValidarCodDetalheAsync(conn, osExp);
+        }
+
+        private static async Task ValidarCodDetalheAsync(NpgsqlConnection conn, OsExpModel osExp)
+        {
+            if (osExp.coddetalhescompl is null)
+            {
+                throw new InvalidOperationException("Informe o COD.DET.");
+            }
+
+            const string validacaoSql = """
+                SELECT
+                    complemento.sigla,
+                    EXISTS (
+                        SELECT 1
+                        FROM expedicao.tbl_os_exp AS os
+                        WHERE os.coddetalhescompl = detalhe.coddetalhescompl
+                          AND os.n_os_desbaiamento IS DISTINCT FROM @n_os_desbaiamento
+                    ) AS ja_emitida
+                FROM producao.tblDetalhesComplemento AS detalhe
+                INNER JOIN producao.t_complemento_chk AS complemento
+                    ON detalhe.codcompl = complemento.codcompl
+                WHERE detalhe.coddetalhescompl = @coddetalhescompl
+                  AND complemento.sigla NOT LIKE 'SROOM%'
+                LIMIT 1;
+                """;
+
+            var validacao = await conn.QueryFirstOrDefaultAsync<ValidacaoDetalheDesbaiamentoModel>(validacaoSql, osExp);
+            if (validacao == null)
+            {
+                throw new InvalidOperationException("O COD.DET informado não existe ou não está disponível para desbaiamento.");
+            }
+
+            if (validacao.ja_emitida)
+            {
+                throw new InvalidOperationException("Já existe uma O.S. de desbaiamento emitida para este COD.DET.");
+            }
+
+            osExp.sigla = validacao.sigla;
         }
 
     }
