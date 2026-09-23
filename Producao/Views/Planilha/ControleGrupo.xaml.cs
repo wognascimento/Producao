@@ -21,6 +21,7 @@ namespace Producao.Views.Planilha
     {
         private ICollectionView? _gridView;
         private bool _atualizandoSequencia;
+        private bool _carregandoDados;
 
         public ControleGrupo()
         {
@@ -32,18 +33,50 @@ namespace Producao.Views.Planilha
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                ControleGrupoViewModel vm = (ControleGrupoViewModel)DataContext;
-                vm.StatusProducao = await vm.GetStatusProducaoAsync();
-                vm.ControlePlanilhaGrupos = await vm.GetItensAsync();
-                VincularAtualizacaoSequencia();
-                AtualizarSequencia();
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                await AtualizarAsync();
             }
             catch (Exception ex)
             {
                 Producao.ErrorDialog.Show(ex, "Erro");
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+            }
+        }
+
+        public async Task AtualizarAsync()
+        {
+            if (_carregandoDados)
+                return;
+
+            _carregandoDados = true;
+            Mouse.OverrideCursor = Cursors.Wait;
+
+            try
+            {
+                var vm = (ControleGrupoViewModel)DataContext;
+                var statusProducaoTask = vm.GetStatusProducaoAsync();
+                var itensTask = vm.GetItensAsync();
+                await Task.WhenAll(statusProducaoTask, itensTask);
+
+                vm.StatusProducao = await statusProducaoTask;
+                var novosItens = await itensTask;
+
+                if (vm.ControlePlanilhaGrupos == null)
+                {
+                    vm.ControlePlanilhaGrupos = novosItens;
+                    VincularAtualizacaoSequencia();
+                }
+                else
+                {
+                    vm.ControlePlanilhaGrupos.Clear();
+                    foreach (var item in novosItens)
+                        vm.ControlePlanilhaGrupos.Add(item);
+                }
+
+                AtualizarSequencia();
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+                _carregandoDados = false;
             }
         }
 

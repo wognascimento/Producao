@@ -348,7 +348,7 @@ namespace Producao
                     string.Equals(p.Header?.ToString(), title, StringComparison.OrdinalIgnoreCase));
         }
 
-        private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        private async void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key != Key.F5)
             {
@@ -367,6 +367,12 @@ namespace Producao
 
             try
             {
+                if (currentContent is ControleGrupo controleGrupo)
+                {
+                    await controleGrupo.AtualizarAsync();
+                    return;
+                }
+
                 if (Activator.CreateInstance(currentContent.GetType()) is not FrameworkElement refreshedContent)
                 {
                     return;
