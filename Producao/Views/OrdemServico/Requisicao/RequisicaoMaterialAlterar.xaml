@@ -147,8 +147,9 @@
                              CanUserReorderColumns="True"
                              ShowGroupPanel="False"
                              ItemsSource="{Binding QryRequisicaoDetalhes}"
-                             MouseDoubleClick="OnMouseDoubleClick"
-                             RowValidating="itens_RowValidating">
+                             BeginningEdit="itens_BeginningEdit"
+                             CellEditEnded="itens_CellEditEnded"
+                             MouseDoubleClick="OnMouseDoubleClick">
             <telerik:RadGridView.Columns>
                 <telerik:GridViewDataColumn Header="ID" DataMemberBinding="{Binding cod_det_req, Converter={StaticResource ConverterNumber}}" IsReadOnly="True"/>
                 <telerik:GridViewDataColumn Header="COD." DataMemberBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}" IsReadOnly="True"/>

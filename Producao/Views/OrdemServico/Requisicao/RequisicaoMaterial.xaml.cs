@@ -27,6 +27,7 @@ namespace Producao.Views.OrdemServico.Requisicao
         List<string> lLocalShopping = ["", "INTERNO", "EXTERNO"];
         bool dbClick;
         private bool carregandoProdutoPorCodigo;
+        private readonly Dictionary<QryRequisicaoDetalheModel, double?> _quantidadesOriginais = new();
         static DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
         public RequisicaoMaterial(object obj)
@@ -310,6 +311,47 @@ namespace Producao.Views.OrdemServico.Requisicao
 
         }
         */
+        private void itens_BeginningEdit(object sender, GridViewBeginningEditRoutedEventArgs e)
+        {
+            if (e.Cell?.Column?.UniqueName == "quantidade" &&
+                e.Cell.DataContext is QryRequisicaoDetalheModel item)
+            {
+                _quantidadesOriginais[item] = item.quantidade;
+            }
+        }
+
+        private async void itens_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
+        {
+            if (e.Cell?.Column?.UniqueName != "quantidade" ||
+                e.Cell.ParentRow?.Item is not QryRequisicaoDetalheModel item)
+            {
+                return;
+            }
+
+            if (!_quantidadesOriginais.Remove(item, out var quantidadeOriginal) ||
+                Nullable.Equals(quantidadeOriginal, item.quantidade))
+            {
+                return;
+            }
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var vm = (RequisicaoViewModel)DataContext;
+                await vm.AtualizarQuantidadeAsync(item.cod_det_req, item.quantidade);
+                item.data = DateTime.Now;
+                item.alterado_por = DataBaseSettings.Instance.Username;
+            }
+            catch (Exception ex)
+            {
+                Producao.ErrorDialog.Show(ex, "Não foi possível atualizar a quantidade");
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+
         private async void OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             dbClick = true;

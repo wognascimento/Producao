@@ -391,6 +391,32 @@ namespace Producao
             }
         }
 
+        public async Task AtualizarQuantidadeAsync(long? codDetReq, double? quantidade)
+        {
+            if (codDetReq is null or 0)
+                throw new InvalidOperationException("Não foi possível identificar o item da requisição.");
+
+            const string sql = """
+                UPDATE producao.t_detalhes_req
+                SET quantidade = @quantidade,
+                    data = @data,
+                    alterado_por = @alteradoPor
+                WHERE cod_det_req = @codDetReq;
+                """;
+
+            await using var conn = CreateConnection();
+            var linhasAlteradas = await conn.ExecuteAsync(sql, new
+            {
+                codDetReq,
+                quantidade,
+                data = DateTime.Now,
+                alteradoPor = DataBaseSettings.Instance.Username
+            });
+
+            if (linhasAlteradas == 0)
+                throw new InvalidOperationException("O item da requisição não foi encontrado para atualização.");
+        }
+
         public async Task<ObservableCollection<QryRequisicaoDetalheModel>> GetRequisicaoDetalhesAsync(long? num_requisicao)
         {
             try
