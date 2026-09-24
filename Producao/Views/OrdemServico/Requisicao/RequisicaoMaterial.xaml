@@ -149,16 +149,16 @@
                              ItemsSource="{Binding QryRequisicaoDetalhes}"
                              MouseDoubleClick="OnMouseDoubleClick">
             <telerik:RadGridView.Columns>
-                <telerik:GridViewDataColumn Header="ID" DataMemberBinding="{Binding cod_det_req, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="COD." DataMemberBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="PLANILHA" DataMemberBinding="{Binding planilha}"/>
-                <telerik:GridViewDataColumn Header="DESCRIÇÃO" DataMemberBinding="{Binding descricao_completa}"/>
-                <telerik:GridViewDataColumn Header="UNID" DataMemberBinding="{Binding unidade}"/>
-                <telerik:GridViewDataColumn Header="QTDE" DataMemberBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}"/>
-                <telerik:GridViewDataColumn Header="VOLTAGEM" DataMemberBinding="{Binding voltagem}"/>
-                <telerik:GridViewDataColumn Header="LOCAL SHOPPING" DataMemberBinding="{Binding local_shop}"/>
-                <telerik:GridViewDataColumn Header="INSERIDO EM" DataMemberBinding="{Binding data, StringFormat={}{0:dd/MM/yyyy}}"/>
-                <telerik:GridViewDataColumn Header="INSERIDO POR" DataMemberBinding="{Binding alterado_por}"/>
+                <telerik:GridViewDataColumn Header="ID" DataMemberBinding="{Binding cod_det_req, Converter={StaticResource ConverterNumber}}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="COD." DataMemberBinding="{Binding codcompladicional, Converter={StaticResource ConverterNumber}}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="PLANILHA" DataMemberBinding="{Binding planilha}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="DESCRIÇÃO" DataMemberBinding="{Binding descricao_completa}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="UNID" DataMemberBinding="{Binding unidade}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="QTDE" UniqueName="quantidade" DataMemberBinding="{Binding quantidade, Converter={StaticResource ConverterNumber}}" IsReadOnly="False"/>
+                <telerik:GridViewDataColumn Header="VOLTAGEM" DataMemberBinding="{Binding voltagem}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="LOCAL SHOPPING" DataMemberBinding="{Binding local_shop}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="INSERIDO EM" DataMemberBinding="{Binding data, StringFormat={}{0:dd/MM/yyyy}}" IsReadOnly="True"/>
+                <telerik:GridViewDataColumn Header="INSERIDO POR" DataMemberBinding="{Binding alterado_por}" IsReadOnly="True"/>
             </telerik:RadGridView.Columns>
         </telerik:RadGridView>
     </Grid>

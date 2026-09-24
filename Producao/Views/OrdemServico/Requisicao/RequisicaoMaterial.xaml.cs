@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.OrdemServico.Requisicao
 {
@@ -81,6 +84,7 @@ namespace Producao.Views.OrdemServico.Requisicao
             txtComplementoAdicional.Text = string.Empty;
             txtComplementoAdicional.SelectedItem = null;
             txtQuantidade.Text = string.Empty;
+            txtUnidade.Text = string.Empty;
             txtObservacao.Text = string.Empty;
             txtPlanilha.Focus();
 
@@ -308,7 +312,6 @@ namespace Producao.Views.OrdemServico.Requisicao
         */
         private async void OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            
             dbClick = true;
             var record = itens.SelectedItem as QryRequisicaoDetalheModel;
             if (record is null)
@@ -334,14 +337,18 @@ namespace Producao.Views.OrdemServico.Requisicao
             try
             {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = Cursors.Wait; });
-                vm.Descricao = await vm.GetDescricaoAsync((long)record?.codcompladicional);
-                tbCodproduto.Text = vm.Descricao.codcompladicional.ToString();
-                txtPlanilha.Text = vm.Descricao.planilha;
-                txtDescricao.Text = vm.Descricao.descricao;
-                txtDescricaoAdicional.Text = vm.Descricao.descricao_adicional;
-                txtComplementoAdicional.Text = vm.Descricao.complementoadicional;
-                txtQuantidade.Text = record?.quantidade.ToString();
-                txtObservacao.Text = record?.observacao ?? string.Empty;
+                if (record.codcompladicional == null)
+                {
+                    MessageBox.Show("O item não possui código de produto.", "Requisição de material", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                await PreencherProdutoPorCodigoAsync(record.codcompladicional.Value);
+                if (vm.Descricao == null)
+                    return;
+
+                txtQuantidade.Text = record.quantidade.ToString();
+                txtObservacao.Text = record.observacao ?? string.Empty;
 
                 vm.RequisicaoDetalhe = new DetalheRequisicaoModel
                 {
@@ -351,11 +358,6 @@ namespace Producao.Views.OrdemServico.Requisicao
                     quantidade = (float?)record.quantidade
                 };
 
-                vm.Produtos = await vm.GetProdutosAsync(vm.Descricao.planilha);
-                vm.DescAdicionais = await vm.GetDescAdicionaisAsync(vm.Descricao.codigo);
-                vm.CompleAdicionais = await vm.GetCompleAdicionaisAsync(vm.Descricao.coduniadicional);
-
-                Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
             catch (FormatException ex)
             {
@@ -365,6 +367,9 @@ namespace Producao.Views.OrdemServico.Requisicao
             catch (Exception ex)
             {
                 Producao.ErrorDialog.Show(ex, "Erro");
+            }
+            finally
+            {
                 Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
             }
 
@@ -397,7 +402,33 @@ namespace Producao.Views.OrdemServico.Requisicao
                 }
             }
         }
+
+        private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T parent)
+                    return parent;
+
+                child = VisualTreeHelper.GetParent(child);
+            }
+
+            return null;
+        }
         */
+        private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T parent)
+                    return parent;
+
+                child = VisualTreeHelper.GetParent(child);
+            }
+
+            return null;
+        }
+
         private void OnDropDownOpened(object sender, EventArgs e)
         {
             dbClick = false;
@@ -583,6 +614,20 @@ namespace Producao.Views.OrdemServico.Requisicao
             vm.Descricao = await vm.GetDescricaoAsync(codcompladicional);
             if (vm.Descricao == null)
             {
+                carregandoProdutoPorCodigo = true;
+                try
+                {
+                    Limpar();
+                    vm.Planilha = null;
+                    vm.Produto = null;
+                    vm.DescAdicional = null;
+                    vm.Compledicional = null;
+                }
+                finally
+                {
+                    carregandoProdutoPorCodigo = false;
+                }
+
                 MessageBox.Show("Produto não encontrado", "Busca de produto");
                 return;
             }
