@@ -373,6 +373,12 @@ namespace Producao
                     return;
                 }
 
+                if (currentContent is ViewEtiquetaCheckListEmitida etiquetasEmitidas)
+                {
+                    await etiquetasEmitidas.AtualizarAsync();
+                    return;
+                }
+
                 if (Activator.CreateInstance(currentContent.GetType()) is not FrameworkElement refreshedContent)
                 {
                     return;

@@ -115,6 +115,51 @@ namespace Producao.Views.OrdemServico.Produto
             }
         }
 
+        private void OnComboPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Tab || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) || sender is not RadComboBox combo)
+                return;
+
+            var texto = combo.Text?.Trim() ?? string.Empty;
+            var itens = combo.Items.Cast<object>().ToList();
+            if (itens.Count == 0)
+                return;
+
+            object? selecionado = combo.SelectedItem;
+            if (selecionado == null || !CorrespondeAoTexto(combo, selecionado, texto))
+            {
+                selecionado = itens.FirstOrDefault(item =>
+                    string.Equals(ObterTextoItem(combo, item), texto, StringComparison.CurrentCultureIgnoreCase));
+
+                selecionado ??= itens.FirstOrDefault(item =>
+                    ObterTextoItem(combo, item).StartsWith(texto, StringComparison.CurrentCultureIgnoreCase));
+
+                selecionado ??= itens.FirstOrDefault(item =>
+                    ObterTextoItem(combo, item).IndexOf(texto, StringComparison.CurrentCultureIgnoreCase) >= 0);
+            }
+
+            if (selecionado == null)
+                return;
+
+            combo.SelectedItem = selecionado;
+            combo.Text = ObterTextoItem(combo, selecionado);
+            combo.IsDropDownOpen = false;
+        }
+
+        private static bool CorrespondeAoTexto(RadComboBox combo, object item, string texto)
+        {
+            return string.IsNullOrEmpty(texto) ||
+                   ObterTextoItem(combo, item).IndexOf(texto, StringComparison.CurrentCultureIgnoreCase) >= 0;
+        }
+
+        private static string ObterTextoItem(RadComboBox combo, object item)
+        {
+            if (string.IsNullOrWhiteSpace(combo.DisplayMemberPath))
+                return item.ToString() ?? string.Empty;
+
+            return item.GetType().GetProperty(combo.DisplayMemberPath)?.GetValue(item)?.ToString() ?? string.Empty;
+        }
+
         private async void OnSelectedPlanilha(object sender, SelectionChangedEventArgs e)
         {
             try

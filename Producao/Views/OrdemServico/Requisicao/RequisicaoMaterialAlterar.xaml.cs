@@ -1,7 +1,6 @@
 using Npgsql;
-using Producao.Views.Construcao;
-using Producao.Views.PopUp;
 using Producao.Views.CentralModelos.Compat;
+using Producao.Views.PopUp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

@@ -51,6 +51,26 @@ namespace Producao.Views.CheckList
             //((MainWindow)Application.Current.MainWindow)._mdi.Items.Remove(this);
         }
 
+        public async Task AtualizarAsync()
+        {
+            var mainWindow = (MainWindow)Application.Current.MainWindow;
+            try
+            {
+                mainWindow.PbLoading.Visibility = Visibility.Visible;
+                var vm = (EtiquetaEmitidaViewModel)DataContext;
+                await vm.GetEtiquetasAsync();
+                _dadosCarregados = true;
+            }
+            catch (Exception ex)
+            {
+                Producao.ErrorDialog.Show(ex, "Erro ao atualizar etiquetas emitidas");
+            }
+            finally
+            {
+                mainWindow.PbLoading.Visibility = Visibility.Hidden;
+            }
+        }
+
         private void OnImprimirClick(object sender, RoutedEventArgs e)
         {
             EtiquetaEmitidaViewModel vm = (EtiquetaEmitidaViewModel)DataContext;
@@ -240,8 +260,23 @@ namespace Producao.Views.CheckList
             try
             {
                 const string sql = """
-                    SELECT *
-                    FROM producao.etiqueta_emitida;
+                    SELECT data_de_expedicao,
+                           sigla,
+                           item_memorial,
+                           local_shoppings,
+                           planilha,
+                           descricao_completa,
+                           coddetalhescompl,
+                           codvol,
+                           volumes,
+                           volumes_total,
+                           qtd,
+                           criado_por,
+                           criado_em
+                    FROM producao.etiqueta_emitida
+                    ORDER BY criado_em DESC NULLS LAST,
+                             coddetalhescompl,
+                             volumes;
                     """;
 
                 var data = await QueryAsync<EtiquetaEmitidaModel>(sql);

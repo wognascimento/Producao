@@ -218,6 +218,8 @@ namespace Producao.Views.CentralModelos.Compat
 
         public BorderCollection Borders => new(range.Style);
 
+        public int LastRow => range.RangeAddress.LastAddress.RowNumber;
+
         public string? Text
         {
             get => range.FirstCell().GetString();

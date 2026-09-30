@@ -26,8 +26,8 @@ namespace Producao.Views.CheckList
         private bool suppressComboCascade;
         private bool _dadosCarregados;
         private bool _restaurandoCelulaComErro;
-        private readonly Dictionary<string, object?> _dgCheckListGeralValoresOriginais = new();
-        private readonly HashSet<string> _dgCheckListGeralSalvamentosPendentes = new();
+        private readonly Dictionary<string, object?> _dgCheckListGeralValoresOriginais = [];
+        private readonly HashSet<string> _dgCheckListGeralSalvamentosPendentes = [];
         private QryCheckListGeralModel? _dgCheckListGeralItemComErro;
         private Telerik.Windows.Controls.GridViewColumn? _dgCheckListGeralColunaComErro;
 
@@ -581,8 +581,8 @@ namespace Producao.Views.CheckList
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
 
-                //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
+                // Abre o modelo para preservar integralmente a formatação definida no Excel.
+                IWorkbook workbook = application.Workbooks.Open(BaseSettings.ResolveModeloPath("CHECKLIST_MODELO.xlsx"));
                 IWorksheet worksheet = workbook.Worksheets[0];
                 Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.IsGridLinesVisible = false;
@@ -622,6 +622,7 @@ namespace Producao.Views.CheckList
                 worksheet.Range["A1"].Text = $"{vm.Sigla.sigla_serv} CHECK LIST {BaseSettings.Database}";
                 worksheet.Range["A1"].CellStyle.Font.Bold = true;
                 worksheet.Range["A1"].CellStyle.Font.Size = 25;
+                worksheet.Range["A1:K1"].RowHeight = 32.25;
 
                 worksheet.Range["A2"].Text = $"ITEM";
                 worksheet.Range["A2"].ColumnWidth = 5;
@@ -660,12 +661,109 @@ namespace Producao.Views.CheckList
                 worksheet.Range["K2"].ColumnWidth = 10;
                 worksheet.Range["K2"].WrapText = true;
 
-                worksheet.Rows[1].CellStyle = bodyStyle;
-
+                worksheet.Range["A:A"].ColumnWidth = 5;
+                worksheet.Range["B:B"].ColumnWidth = 20;
+                worksheet.Range["C:C"].ColumnWidth = 20;
+                worksheet.Range["D:D"].ColumnWidth = 45;
+                worksheet.Range["E:H"].ColumnWidth = 5;
+                worksheet.Range["I:I"].ColumnWidth = 30;
+                worksheet.Range["J:K"].ColumnWidth = 10;
                 var dados = await vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado);
-                worksheet.ImportData(dados, 3, 1, false);
+                if (dados.Count == 0)
+                {
+                    Application.Current.Dispatcher.Invoke(() => { Mouse.OverrideCursor = null; });
+                    MessageBox.Show("Não existem dados para imprimir neste checklist.", "Imprimir", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
 
-                worksheet.Range[$"A3:K{dados.Count + 2}"].CellStyle = headerStyle;
+                // Limpa apenas o conteúdo antigo do modelo. As dimensões, bordas,
+                // fontes, alinhamentos e configurações de impressão são preservadas.
+                var lastTemplateRow = worksheet.UsedRange.LastRow;
+                for (var row = 3; row <= lastTemplateRow; row++)
+                {
+                    for (var column = 'A'; column <= 'K'; column++)
+                        worksheet.Range[$"{column}{row}"].Text = string.Empty;
+                }
+
+                static int CountWrappedLines(string? value, int charactersPerLine)
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        return 1;
+
+                    return value.Split('\n')
+                        .Sum(part => Math.Max(1, (int)Math.Ceiling(part.TrimEnd('\r').Length / (double)charactersPerLine)));
+                }
+
+                var linha = 3;
+                foreach (var item in dados)
+                {
+                    worksheet.Range[$"A{linha}"].Text = item.item_memorial ?? string.Empty;
+                    worksheet.Range[$"B{linha}"].Text = item.local_shoppings ?? string.Empty;
+                    worksheet.Range[$"C{linha}"].Text = item.planilha ?? string.Empty;
+                    worksheet.Range[$"D{linha}"].Text = item.descricao_dd ?? item.descricao ?? string.Empty;
+                    worksheet.Range[$"E{linha}"].Text = item.unidade ?? string.Empty;
+
+                    if (item.qtd.HasValue)
+                        worksheet.Range[$"F{linha}"].Number = item.qtd.Value;
+                    if (item.custo_unitario.HasValue)
+                        worksheet.Range[$"G{linha}"].Number = item.custo_unitario.Value;
+                    if (item.custo_total.HasValue)
+                        worksheet.Range[$"H{linha}"].Number = item.custo_total.Value;
+
+                    worksheet.Range[$"I{linha}"].Text = item.orient_montagem ?? string.Empty;
+                    if (item.coddetalhescompl.HasValue)
+                        worksheet.Range[$"J{linha}"].Number = item.coddetalhescompl.Value;
+                    worksheet.Range[$"K{linha}"].Text = item.caminhao ?? string.Empty;
+
+                    var wrappedLines = new[]
+                    {
+                        CountWrappedLines(item.local_shoppings, 22),
+                        CountWrappedLines(item.planilha, 22),
+                        CountWrappedLines(item.descricao_dd ?? item.descricao, 50),
+                        CountWrappedLines(item.orient_montagem, 35)
+                    }.Max();
+                    worksheet.Range[$"A{linha}:K{linha}"].RowHeight = Math.Max(18, wrappedLines * 15);
+                    linha++;
+                }
+
+                worksheet.Range[$"A3:K{dados.Count + 2}"].WrapText = true;
+
+                // Aplica as bordas diretamente em cada célula. Ao atribuir um estilo
+                // a uma faixa, o XlsIO pode considerar as bordas apenas no contorno.
+                for (var row = 2; row <= dados.Count + 2; row++)
+                {
+                    for (var column = 'A'; column <= 'K'; column++)
+                    {
+                        var cell = worksheet.Range[$"{column}{row}"];
+                        cell.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
+                        cell.Borders[ExcelBordersIndex.EdgeBottom].LineStyle = ExcelLineStyle.Thin;
+                        cell.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                        cell.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                        cell.Borders[ExcelBordersIndex.EdgeTop].Color = ExcelKnownColors.Grey_25_percent;
+                        cell.Borders[ExcelBordersIndex.EdgeBottom].Color = ExcelKnownColors.Grey_25_percent;
+                        cell.Borders[ExcelBordersIndex.EdgeLeft].Color = ExcelKnownColors.Grey_25_percent;
+                        cell.Borders[ExcelBordersIndex.EdgeRight].Color = ExcelKnownColors.Grey_25_percent;
+                    }
+                }
+
+                // Formata por célula e por último para impedir que a atribuição de
+                // estilos das linhas de dados substitua o layout do cabeçalho.
+                var titleCell = worksheet.Range["A1"];
+                titleCell.CellStyle.Font.Bold = true;
+                titleCell.CellStyle.Font.Size = 25;
+                worksheet.Range["A1:K1"].RowHeight = 32.25;
+
+                for (var column = 'A'; column <= 'K'; column++)
+                {
+                    var headerCell = worksheet.Range[$"{column}2"];
+                    headerCell.WrapText = true;
+                    headerCell.CellStyle.Font.Bold = true;
+                    headerCell.CellStyle.Font.Size = 11;
+                    headerCell.CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    headerCell.CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                }
+
+                worksheet.Range["A2:K2"].RowHeight = 45;
 
                 worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[$"A3:A{dados.Count + 2}"].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;

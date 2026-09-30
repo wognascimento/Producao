@@ -62,6 +62,7 @@
                       ItemsSource="{Binding Planilhas}"
                       DisplayMemberPath="planilha"
                       SelectedItem="{Binding Planilha, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      PreviewKeyDown="OnComboPreviewKeyDown"
                       SelectionChanged="OnSelectedPlanilha" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
@@ -73,6 +74,7 @@
                       ItemsSource="{Binding Produtos}"
                       DisplayMemberPath="descricao"
                       SelectedItem="{Binding Produto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      PreviewKeyDown="OnComboPreviewKeyDown"
                       SelectionChanged="OnSelectedDescricao" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
@@ -84,6 +86,7 @@
                       ItemsSource="{Binding DescAdicionais}"
                       DisplayMemberPath="descricao_adicional"
                       SelectedItem="{Binding DescAdicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      PreviewKeyDown="OnComboPreviewKeyDown"
                       SelectionChanged="OnSelectedDescricaoAdicional" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 
@@ -95,6 +98,7 @@
                       ItemsSource="{Binding CompleAdicionais}"
                       DisplayMemberPath="complementoadicional"
                       SelectedItem="{Binding Compledicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      PreviewKeyDown="OnComboPreviewKeyDown"
                       SelectionChanged="OnSelectedComplementoAdicional" Margin="0,0,2,2" IsFilteringEnabled="True" OpenDropDownOnFocus="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
         </StackPanel>
 

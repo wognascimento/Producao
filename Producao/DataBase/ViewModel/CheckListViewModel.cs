@@ -1499,7 +1499,7 @@ namespace Producao
             }
         }
 
-        public async Task<IList> GetChkGeralRelatorioAsync(long? id_aprovado)
+        public async Task<IList<ChkGeralRelatorioModel>> GetChkGeralRelatorioAsync(long? id_aprovado)
         {
             try
             {
@@ -1521,7 +1521,7 @@ namespace Producao
                     ORDER BY ordem;
                     """;
                 await using var conn = CreateConnection();
-                var data = (await conn.QueryAsync(sql, new { id_aprovado })).ToList();
+                var data = (await conn.QueryAsync<ChkGeralRelatorioModel>(sql, new { id_aprovado })).ToList();
                 return data;
 
             }
