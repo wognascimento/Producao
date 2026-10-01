@@ -169,13 +169,19 @@ namespace Producao.Views.CheckList
 
                 ViewMemorialViewModel vm = (ViewMemorialViewModel)DataContext;
                 DataBaseSettings BaseSettings = DataBaseSettings.Instance;
+                if (vm.Sigla is null || vm.Tema is null || vm.Itens is null || !vm.Itens.Any())
+                {
+                    Mouse.OverrideCursor = null;
+                    MessageBox.Show("Selecione a sigla e o tema com itens para imprimir.", "Memorial", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
                 using ExcelEngine excelEngine = new();
                 IApplication application = excelEngine.Excel;
 
                 application.DefaultVersion = ExcelVersion.Xlsx;
 
                 //Create a workbook
-                IWorkbook workbook = application.Workbooks.Create(1);
+                using IWorkbook workbook = application.Workbooks.Create(1, preserveFormatting: true);
                 IWorksheet worksheet = workbook.Worksheets[0];
                 Producao.Utils.PrintPageSetupHelper.ApplyA4Margins(worksheet);
                 worksheet.IsGridLinesVisible = false;
@@ -217,10 +223,12 @@ namespace Producao.Views.CheckList
                 worksheet.Range["A1"].Text = $"{vm.Sigla.sigla} MEMORIAL {BaseSettings.Database}";
                 worksheet.Range["A1"].CellStyle.Font.Bold = true;
                 worksheet.Range["A1"].CellStyle.Font.Size = 25;
+                worksheet.Range["A1:I1"].RowHeight = 32.25;
 
                 worksheet.Range["A2"].Text = $"{vm.Tema.tema}";
                 worksheet.Range["A2"].CellStyle.Font.Bold = true;
                 worksheet.Range["A2"].CellStyle.Font.Size = 20;
+                worksheet.Range["A2:I2"].RowHeight = 27;
 
                 worksheet.Range["A3"].Text = $"ITEM";
                 worksheet.Range["A3"].ColumnWidth = 5;
@@ -256,7 +264,9 @@ namespace Producao.Views.CheckList
                 worksheet.Range["I3"].ColumnWidth = 15;
                 worksheet.Range["I3"].WrapText = true;
 
-                worksheet.Rows[2].CellStyle = bodyStyle;
+                worksheet.Range["A3:I3"].CellStyle = bodyStyle;
+                worksheet.Range["A3:I3"].CellStyle.Font.Size = 11;
+                worksheet.Range["A3:I3"].RowHeight = 45;
 
                 var dados = vm.Itens.Select(m => new {m.item, m.localitem, m.descricao, m.qtd, m.dimensao, m.baia_caminhao, m.obs, m.obs_interna, m.obs_alteracao}).ToList(); // await vm.GetChkGeralRelatorioAsync(vm.Sigla.id_aprovado);
                 worksheet.ImportData(dados, 4, 1, false);

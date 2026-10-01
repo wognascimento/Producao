@@ -47,7 +47,7 @@ public sealed class DataBaseSettings
         Username = ReadSetting("Username", EnvUsername, Environment.UserName);
         Password = ReadSetting("Password", EnvPassword, null);
         CaminhoSistema = ReadSetting("SystemPath", null, CaminhoSistema);
-        UpdateInfoUrl = ReadSetting("UpdateInfoUrl", null, "http://192.168.0.49/downloads/producao/version.json");
+        UpdateInfoUrl = ReadSetting("UpdateInfoUrl", "PRODUCAO_UPDATE_URL", "https://atualizasig.cipolatti.com.br/downloads/producao/version.json");
         RefreshConnectionString();
     }
 

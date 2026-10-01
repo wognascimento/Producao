@@ -24,7 +24,8 @@ namespace Producao.Views.CentralModelos.Compat
     {
         public IWorkbook Open(string filePath) => new(new XLWorkbook(filePath), preserveFormatting: true);
         public IWorkbook OpenReadOnly(string filePath) => Open(filePath);
-        public IWorkbook Create(int sheetCount) => new(new XLWorkbook(), sheetCount);
+        public IWorkbook Create(int sheetCount, bool preserveFormatting = false)
+            => new(new XLWorkbook(), sheetCount, preserveFormatting);
     }
 
     internal sealed class IWorkbook : IDisposable
