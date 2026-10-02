@@ -44,6 +44,8 @@ namespace Producao
     {
         DataBaseSettings BaseSettings = DataBaseSettings.Instance;
         private readonly string CURRENT_VERSION = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        private bool checkingForUpdates;
+        private bool startupUpdateChecked;
 
         public MainWindow()
         {
@@ -192,6 +194,10 @@ namespace Producao
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            if (startupUpdateChecked) return;
+            startupUpdateChecked = true;
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            await CheckForUpdatesAsync(showMessages: false);
             /*
             try
             {
@@ -224,12 +230,15 @@ namespace Producao
             */
         }
 
-        private async Task CheckForUpdatesAsync()
+        private async Task CheckForUpdatesAsync(bool showMessages = true)
         {
+            if (checkingForUpdates) return;
+            checkingForUpdates = true;
             try
             {
                 if (string.IsNullOrWhiteSpace(BaseSettings.UpdateInfoUrl))
                 {
+                    if (!showMessages) return;
                     MessageBox.Show(
                         "O endereco de atualizacao nao esta configurado.",
                         "Atualizacao do sistema",
@@ -243,6 +252,7 @@ namespace Producao
 
                 if (updateInfo == null)
                 {
+                    if (!showMessages) return;
                     MessageBox.Show(
                         $"O sistema ja esta atualizado.\n\nVersao instalada: {CURRENT_VERSION}",
                         "Atualizacao do sistema",
@@ -265,6 +275,7 @@ namespace Producao
                 if (result != MessageBoxResult.Yes)
                     return;
 
+                showMessages = true;
                 string updateExecutable = Path.Combine(AppContext.BaseDirectory, "Update.exe");
                 if (!File.Exists(updateExecutable))
                     throw new FileNotFoundException("O atualizador Update.exe nao foi encontrado.", updateExecutable);
@@ -278,8 +289,13 @@ namespace Producao
                 startInfo.ArgumentList.Add(jsonData);
                 startInfo.ArgumentList.Add("Producao.exe");
 
-                Process.Start(startInfo);
+                if (Process.Start(startInfo) == null)
+                    throw new InvalidOperationException("Nao foi possivel iniciar o atualizador.");
                 Application.Current.Shutdown();
+            }
+            catch (Exception ex) when (!showMessages)
+            {
+                Trace.TraceWarning("Falha na verificacao automatica de atualizacao: {0}", ex.Message);
             }
             catch (HttpRequestException ex)
             {
@@ -299,6 +315,10 @@ namespace Producao
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
                 );
+            }
+            finally
+            {
+                checkingForUpdates = false;
             }
         }
 

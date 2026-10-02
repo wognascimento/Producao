@@ -19,6 +19,7 @@ namespace Producao.Views.kit.solucao
     public partial class ViewKitSolucao : UserControl
     {
         private bool inicializado;
+        private bool inicializando;
 
         public ViewKitSolucao()
         {
@@ -28,9 +29,10 @@ namespace Producao.Views.kit.solucao
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            if (inicializado)
+            if (inicializado || inicializando)
                 return;
 
+            inicializando = true;
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
@@ -45,6 +47,7 @@ namespace Producao.Views.kit.solucao
             }
             finally
             {
+                inicializando = false;
                 Mouse.OverrideCursor = null;
             }
         }
@@ -264,6 +267,12 @@ namespace Producao.Views.kit.solucao
         public async Task CriarOSAsync()
         {
             await using var conn = new NpgsqlConnection(BaseSettings.ConnectionString);
+            await conn.OpenAsync();
+            await using var transaction = await conn.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+
+            // Serialize the existence check and insertion, including writes from other clients.
+            await conn.ExecuteAsync("SET LOCAL lock_timeout = '10s'; LOCK TABLE producao.tbl_servicos IN SHARE ROW EXCLUSIVE MODE;",
+                transaction: transaction);
 
             await conn.ExecuteAsync(
                 @"INSERT INTO producao.tbl_servicos (
@@ -302,9 +311,20 @@ namespace Producao.Views.kit.solucao
                     qry_siglas_emit_os.sigla_serv
                 FROM
                     producao.tbl_tipo_os
-                    CROSS JOIN producao.qry_siglas_emit_os
+                    CROSS JOIN (
+                        SELECT DISTINCT sigla_serv
+                        FROM producao.t_aprovados
+                        WHERE sigla <> 'CIPOLATTI'
+                          AND NULLIF(BTRIM(sigla_serv), '') IS NOT NULL
+                    ) AS qry_siglas_emit_os
                 WHERE
                     producao.tbl_tipo_os.tipo_servico IN ('KIT MANUTENÇÃO', 'KIT SOLUÇÃO', 'KIT DESMONTAGEM')
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM producao.tbl_servicos existente
+                        WHERE existente.sigla = qry_siglas_emit_os.sigla_serv
+                          AND existente.tipo = producao.tbl_tipo_os.tipo_servico
+                    )
                 GROUP BY
                     producao.tbl_tipo_os.tipo_servico,
                     producao.tbl_tipo_os.descricao_servico,
@@ -316,7 +336,9 @@ namespace Producao.Views.kit.solucao
                         WHEN tipo_servico = 'KIT SOLUÇÃO' THEN sigla_serv || '-S'
                         WHEN tipo_servico = 'KIT DESMONTAGEM' THEN sigla_serv || '-D'
                         ELSE sigla_serv
-                    END;");
+                    END;", transaction: transaction);
+
+            await transaction.CommitAsync();
         }
 
         private const string InsertOsKitSql = @"

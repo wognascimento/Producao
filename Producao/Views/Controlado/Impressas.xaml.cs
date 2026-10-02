@@ -50,7 +50,7 @@ namespace Producao.Views.Controlado
             {
                 RadWindow.Alert(new DialogParameters()
                 {
-                    Theme = new CrystalTheme(),
+                    Theme = new Office2016Theme(),
                     Content = "Não existem etiquetas não vinculadas a uma requisição.",
                     Header = "Atenção",
                 });
@@ -59,7 +59,7 @@ namespace Producao.Views.Controlado
 
             RadWindow.Confirm(new DialogParameters()
             {
-                Theme = new CrystalTheme(),
+                Theme = new Office2016Theme(),
                 OkButtonContent = "Sim",
                 CancelButtonContent = "Não",
                 Content = "Deseja imprimir todas as etiquetas não vinculadas a uma requisição ?",
@@ -113,7 +113,7 @@ namespace Producao.Views.Controlado
 
                     RadWindow.Alert(new DialogParameters()
                     {
-                        Theme = new CrystalTheme(),
+                        Theme = new Office2016Theme(),
                         Content = "Etiquetas impressas.",
                         Header = "Atenção",
                     });

@@ -179,7 +179,7 @@ namespace Producao.Views.Controlado
                 ResizeMode = ResizeMode.NoResize,
                 CanMove = false
             };
-            StyleManager.SetTheme(radWindow, new Windows8Theme());
+            StyleManager.SetTheme(radWindow, new Office2016Theme());
             radWindow.ShowDialog();
         }
 
@@ -193,7 +193,7 @@ namespace Producao.Views.Controlado
             };
 
             var manager = new RadDesktopAlertManager();
-            StyleManager.SetTheme(alert, new Windows8Theme());
+            StyleManager.SetTheme(alert, new Office2016Theme());
             manager.ShowAlert(alert);
         }
 
