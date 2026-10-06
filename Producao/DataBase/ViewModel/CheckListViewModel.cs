@@ -1513,6 +1513,8 @@ namespace Producao
                         qtd,
                         custo_unitario,
                         custo_total,
+                        pl_unitario,
+                        pl_total,
                         orient_montagem,
                         coddetalhescompl,
                         caminhao

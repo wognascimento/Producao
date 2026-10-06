@@ -66,19 +66,28 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
-function IsDotNetDesktopRuntime10Installed: Boolean;
+function HasDotNetDesktopRuntime10InRegistry(RootKey: Integer): Boolean;
 var
   Versions: TArrayOfString;
   I: Integer;
 begin
   Result := False;
-  if RegGetValueNames(HKLM64, 'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App', Versions) then
+  if RegGetValueNames(RootKey, 'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App', Versions) then
     for I := 0 to GetArrayLength(Versions) - 1 do
       if Copy(Versions[I], 1, 5) = '10.0.' then
       begin
         Result := True;
         Exit;
       end;
+end;
+
+function IsDotNetDesktopRuntime10Installed: Boolean;
+begin
+  // The x64 runtime can be registered in the 32-bit registry view.
+  Result := HasDotNetDesktopRuntime10InRegistry(HKLM32);
+  if not Result then
+    Result := HasDotNetDesktopRuntime10InRegistry(HKLM64);
+  Log('Windows Desktop Runtime 10 x64 detected: ' + IntToStr(Ord(Result)));
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;

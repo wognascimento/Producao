@@ -644,10 +644,10 @@ namespace Producao.Views.CheckList
                 worksheet.Range["F2"].Text = $"QTDE";
                 worksheet.Range["F2"].ColumnWidth = 5;
 
-                worksheet.Range["G2"].Text = $"C. UNIT";
+                worksheet.Range["G2"].Text = $"PL. UNIT";
                 worksheet.Range["G2"].ColumnWidth = 5;
 
-                worksheet.Range["H2"].Text = $"C. TOT";
+                worksheet.Range["H2"].Text = $"PL. TOT";
                 worksheet.Range["H2"].ColumnWidth = 5;
 
                 worksheet.Range["I2"].Text = $"ORIENTAÇÃO DE MONTAGEM";
@@ -705,10 +705,10 @@ namespace Producao.Views.CheckList
 
                     if (item.qtd.HasValue)
                         worksheet.Range[$"F{linha}"].Number = item.qtd.Value;
-                    if (item.custo_unitario.HasValue)
-                        worksheet.Range[$"G{linha}"].Number = item.custo_unitario.Value;
-                    if (item.custo_total.HasValue)
-                        worksheet.Range[$"H{linha}"].Number = item.custo_total.Value;
+                    if (item.pl_unitario.HasValue)
+                        worksheet.Range[$"G{linha}"].Number = item.pl_unitario.Value;
+                    if (item.pl_total.HasValue)
+                        worksheet.Range[$"H{linha}"].Number = item.pl_total.Value;
 
                     worksheet.Range[$"I{linha}"].Text = item.orient_montagem ?? string.Empty;
                     if (item.coddetalhescompl.HasValue)

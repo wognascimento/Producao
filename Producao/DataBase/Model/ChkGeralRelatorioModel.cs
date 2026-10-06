@@ -18,6 +18,8 @@ namespace Producao
         public double? qtd { get; set; }
         public double? custo_unitario { get; set; }
         public double? custo_total { get; set; }
+        public double? pl_unitario { get; set; }
+        public double? pl_total { get; set; }
         public string? orient_montagem { get; set; }
         public long? coddetalhescompl { get; set; }
         public long? codcompladicional { get; set; }
