@@ -35,7 +35,10 @@
             Name="itens"
             ItemsSource="{Binding Descricoes}"
             IsFilteringAllowed="True"
-            IsReadOnly="True"
+            IsReadOnly="False"
+            CanUserInsertRows="False"
+            CanUserDeleteRows="False"
+            RowValidating="OnRowValidating"
             ClipboardCopyMode="Cells,Header"
             AutoGenerateColumns="False"
             ShowGroupPanel="False"
@@ -57,7 +60,7 @@
                 <telerik:GridViewDataColumn Header="vida_util" UniqueName="vida_util" DataMemberBinding="{Binding vida_util}"/>
                 <telerik:GridViewDataColumn Header="custo" UniqueName="custo" DataMemberBinding="{Binding custo}" DataFormatString="{}{0:N2}"/>
                 <telerik:GridViewDataColumn Header="saldo_estoque" UniqueName="saldo_estoque" DataMemberBinding="{Binding saldo_estoque}"/>
-                <telerik:GridViewDataColumn Header="peso" UniqueName="peso" DataMemberBinding="{Binding peso}" DataFormatString="{}{0:N2}"/>
+                <telerik:GridViewDataColumn Header="peso" UniqueName="peso" DataMemberBinding="{Binding peso, Mode=TwoWay}" DataFormatString="{}{0:N2}"/>
                 <telerik:GridViewDataColumn Header="m3" UniqueName="m3" DataMemberBinding="{Binding m3}" DataFormatString="{}{0:N2}"/>
                 <telerik:GridViewDataColumn Header="pl" UniqueName="pl" DataMemberBinding="{Binding pl}" DataFormatString="{}{0:N2}"/>
                 <telerik:GridViewDataColumn Header="pb" UniqueName="pb" DataMemberBinding="{Binding pb}" DataFormatString="{}{0:N2}"/>

@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Media;
 
 namespace Producao.Views.kit
 {
@@ -63,6 +66,8 @@ namespace Producao.Views.kit
 
         private static void PreencherItens(ExcelWorksheet worksheet, IReadOnlyList<KitChkGeralModel> itens)
         {
+            worksheet.View.ShowGridLines = true;
+            worksheet.PrinterSettings.ShowGridLines = true;
             for (var index = 0; index < itens.Count; index++)
             {
                 var item = itens[index];
@@ -78,8 +83,50 @@ namespace Producao.Views.kit
                 SetText(worksheet, $"P{row}", string.Empty);
                 SetNumber(worksheet, $"Q{row}", item.custo);
                 SetNumber(worksheet, $"R{row}", item.peso);
+                worksheet.Cells[$"Q{row}:R{row}"].Style.Numberformat.Format = "0.00";
                 SetText(worksheet, $"S{row}", item.inserido_por);
+
+                worksheet.Cells[$"C{row}:D{row}"].Merge = true;
+                worksheet.Cells[$"E{row}:K{row}"].Merge = true;
+                worksheet.Cells[$"M{row}:N{row}"].Merge = true;
+                var range = worksheet.Cells[row, 1, row, 19];
+                range.Style.WrapText = true;
+                range.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                range.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                range.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                range.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                range.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                AjustarAltura(worksheet, row);
             }
+        }
+
+        private static void AjustarAltura(ExcelWorksheet worksheet, int row)
+        {
+            var height = Math.Max(worksheet.DefaultRowHeight, worksheet.Row(row).Height);
+            for (var column = 1; column <= 19; column++)
+            {
+                var cell = worksheet.Cells[row, column];
+                var merged = worksheet.MergedCells[row, column];
+                var range = string.IsNullOrEmpty(merged) ? cell : worksheet.Cells[merged];
+                if (range.Start.Column != column || string.IsNullOrEmpty(cell.Text))
+                    continue;
+
+                // Excel column widths are character-based; measure wrapped text in WPF pixels.
+                double width = 0;
+                for (var c = range.Start.Column; c <= range.End.Column; c++)
+                    width += Math.Floor(worksheet.Column(c).Width * 7 + 5);
+                var font = cell.Style.Font;
+                var text = new FormattedText(cell.Text, CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
+                    new Typeface(new FontFamily(font.Name), font.Italic ? FontStyles.Italic : FontStyles.Normal,
+                        font.Bold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal),
+                    font.Size * 96d / 72d, Brushes.Black, 1d)
+                {
+                    MaxTextWidth = Math.Max(1, width - 10)
+                };
+                height = Math.Max(height, Math.Ceiling(text.Height * 72d / 96d + 6));
+            }
+            worksheet.Row(row).Height = Math.Min(409, height);
         }
 
         private static void PreencherEtiquetas(ExcelWorksheet worksheet, IReadOnlyList<KitChkGeralModel> itens)

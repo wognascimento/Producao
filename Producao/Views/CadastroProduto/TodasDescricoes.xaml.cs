@@ -3,6 +3,7 @@ using Dapper;
 using Npgsql;
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.GridView;
 
 namespace Producao.Views.CadastroProduto;
 
@@ -23,6 +25,26 @@ public partial class TodasDescricoes : UserControl
     {
         DataContext = new TodasDescricoesViewModel();
         InitializeComponent();
+        foreach (var column in itens.Columns)
+            column.IsReadOnly = column.UniqueName != "peso";
+    }
+
+    private void OnRowValidating(object sender, GridViewRowValidatingEventArgs e)
+    {
+        if (e.EditOperationType == GridViewEditOperationType.None || e.Row.Item is not QryDescricao item)
+            return;
+        if (!item.codcompladicional.HasValue ||
+            (item.peso.HasValue && (!double.IsFinite(item.peso.Value) || item.peso.Value < 0)))
+        {
+            e.IsValid = false;
+            e.ValidationResults.Add(new GridViewCellValidationResult
+            {
+                PropertyName = "peso", ErrorMessage = "Informe um peso valido, maior ou igual a zero, em um produto com codigo."
+            });
+            return;
+        }
+        DescricaoPesoGridSave.Save(sender, e,
+            () => ((TodasDescricoesViewModel)DataContext).SalvarPesoAsync(item));
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -109,6 +131,7 @@ public partial class TodasDescricoes : UserControl
 
 public class TodasDescricoesViewModel : INotifyPropertyChanged
 {
+    private readonly Dictionary<QryDescricao, double?> pesosOriginais = new();
     readonly DataBaseSettings BaseSettings = DataBaseSettings.Instance;
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -138,12 +161,38 @@ public class TodasDescricoesViewModel : INotifyPropertyChanged
             var data = await conn.QueryAsync<QryDescricao>(
                 @"SELECT *
                   FROM producao.qry3descricoes;");
-            return new ObservableCollection<QryDescricao>(data);
+            var descricoes = new ObservableCollection<QryDescricao>(data);
+            pesosOriginais.Clear();
+            foreach (var item in descricoes)
+                pesosOriginais[item] = item.peso;
+            return descricoes;
         }
         catch (Exception)
         {
             throw;
         }
+    }
+
+    public async Task SalvarPesoAsync(QryDescricao item)
+    {
+        if (!pesosOriginais.TryGetValue(item, out var original))
+            throw new InvalidOperationException("Recarregue a lista antes de alterar o peso.");
+        if (Nullable.Equals(original, item.peso))
+            return;
+
+        await using var conn = new NpgsqlConnection(BaseSettings.ConnectionString);
+        await conn.OpenAsync();
+        await using var transaction = await conn.BeginTransactionAsync();
+        var affected = await conn.ExecuteAsync(@"
+            UPDATE producao.tblcomplementoadicional
+            SET peso = @peso
+            WHERE codcompladicional = @codcompladicional
+              AND peso IS NOT DISTINCT FROM @original;",
+            new { item.peso, item.codcompladicional, original }, transaction);
+        if (affected != 1)
+            throw new InvalidOperationException("Produto nao encontrado ou peso alterado por outro usuario. Recarregue a lista.");
+        await transaction.CommitAsync();
+        pesosOriginais[item] = item.peso;
     }
 }
 
