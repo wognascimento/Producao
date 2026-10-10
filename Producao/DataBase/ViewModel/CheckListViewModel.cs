@@ -1459,6 +1459,9 @@ namespace Producao
 
         public async Task<DetalhesComplemento> ConfirmarComplementoCheckListAsync(DetalhesComplemento detCompl)
         {
+            ArgumentNullException.ThrowIfNull(detCompl);
+            if (!detCompl.coddetalhescompl.HasValue)
+                throw new InvalidOperationException("Salve o complemento antes de confirmar.");
             try
             {
                 var det = await QueryFirstOrDefaultAsync<DetalhesComplemento>(
@@ -1469,6 +1472,8 @@ namespace Producao
                     LIMIT 1;
                     """,
                     new { detCompl.coddetalhescompl });
+                if (det == null)
+                    throw new InvalidOperationException("O complemento não foi encontrado. Atualize o checklist antes de confirmar.");
                 if (det != null)
                 {
                     det.confirmado = detCompl.confirmado;

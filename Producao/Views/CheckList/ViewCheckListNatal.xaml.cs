@@ -873,8 +873,9 @@ namespace Producao.Views.CheckList
         private async void dgComplemento_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
 
-            QryCheckListGeralComplementoModel? dado = e.Cell?.DataContext as QryCheckListGeralComplementoModel;
-            CheckListViewModel vm = (CheckListViewModel)DataContext;
+            if (e.EditAction == GridViewEditAction.Cancel ||
+                e.Cell?.DataContext is not QryCheckListGeralComplementoModel dado ||
+                DataContext is not CheckListViewModel vm) return;
 
             try
             {
@@ -890,13 +891,18 @@ namespace Producao.Views.CheckList
 
                 if (dado is not null && e.Cell?.Column?.UniqueName == "confirmado")
                 {
-                    vm.DetCompl.coddetalhescompl = dado.coddetalhescompl;
-                    vm.DetCompl.confirmado = dado.confirmado;
-                    vm.DetCompl.confirmado_data = dado.confirmado == "-1" ? DateTime.Now : dado.confirmado_data;
-                    vm.DetCompl.confirmado_por = dado.confirmado == "-1" ? global::Producao.DataBaseSettings.Instance.Username : dado.confirmado_por;
-                    vm.DetCompl.desabilitado_confirmado_data = dado.confirmado == "0" ? DateTime.Now : dado.desabilitado_confirmado_data;
-                    vm.DetCompl.desabilitado_confirmado_por = dado.confirmado == "0" ? global::Producao.DataBaseSettings.Instance.Username : dado.desabilitado_confirmado_por;
-                    vm.DetCompl = await vm.ConfirmarComplementoCheckListAsync(vm.DetCompl);
+                    // New rows are persisted by RowValidated, including their confirmation.
+                    if (!dado.coddetalhescompl.HasValue) return;
+                    var detalhe = new DetalhesComplemento
+                    {
+                        coddetalhescompl = dado.coddetalhescompl,
+                        confirmado = dado.confirmado,
+                        confirmado_data = dado.confirmado == "-1" ? DateTime.Now : dado.confirmado_data,
+                        confirmado_por = dado.confirmado == "-1" ? global::Producao.DataBaseSettings.Instance.Username : dado.confirmado_por,
+                        desabilitado_confirmado_data = dado.confirmado == "0" ? DateTime.Now : dado.desabilitado_confirmado_data,
+                        desabilitado_confirmado_por = dado.confirmado == "0" ? global::Producao.DataBaseSettings.Instance.Username : dado.desabilitado_confirmado_por
+                    };
+                    await vm.ConfirmarComplementoCheckListAsync(detalhe);
                 }
 
 
