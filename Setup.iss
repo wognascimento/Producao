@@ -53,6 +53,8 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
+; Install initial configuration only when absent; preserve it on upgrade and uninstall.
+Source: "Producao\App.config"; DestDir: "{app}"; DestName: "Producao.dll.config"; Flags: onlyifdoesntexist uninsneveruninstall
 Source: "{#PublishSourcePath}\*"; DestDir: "{app}"; Excludes: "Producao.dll.config,Producao.exe.config,App.config"; Flags: ignoreversion recursesubdirs createallsubdirs
 #ifdef BundleRuntime
 Source: "{#DotNetRuntimeInstaller}"; DestDir: "{tmp}"; DestName: "windowsdesktop-runtime-10.0-win-x64.exe"; Flags: dontcopy

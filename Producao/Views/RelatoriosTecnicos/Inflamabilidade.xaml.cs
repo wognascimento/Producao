@@ -201,12 +201,7 @@ namespace Producao.Views.RelatoriosTecnicos
                 double yPositionTipo = 60;
                 double yPositionDescritivo = 90;
 
-                double yPositionExtraTipo = 0;
-                double yPositionExtraDescritivo = 30;
-
-                RadFixedPage? pageExtra = null;
-
-                int det = 1;
+                RadFixedPage materialsPage = page2;
                 foreach (var item in itens)
                 {
                     //var classificacao = vm.Classificacoes.Where(c => c.id == item.classificacao).Select()
@@ -215,30 +210,17 @@ namespace Producao.Views.RelatoriosTecnicos
                                         where p.id == item.classificacao
                                         select p.classificacao;
 
-                    if (det > 5)
+                    var lines = PrepararLinhasMaterial(item.descritivo, classificacao.FirstOrDefault());
+                    double blockHeight = 30 + lines.Length * 14 + 12;
+                    if (yPositionTipo + blockHeight > PageHeight - 2 * PageMargin - 80)
                     {
-                        if(det == 6)
-                            pageExtra = AddPdfPage(document);
-
-                        DrawText(pageExtra!, $"{item.tipo}", 0, yPositionExtraTipo, bold: true, fontSize: 15);
-                        DrawText(pageExtra!, $"{item.descritivo}", 0, yPositionExtraDescritivo);
-                        DrawText(pageExtra!, $"{classificacao.FirstOrDefault()}", 185, yPositionExtraDescritivo + 14);
-
-                        yPositionExtraTipo += 120;
-                        yPositionExtraDescritivo += 120;
+                        materialsPage = AddPdfPage(document);
+                        yPositionTipo = 0;
                     }
-                    else 
-                    {
-                        DrawText(page2, $"{item.tipo}", 0, yPositionTipo, bold: true, fontSize: 15);
-                        DrawText(page2, $"{item.descritivo}", 0, yPositionDescritivo);
-                        DrawText(page2, $"{classificacao.FirstOrDefault()}", 185, yPositionDescritivo + 14);
-
-                        //page.Graphics.DrawString(materialInfo, font, brush, new RectangleF(0, yPosition, page.GetClientSize().Width, page.GetClientSize().Height), format);
-                        yPositionTipo += 120;
-                        yPositionDescritivo += 120;
-                    }
-
-                    det++;
+                    yPositionDescritivo = yPositionTipo + 30;
+                    DrawText(materialsPage, item.tipo, 0, yPositionTipo, bold: true, fontSize: 15);
+                    DrawMultilineText(materialsPage, string.Join("\n", lines), 0, yPositionDescritivo);
+                    yPositionTipo += blockHeight;
 
                 }
 
@@ -277,9 +259,8 @@ namespace Producao.Views.RelatoriosTecnicos
                     double xPosition = ((PageWidth - (PageMargin * 2)) - textWidth) / 2;
 
                     // Adiciona o texto do rodapé
-                    DrawText(page, line, xPosition, yPosition);
-                    DrawText(page2, line, xPosition, yPosition);
-                    DrawText(page3, line, xPosition, yPosition);
+                    foreach (var reportPage in document.Pages)
+                        DrawText(reportPage, line, xPosition, yPosition);
 
 
                     // Atualiza a posição y para a próxima linha
@@ -349,6 +330,17 @@ namespace Producao.Views.RelatoriosTecnicos
                 DrawText(page, line, x, y, fontSize: fontSize);
                 y += lineSpacing;
             }
+        }
+
+        internal static string[] PrepararLinhasMaterial(string? descritivo, string? classificacao)
+        {
+            const string quantidade = "Quantidade do material na decoração:";
+            var lines = (descritivo ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').ToList();
+            int index = lines.FindIndex(line => line.TrimStart().StartsWith(quantidade, StringComparison.OrdinalIgnoreCase));
+            string quantityLine = $"{quantidade} {classificacao}".TrimEnd();
+            if (index >= 0) lines[index] = quantityLine;
+            else lines.Insert(Math.Min(1, lines.Count), quantityLine);
+            return lines.ToArray();
         }
 
         private static double EstimateTextWidth(string text, double fontSize)
