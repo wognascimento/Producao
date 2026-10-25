@@ -23,7 +23,7 @@
         <telerik:RadGridView
             x:Name="dataGrid"
             Grid.Row="1"
-            ItemsSource="{Binding Descricoes}"
+            ItemsSource="{Binding DescricoesFiltradas}"
             SelectedItem="{Binding Descricao, Mode=TwoWay}"
             AutoGenerateColumns="False"
             ShowGroupPanel="False"

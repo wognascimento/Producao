@@ -131,6 +131,11 @@ namespace Producao.Views.kit
 
         private static void PreencherEtiquetas(ExcelWorksheet worksheet, IReadOnlyList<KitChkGeralModel> itens)
         {
+            var ultimaLinhaAnterior = worksheet.Dimension?.End.Row ?? 0;
+            for (var row = 1; row <= ultimaLinhaAnterior; row++)
+                worksheet.Row(row).PageBreak = false;
+            for (var column = 1; column <= (worksheet.Dimension?.End.Column ?? 10); column++)
+                worksheet.Column(column).PageBreak = false;
             worksheet.Cells.Clear();
 
             for (var column = 1; column <= 10; column++)
@@ -191,6 +196,9 @@ namespace Producao.Views.kit
 
                 MergeText(worksheet, $"A{row2}:G{row2}", item.solicitante, 22, false, 26.25);
                 MergeText(worksheet, $"H{row2}:J{row2}", item.atendente, 22, false, 26.25);
+                worksheet.Row(row2 + 1).Height = 78;
+                // O separador entre paginas nao deve ocupar uma folha de impressao.
+                worksheet.Row(row2 + 1).Hidden = (row2 + 1) % 32 == 0;
                 row1 += 1;
                 row2 += 2;
 
@@ -201,8 +209,21 @@ namespace Producao.Views.kit
             worksheet.PrinterSettings.LeftMargin = Producao.Utils.PrintPageSetupHelper.LeftMargin;
             worksheet.PrinterSettings.RightMargin = Producao.Utils.PrintPageSetupHelper.RightMargin;
             worksheet.PrinterSettings.HorizontalCentered = true;
-            worksheet.PrinterSettings.VerticalCentered = true;
-            worksheet.PrinterSettings.Scale = 90;
+            //worksheet.PrinterSettings.VerticalCentered = true;
+            worksheet.PrinterSettings.PaperSize = ePaperSize.A4;
+            worksheet.PrinterSettings.Orientation = eOrientation.Portrait;
+            worksheet.PrinterSettings.VerticalCentered = false;
+            worksheet.PrinterSettings.FitToPage = true;
+            worksheet.PrinterSettings.FitToWidth = 1;
+            worksheet.PrinterSettings.FitToHeight = 0;
+            worksheet.Names.Remove("_xlnm.Print_Titles");
+            if (itens.Count > 0)
+            {
+                var ultimaLinha = itens.Count * 16 - 1;
+                worksheet.PrinterSettings.PrintArea = worksheet.Cells[1, 1, ultimaLinha, 10];
+                for (var row = 31; row < ultimaLinha; row += 32)
+                    worksheet.Row(row).PageBreak = true;
+            }
         }
 
         private static void MergeText(ExcelWorksheet worksheet, string address, string? value, double fontSize, bool bold, double rowHeight)

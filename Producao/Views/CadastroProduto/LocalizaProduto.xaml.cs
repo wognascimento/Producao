@@ -52,9 +52,11 @@ namespace Producao.Views.CadastroProduto
 
         private void ConfigureFilter()
         {
-            var view = CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
-            if (view != null)
-                view.Filter = FilterDescricao;
+            var vm = (LocalizaProdutoViewModel)DataContext;
+            vm.DescricoesFiltradas = new ListCollectionView(vm.Descricoes)
+            {
+                Filter = FilterDescricao
+            };
         }
 
         private bool FilterDescricao(object obj)
@@ -80,7 +82,7 @@ namespace Producao.Views.CadastroProduto
         {
             try
             {
-                CollectionViewSource.GetDefaultView(dataGrid.ItemsSource)?.Refresh();
+                ((LocalizaProdutoViewModel)DataContext).DescricoesFiltradas?.Refresh();
             }
             catch (Exception ex)
             {
@@ -106,6 +108,13 @@ namespace Producao.Views.CadastroProduto
         }
 
         private ObservableCollection<QryDescricao> descricoes;
+        private ICollectionView descricoesFiltradas;
+        public ICollectionView DescricoesFiltradas
+        {
+            get => descricoesFiltradas;
+            set { descricoesFiltradas = value; RaisePropertyChanged(nameof(DescricoesFiltradas)); }
+        }
+
         public ObservableCollection<QryDescricao> Descricoes
         {
             get { return descricoes; }
