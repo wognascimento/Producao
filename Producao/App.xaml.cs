@@ -36,6 +36,7 @@ namespace Producao
 
         private static void RegistrarHandlersDapper()
         {
+            Utils.TimeOnlyToTimeSpanHandler.Register();
             SqlMapper.AddTypeHandler(new Utils.DateOnlyToDateTimeHandler());
             SqlMapper.AddTypeHandler(new Utils.DateOnlyToNullableDateTimeHandler());
         }
