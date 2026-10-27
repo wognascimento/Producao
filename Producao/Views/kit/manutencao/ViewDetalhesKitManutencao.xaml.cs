@@ -357,7 +357,15 @@ namespace Producao.Views.kit.solucao
 
         private void dgComplemento_CellEditEnded(object sender, GridViewCellEditEndedEventArgs e)
         {
+            if (e.EditAction != GridViewEditAction.Commit ||
+                e.Cell.Column.UniqueName != "codcompladicional" ||
+                e.Cell.DataContext is not QryCheckListGeralComplementoModel record ||
+                DataContext is not DetalhesKitManutencaoViewModel vm)
+                return;
 
+            var complemento = vm.CompleAdicionais?.FirstOrDefault(c => c.codcompladicional == record.codcompladicional);
+            record.unidade = complemento?.unidade;
+            record.saldoestoque = complemento?.saldo_estoque;
         }
 
         private async void dgComplemento_RowValidated(object sender, GridViewRowValidatedEventArgs e)

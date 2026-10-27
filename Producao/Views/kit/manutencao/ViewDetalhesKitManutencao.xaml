@@ -179,20 +179,12 @@
                              RowValidating="dgComplemento_RowValidating"
                              FontSize="10">
             <telerik:RadGridView.Columns>
-                <telerik:GridViewDataColumn Header="COMPLEMENTO ADICIONAL" DataMemberBinding="{Binding codcompladicional}">
-                    <telerik:GridViewDataColumn.CellTemplate>
-                        <DataTemplate>
-                            <telerik:RadComboBox ItemsSource="{Binding DataContext.CompleAdicionais, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"
-                                                 DisplayMemberPath="complementoadicional"
-                                                 SelectedValuePath="codcompladicional"
-                                                 SelectedValue="{Binding codcompladicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                 IsEditable="True"
-                                                 IsFilteringEnabled="True"
-                                                 OpenDropDownOnFocus="True"
-                                                 SelectionChanged="OnComplementoAdicionalSelectionChanged" Margin="0,0,2,2" IsTextSearchEnabled="True" StaysOpenOnEdit="True" CanAutocompleteSelectItems="False" CanKeyboardNavigationSelectItems="False" UpdateSelectionOnLostFocus="False" UpdateTextOnLostFocus="False"/>
-                        </DataTemplate>
-                    </telerik:GridViewDataColumn.CellTemplate>
-                </telerik:GridViewDataColumn>
+                <telerik:GridViewComboBoxColumn UniqueName="codcompladicional"
+                                                Header="COMPLEMENTO ADICIONAL"
+                                                DataMemberBinding="{Binding codcompladicional, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                ItemsSource="{Binding DataContext.CompleAdicionais, RelativeSource={RelativeSource AncestorType=telerik:RadGridView}}"
+                                                DisplayMemberPath="complementoadicional"
+                                                SelectedValueMemberPath="codcompladicional"/>
                 <telerik:GridViewDataColumn Header="UNID" DataMemberBinding="{Binding unidade}" TextAlignment="Center"/>
                 <telerik:GridViewDataColumn Header="ESTOQUE" DataMemberBinding="{Binding saldoestoque, Converter={StaticResource ConverterNumber}}" TextAlignment="Center"/>
                 <telerik:GridViewDataColumn Header="QTDE" DataMemberBinding="{Binding qtd, Converter={StaticResource ConverterNumber}}"/>
